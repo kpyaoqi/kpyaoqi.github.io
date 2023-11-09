@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="UniswapV3白皮书资金利用率价格区间(0, ∞)看起来很理想，我们的资金在任何时候（任意价格点）都能为我们赚取手续费。 但我们忽略了另一个影响收益的重要因素，那就是资金的利用率。当一个用户来用我们的池子做交易时，其交易的量相比我们的流动性来说是很小的。 比如，ETH的历史价格大致在 $0.75 到 $4,800 这个区间。在今天（2022年6月），1 个 ETH 的现货价格是 $1800，没">
+<meta property="og:type" content="article">
+<meta property="og:title" content="V3白皮书">
+<meta property="og:url" content="https://kongpengyq.com/2023/01/22/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/V3%E7%99%BD%E7%9A%AE%E4%B9%A6/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="UniswapV3白皮书资金利用率价格区间(0, ∞)看起来很理想，我们的资金在任何时候（任意价格点）都能为我们赚取手续费。 但我们忽略了另一个影响收益的重要因素，那就是资金的利用率。当一个用户来用我们的池子做交易时，其交易的量相比我们的流动性来说是很小的。 比如，ETH的历史价格大致在 $0.75 到 $4,800 这个区间。在今天（2022年6月），1 个 ETH 的现货价格是 $1800，没">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/understanding-02-liquidityrate.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/curve_finite.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/usdceth_liquidity.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/image-20230612212257348.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/image-20230612213006843.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/image-20230612213108342.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/ticks_and_ranges.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/image-20230612213210938.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/image-20230612213253656.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/image-20230613092300794.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/image-20230613092310737.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/image-20230613092344185.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/image-20230613092409473.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/image-20230613092421643.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/image-20230613092504648.png">
+<meta property="article:published_time" content="2023-01-21T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:01:34.867Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链知识点总结">
+<meta property="article:tag" content="UniswapV3">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/understanding-02-liquidityrate.png">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/01/22/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/V3%E7%99%BD%E7%9A%AE%E4%B9%A6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>V3白皮书 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/01/22/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/V3%E7%99%BD%E7%9A%AE%E4%B9%A6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          V3白皮书
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-01-22 00:00:00" itemprop="dateCreated datePublished" datetime="2023-01-22T00:00:00+08:00">2023-01-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:01:34" itemprop="dateModified" datetime="2023-11-09T10:01:34+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/UniswapV3/" itemprop="url" rel="index">
+                    <span itemprop="name">UniswapV3</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="UniswapV3白皮书"><a href="#UniswapV3白皮书" class="headerlink" title="UniswapV3白皮书"></a>UniswapV3白皮书</h1><h2 id="资金利用率"><a href="#资金利用率" class="headerlink" title="资金利用率"></a>资金利用率</h2><p>价格区间(0, ∞)看起来很理想，我们的资金在任何时候（任意价格点）都能为我们赚取手续费。</p>
+<p>但我们忽略了另一个影响收益的重要因素，那就是资金的利用率。<strong>当一个用户来用我们的池子做交易时，其交易的量相比我们的流动性来说是很小的</strong>。</p>
+<p>比如，ETH的历史价格大致在 $0.75 到 $4,800 这个区间。在今天（2022年6月），1 个 ETH 的现货价格是 $1800，没有人会愿意用 $5000 购买一个 ETH，所以在这个价格上提供流动性是毫无用处的。因此，在远离当前价格区间的、永远不会达到的某个点上提供流动性是毫无意义的。</p>
+<p>假设现在池子内资产 X 和 Y 都有 8 个，价格 p 为 1。现在有一笔订单，<strong>用 1 个 X 来换取 1 个 Y</strong>，我们先不考虑滑点和手续费的影响，这一笔交易为我们带来的手续费收益是 <code>fee = 1 * 0.3%</code>，实际参与赚取手续费的流动性就是输出的 1 个 y，这相比于总流动性是很小的，在这一笔交易中，<strong>资金利用率是大约是 <code>1 / 8</code>。</strong>也就是说，我们<strong>只需要极少一部分流动性就能承载这一笔交易</strong>，而大部分流动性在交易过程中只是躺在那做收益的分母而已……</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Dapp-Learning-DAO/Dapp-Learning/blob/main/defi/Uniswap-V3/whitepaperGuide/img/understanding-02-liquidityrate.png"><img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/understanding-02-liquidityrate.png" alt="liquidity rate" style="zoom:50%;" /></a> </p>
+<h2 id="集中流动性"><a href="#集中流动性" class="headerlink" title="集中流动性"></a>集中流动性</h2><p>Uniswap V3 引入了 <em>集中流动性(concentrated liquidity)</em> 的概念：<strong>LP 可以选择他们希望在哪个价格区间提供流动性</strong>。这个机制通过将更多的流动性提供在一个相对狭窄的价格区间，来大大提高资产利用效率；这也使 Uniswap 的使用场景更加多样化：<strong>它现在可以对于不同价格波动性的池子进行不同的配置。</strong>这就是 V3 相对于 V2 的主要提升点。</p>
+<p>简单地来说，<strong>一个 Uniswap V3 的交易对由许多个 Uniswap V2 的交易对构成。</strong>V2 与 V3 的区别是，<strong>在 V3 中，一个交易对有许多的价格区间</strong>，而每个价格区间内都有<strong>一定数量的资产</strong>。从零到正无穷的整个价格区间被划分成了许多个小的价格区间，<strong>每一个区间中都有一定数量的流动性</strong>。而更关键的点在于，在每个小的价格区间中，<strong>工作机制与 Uniswap V2</strong> 完全一样。这也是为什么我们说一个 Uniswap V3 的池子就是许多个 V2 的池子。</p>
+<p>下面，我们来对这种机制进行可视化。我们并不是重新选择一个有限的曲线，而是我们把它在价格 a 与价格 b之间的部分截取出来，把它们当作是是曲线的边界。更进一步，我们把曲线进行平移使得边界点落在坐标轴上，于是得到了下图：</p>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/curve_finite.png" alt="Uniswap V3 price range" style="zoom:50%;" /> 
+
+<blockquote>
+<p>它看起来或许有点单调， 因此 Uniswap V3 有许多的价格区间——这样它们就不会感到孤单了 🙂</p>
+</blockquote>
+<blockquote>
+<p>一个有趣的事实：根据这个原理，可以利用V3的价格区间来挂限价单。</p>
+</blockquote>
+<h3 id="限价单"><a href="#限价单" class="headerlink" title="限价单"></a>限价单</h3><p>事实上，这种资产 X 全部转为资产 Y 的特性并不能算是缺陷，反而是一种可以利用的特性。比如当我们与市场看法相反的时候，<strong>市场大部分人看好 X，而你却看好 Y（或者看空 X）</strong>，于是你故意<strong>设置了一个比较窄的价格区间</strong>（容易被价格穿过），放在比当前价格高的地方，此时注入流动性，将会全部是资产 X。当资产 X 价格上涨时，先进入你的流动性价格区间，不断有人用资产 Y 换走你池内的资产 X，直至价格完全穿过价格区间的上限，<strong>池内的资产 X 被全部换成了资产 Y。</strong></p>
+<p>下面一图展示了 <a target="_blank" rel="noopener" href="https://info.uniswap.org/#/pools/0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8">USDC&#x2F;ETH 池子的流动性分布</a>:</p>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/usdceth_liquidity.png" alt="Liquidity in the real USDC/ETH pool" style="zoom: 33%;" /> 
+
+<p>可以看到，大量流动性集中在现价的附近，而较远的价格区间中的流动性较少——这是因为 LP 更希望提高它们的资产利用效率。当然，整个区间也不是无穷的，在图片右侧也显示了其上界。</p>
+<h2 id="价格区间的风险与收益"><a href="#价格区间的风险与收益" class="headerlink" title="价格区间的风险与收益"></a>价格区间的风险与收益</h2><p><strong>当出现价格在区间以外的情况，此时流动性头寸不但不能继续赚取手续费，同时必定全部变成了单一资产</strong>，且一定是当时市场中处于弱势一方的资产。比如当资产 Y 涨价，将会有大量订单用资产 X 从池子中换取 Y，于是池子中的 X 越来越多，而 Y 最终会清零。因为 AMM 自动做市，实际上也是一种被动的做市，永远需要和市场中的订单做对手盘。</p>
+<p>也就是说，价格区间越窄，价格移出区间的概率越大，风险越大，而区间越宽，风险就越小。如果你厌恶这种价格移出区间的风险，那么大可<strong>直接将价格区间设置为 (0, ∞)</strong> ，官方的 UI 界面也支持这个操作，那么你就会得到一个完全没有虚拟流动性，和 V2 差不多的全价格区间流动性了。</p>
+<p>当然这么做的代价就是，<strong>资金利用率和 V2 也没差别，非常的低</strong>。这就相当于你将资金均匀分散到一个很长的价格轴上，虽然每次交易都能赚取手续费，但由于资金在每个价格点上被摊薄的太厉害，导致<strong>每次赚取手续费的占比权重非常低</strong>。</p>
+<h2 id="Uniswap-V3-的数学原理"><a href="#Uniswap-V3-的数学原理" class="headerlink" title="Uniswap V3 的数学原理"></a>Uniswap V3 的数学原理</h2><p>在数学原理上，V3 是基于 V2 的：它们使用了相同的底层公式，但实际上 V3 使用的是<em>增强版</em>。</p>
+<p>为了处理价格区间之间的转换，简化流动性管理，以及避免取整出现问题，V3 使用了下面这些新的标识：</p>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/image-20230612212257348.png" alt="image-20230612212257348" style="zoom:67%;" /> 
+
+<p><em>L</em> 被称作 <em>流动性数量</em>。池子中的流动性是两种 token 资产数量的组合。我们知道，按照公式，两种代币数量乘积为 <em>k</em>，因此我们可以用<strong>sqrt(x<em>y</em>)</strong> 来衡量池子流动性。<em>L</em> 实际上是 <em>x</em> 和 <em>y</em> 的几何平均数。</p>
+<p><em>y</em>&#x2F;<em>x</em> 是 token0 相对于 token1 的价格。由于池子里两种代币的价格互为倒数，我们在计算中仅使用其中一个( Uniswap V3使用的是 y*&#x2F;<em>x</em>)。token1 相对于 token0 的价格即为 1&#x2F;(<em>y</em>&#x2F;<em>x</em>)&#x3D;x&#x2F;y*。类似地，1&#x2F;sqrt(p) &#x3D; 1&#x2F;sqrt(<em>y</em>&#x2F;<em>x</em>)&#x3D;sqrt(x&#x2F;y)</p>
+<p>我们使用 sqrt(<em>P</em>) 而不是 <em>P</em> 有两个原因：</p>
+<ol>
+<li><p>平方根计算并不精确并且会引入取整的问题。因此，更简单的方法是我们干脆就在合约中存平方根的结果，而不是在合约中计算它。合约中并不存储 x 和 y</p>
+</li>
+<li><p>sqrt(P) 与 <em>L</em> 之间有一个有趣的关系：L也表示了输出数量的变化与 sqrt(P) 的变化之间的关系：</p>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/image-20230612213006843.png" alt="image-20230612213006843" style="zoom:67%;" /></li>
+</ol>
+<h2 id="价格"><a href="#价格" class="headerlink" title="价格"></a>价格</h2><p>同样，我们并不需要计算准确的价格——我们可以直接计算获得的token数量。并且，由于我们在合约中并不存储 x 和 <em>y</em>，我们将仅通过 <em>L</em> 和 sqrt(<em>P</em>) 进行计算。</p>
+<p>根据上文中的公式，我们能得到Δ<em>y</em>：</p>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/image-20230612213108342.png" alt="image-20230612213108342" style="zoom:67%;" /> 
+
+<h2 id="Ticks"><a href="#Ticks" class="headerlink" title="Ticks"></a>Ticks</h2><p>正如我们前面说到的，V2 中的无穷价格区间在 V3 中被分成了更小的价格区间，每个区间都由上下界端点进行限制。为了进行这些边界的协调，V3引入了 <em>ticks</em>。</p>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/ticks_and_ranges.png" alt="Price ranges and ticks" style="zoom:67%;" /> 
+
+<p>在 V3，整个价格区间由离散的、均匀分布的 ticks 进行标定。每个 tick 有一个 index 和对应的价格：</p>
+<p><em>p</em>(<em>i</em>)&#x3D;1.0001^<em>i</em></p>
+<p><em>p</em>(<em>i</em>) 即为 tick <em>i</em> 的价格. 使用 1.0001 的幂次作为标定有一个很好的性质：两个相邻 tick 之间的差距为 0.01% 或者<em>一个基点。</em></p>
+<blockquote>
+<p>基点 (1% 的百分之一，或者 0.01%，或者 0.0001)是在金融中用来衡量百分比的一个单位。你可能在央行宣布对于利率的调整中听过基点这个名词。</p>
+</blockquote>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/image-20230612213210938.png" alt="image-20230612213210938" style="zoom: 67%;" /> 
+
+<p>Ticks 可以为正也可以为负，并且显然它不是无穷的。V3 把sqrt(<em>P</em> )存储为一个 Q64.96 类型的定点数，使用 64 位作为整数部分，使用 96 位作为小数部分。因此，价格的取值范围是 [2^(−128),2^128][2−128,2128]，ticks 的取值范围是：</p>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/image-20230612213253656.png" alt="image-20230612213253656" style="zoom:67%;" /> 
+
+<h2 id="预言机"><a href="#预言机" class="headerlink" title="预言机"></a>预言机</h2><p>V2 的预言机提供了 TWAP (time-weighted average price 时间加权平均价格)，更新时间是每个区块的第一笔交易的价格，其数值是上一次的数值加上当前价格乘以时间差。</p>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/image-20230613092300794.png" alt="image-20230613092300794" style="zoom:80%;" /> 
+
+<p>外部用户可以通过记录该数值的变化和时间点，获得在一段时间内受短期波动影响较小的时间加权价格。</p>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/image-20230613092310737.png" alt="image-20230613092310737" style="zoom:80%;" /> 
+
+<p>上述公式得出了在 t1 到 t2 的时间内，预言机提供的时间加权价格。因为其值是经过时间加权的（累加的是价格乘以时间差），所以受短期波动影响较小，这样能有效防止恶意的价格波动。</p>
+<p><strong>V2 的预言机在核心合约上只保留最新的一个值，所以如果外部用户想要使用这个预言机，需要自己搭建一套监控和记录的设施，增加了使用者成本。</strong></p>
+<p>V3 相比于 V2 的预言机，有以下较大改动：</p>
+<ol>
+<li>相比 V2 累加的是价格的加权数值，V3 累加的是价格的 log 值，即 <code>log(price, 1.0001)</code></li>
+<li>在核心合约中增加了存储预言机数值的空间，最大 65536 个数值，至少 9 天的数值，建立监控和记录设施不再是必要条件</li>
+<li>增加关于流动性的预言机数值，记录周期和价格一致（每个区块的第一笔交易），其值是当前激活状态的流动性数量的倒数，即 <code>1/liquidity</code></li>
+</ol>
+<h3 id="算术平均与几何平均"><a href="#算术平均与几何平均" class="headerlink" title="算术平均与几何平均"></a>算术平均与几何平均</h3><p>V2 的方式是直接记录价格的累加值，而使用时再除以时间间隔，这就是一种<strong>算术平均</strong> (arithmetic mean)。而 V3 累加的是 <code>log(price, 1.0001)</code> 也就是价格的幂，使用时再除以时间间隔，这是<strong>几何平均</strong> (geometric mean)。</p>
+<p>所以 V3 的预言机公式需要改成如下:</p>
+<p><code>a(t)</code> 是时间 t 时，预言机记录的值（累加价格的 log 值）。</p>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/image-20230613092344185.png" alt="image-20230613092344185" style="zoom:80%;" /> 
+
+<p>这里的 log 数值后面其实还有一个 <code>* 1s</code> 即以每秒作为时间间隔。然而实际情况中，合约中是以区块的时间戳作为标记时间的，所以合约中的代码跟公式不同。每个区块的头一笔交易时更新，此时距离上一次更新时间间隔肯定大于 1s，所以需要将更新值乘以两个区块的时间戳的差。<code>tickCumulative</code> 是 tick 序号的累计值，tick 的序号就是 <code>log(√price, 1.0001)</code>。</p>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/image-20230613092409473.png" alt="image-20230613092409473" style="zoom:80%;" /> 
+
+<p>当外部用户使用时，求 t1 到 t2 时间内的时间加权价格 <code>p(t1,t2)</code> ，需要计算两个时间点的累计值的差 <code>a(t2) - a(t1)</code> 除以时间差。</p>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/image-20230613092421643.png" alt="image-20230613092421643" style="zoom:80%;" /> 
+
+<p>使用几何平均的原因：</p>
+<ul>
+<li>因为合约中记录了 tick 序号，序号是整型，且跟价格相关，所以直接计算序号更加节省 gas。（全局变量中存储的不是价格，而是根号价格，如果直接用价格来记录，要多比较复杂的计算）</li>
+<li>V2 中算数平均价格并不总是倒数关系（以 token1 计价 token0，或反过来），所以需要记录两种价格。V3 中使用几何平均不存在该问题，只需要记录一种价格。<ul>
+<li>举个例子，在 V2 中如果 USD&#x2F;ETH 价格在区块 1 中是 100，在区块 2 中是 300，USD&#x2F;ETH 的均价是 200 USD&#x2F;ETH，但是 ETH&#x2F;USD 的均价是 1&#x2F;150</li>
+</ul>
+</li>
+<li><strong>几何平均比算数平均能更好的反应真实的价格，受短期波动影响更小。</strong>白皮书中的引用提到在几何布朗运动中，算数平均会受到高价格的影响更多。</li>
+</ul>
+<blockquote>
+<p>我在 <a target="_blank" rel="noopener" href="https://github.com/Dapp-Learning-DAO/Dapp-Learning/blob/main/defi/Uniswap-V3/whitepaperGuide/oracleCompare.ipynb">oracleCompare.ipynb</a> 中简单模拟了算数平均和几何平均的预言机机制，实际结果是算数平均受高价影响较大，而几何平均受低价影响较大。</p>
+</blockquote>
+<h3 id="流动性预言机"><a href="#流动性预言机" class="headerlink" title="流动性预言机"></a>流动性预言机</h3><p>相比于 V2，任何时刻活跃的流动性就是池子内所有流动性数量总和（因为都是全价格区间），V3 有了不同价格区间，所以不同时刻，激活状态的流动性数量并不是池子内的总流动性数量。为了便于外部使用者更好的观测激活流动性的数量，V3 添加了预言机的 <code>secondsPerLiquidityCumulative</code> 变量。</p>
+<img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/image-20230613092504648.png" alt="image-20230613092504648" style="zoom:80%;" /> 
+
+<p>（因为 liquidity 可能为 0，此时分母为 1）</p>
+<p>这里的具体含义是每单位流动性参与的做市时长，即一段时间内，参与的流动性越多，那么每单位流动性参与的时长越短，因为分摊收益的流动性数量变多了，反之亦然。</p>
+<p>其记录机制和价格逻辑一致，不再赘述。这里介绍一下它的用途。</p>
+<h3 id="Tick-上辅助预言机计算的数据"><a href="#Tick-上辅助预言机计算的数据" class="headerlink" title="Tick 上辅助预言机计算的数据"></a>Tick 上辅助预言机计算的数据</h3><p>每个已初始化的 tick 上（有流动性添加的），不光有流动性数量和手续费相关的变量(<code>liquidityNet</code>, <code>liquidityGross</code>, <code>feeGrowthOutside</code>)，还有三个可用于做市策略。</p>
+<p>tick 变量一览：</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Variable Name</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>int128</td>
+<td>liquidityNet</td>
+<td>流动性数量净含量</td>
+</tr>
+<tr>
+<td>int128</td>
+<td>liquidityGross</td>
+<td>流动性数量总量</td>
+</tr>
+<tr>
+<td>int256</td>
+<td>feeGrowthOutside0X128</td>
+<td>以 token0 收取的 outside 的手续费总量</td>
+</tr>
+<tr>
+<td>int256</td>
+<td>feeGrowthOutside1X128</td>
+<td>以 token1 收取的 outside 的手续费总量</td>
+</tr>
+<tr>
+<td>int256</td>
+<td>secondsOutside</td>
+<td>价格在 outside 的总时间</td>
+</tr>
+<tr>
+<td>int256</td>
+<td>tickCumulativeOutside</td>
+<td>价格在 outside 的 tick 序号累加</td>
+</tr>
+<tr>
+<td>int256</td>
+<td>secondsPerLiquidityOutsideX128</td>
+<td>价格在 outside 的每单位流动性参与时长</td>
+</tr>
+</tbody></table>
+<p>outside 的含义参考手续费部分的讲解，这些变量前几个都是手续费部分用到的，最后三个则是预言机相关的数据。</p>
+<p>tick 辅助预言机的变量的使用方法：</p>
+<ol>
+<li><code>secondsOutside</code>： 用池子创建以来的总时间减去价格区间两边 tick 上的该变量，就能得出该区间做市的总时长</li>
+<li><code>tickCumulativeOutside</code>： 用预言机的 <code>tickCumulative</code> 减去价格区间两边 tick 上的该变量，除以做市时长，就能得出该区间平均的做市价格（tick 序号）</li>
+<li><code>secondsPerLiquidityOutsideX128</code>： 用预言机的 <code>secondsPerLiquidityCumulative</code> 减去价格区间两边 tick 上的该变量，就是该区间内的每单位流动性的做市时长（使用该结果乘以你的流动性数量，得出你的流动性参与的做市时长，这个时长比上 1 的结果，就是你在该区间赚取的手续费比例）。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/01/22/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/V3%E7%99%BD%E7%9A%AE%E4%B9%A6/" title="V3白皮书">https://kongpengyq.com/2023/01/22/区块链/区块链知识点总结/UniswapV3/V3白皮书/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" rel="tag"># 区块链知识点总结</a>
+              <a href="/tags/UniswapV3/" rel="tag"># UniswapV3</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/01/21/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV2/UniswapV2Router02/" rel="prev" title="UniswapV2Router02">
+      <i class="fa fa-chevron-left"></i> UniswapV2Router02
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/01/22/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UnswapV4/UnsiwapV4/" rel="next" title="UnsiwapV4">
+      UnsiwapV4 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#UniswapV3%E7%99%BD%E7%9A%AE%E4%B9%A6"><span class="nav-text">UniswapV3白皮书</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B5%84%E9%87%91%E5%88%A9%E7%94%A8%E7%8E%87"><span class="nav-text">资金利用率</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%86%E4%B8%AD%E6%B5%81%E5%8A%A8%E6%80%A7"><span class="nav-text">集中流动性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%99%90%E4%BB%B7%E5%8D%95"><span class="nav-text">限价单</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%B7%E6%A0%BC%E5%8C%BA%E9%97%B4%E7%9A%84%E9%A3%8E%E9%99%A9%E4%B8%8E%E6%94%B6%E7%9B%8A"><span class="nav-text">价格区间的风险与收益</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Uniswap-V3-%E7%9A%84%E6%95%B0%E5%AD%A6%E5%8E%9F%E7%90%86"><span class="nav-text">Uniswap V3 的数学原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%B7%E6%A0%BC"><span class="nav-text">价格</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Ticks"><span class="nav-text">Ticks</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E8%A8%80%E6%9C%BA"><span class="nav-text">预言机</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%9C%AF%E5%B9%B3%E5%9D%87%E4%B8%8E%E5%87%A0%E4%BD%95%E5%B9%B3%E5%9D%87"><span class="nav-text">算术平均与几何平均</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%81%E5%8A%A8%E6%80%A7%E9%A2%84%E8%A8%80%E6%9C%BA"><span class="nav-text">流动性预言机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Tick-%E4%B8%8A%E8%BE%85%E5%8A%A9%E9%A2%84%E8%A8%80%E6%9C%BA%E8%AE%A1%E7%AE%97%E7%9A%84%E6%95%B0%E6%8D%AE"><span class="nav-text">Tick 上辅助预言机计算的数据</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

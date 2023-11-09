@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="UniswapV3 合约导读  基本架构core UniswapV3Factory: 提供创建 pool 的接口，并且追踪所有的 pool UniswapV3Pool: 实现代币交易，流动性管理，交易手续费的收取，oracle 数据管理。接口的实现粒度比较低，不适合普通用户使用，错误的调用其中的接口可能会造成经济上的损失。  periphery SwapRouter: 提供代币交易的接口，它是对">
+<meta property="og:type" content="article">
+<meta property="og:title" content="V3合约导读">
+<meta property="og:url" content="https://kongpengyq.com/2023/01/22/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/V3%E5%90%88%E7%BA%A6%E5%AF%BC%E8%AF%BB/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="UniswapV3 合约导读  基本架构core UniswapV3Factory: 提供创建 pool 的接口，并且追踪所有的 pool UniswapV3Pool: 实现代币交易，流动性管理，交易手续费的收取，oracle 数据管理。接口的实现粒度比较低，不适合普通用户使用，错误的调用其中的接口可能会造成经济上的损失。  periphery SwapRouter: 提供代币交易的接口，它是对">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/ExactInput.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/create-pool.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/add-liquidity.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/swap-exact-input.png">
+<meta property="article:published_time" content="2023-01-21T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:01:34.867Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链知识点总结">
+<meta property="article:tag" content="UniswapV3">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/ExactInput.png">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/01/22/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/V3%E5%90%88%E7%BA%A6%E5%AF%BC%E8%AF%BB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>V3合约导读 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/01/22/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/V3%E5%90%88%E7%BA%A6%E5%AF%BC%E8%AF%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          V3合约导读
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-01-22 00:00:00" itemprop="dateCreated datePublished" datetime="2023-01-22T00:00:00+08:00">2023-01-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:01:34" itemprop="dateModified" datetime="2023-11-09T10:01:34+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/UniswapV3/" itemprop="url" rel="index">
+                    <span itemprop="name">UniswapV3</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="UniswapV3-合约导读"><a href="#UniswapV3-合约导读" class="headerlink" title="UniswapV3 合约导读"></a>UniswapV3 合约导读</h1><img src="/noteimg/区块链/区块链知识点总结/UniswapV3/img/ExactInput.png" alt="ExactInput"  />
+
+<h2 id="基本架构"><a href="#基本架构" class="headerlink" title="基本架构"></a>基本架构</h2><h3 id="core"><a href="#core" class="headerlink" title="core"></a>core</h3><ul>
+<li><strong>UniswapV3Factory</strong>: 提供<strong>创建 pool 的接口，并且追踪所有的 pool</strong></li>
+<li><strong>UniswapV3Pool</strong>: 实现<strong>代币交易，流动性管理，交易手续费的收取</strong>，oracle 数据管理。接口的实现粒度比较低，不适合普通用户使用，错误的调用其中的接口可能会造成经济上的损失。</li>
+</ul>
+<h3 id="periphery"><a href="#periphery" class="headerlink" title="periphery"></a>periphery</h3><ul>
+<li><strong>SwapRouter</strong>: 提供<strong>代币交易的接口</strong>，它是对 UniswapV3Pool 合约中交易相关接口的进一步封装，前端界面主要与这个合约来进行对接。</li>
+<li><strong>NonfungiblePositionManager</strong>: 用来<strong>增加&#x2F;移除&#x2F;修改 Pool 的流动性，并且通过 NFT token 将流动性代币化。使用 ERC721 token（v2 使用的是 ERC20）的原因是同一个池的多个流动性并不能等价替换</strong>（v3 的集中流性动功能）。</li>
+</ul>
+<h2 id="流程梳理"><a href="#流程梳理" class="headerlink" title="流程梳理"></a>流程梳理</h2><h3 id="NonfungiblePositionManager"><a href="#NonfungiblePositionManager" class="headerlink" title="NonfungiblePositionManager"></a>NonfungiblePositionManager</h3><h4 id="CreatePool"><a href="#CreatePool" class="headerlink" title="CreatePool"></a>CreatePool</h4><p><a target="_blank" rel="noopener" href="https://github.com/Dapp-Learning-DAO/Dapp-Learning/blob/main/defi/Uniswap-V3/contractGuide/img/create-pool.png"><img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/create-pool.png" alt="创建交易对流程图"></a></p>
+<p>用户首先调用 <code>NonfungiblePositionManager</code> 合约的 <code>createAndInitializePoolIfNecessary</code> 方法创建交易对，传入的参数为交易对的 token0, token1, fee 和初始价格 sqrtPrice.</p>
+<ul>
+<li>调用<code>Factory.getPool(tokenA, tokenB, fee)</code>获取 Pool 地址</li>
+<li>如果 Pool 地址为 0，说明 Pool 还未创建<ul>
+<li>调用Factory.createPool(tokenA, tokenB, fee)，创建 Pool<ul>
+<li>Factory调用 <code>Pool.deploy</code> 部署Pool合约</li>
+</ul>
+</li>
+<li>调用<code>Pool.initialize(sqrtPriceX96)</code>对 Pool 初始化</li>
+</ul>
+</li>
+<li>如果 Pool 地址不为 0 ，说明 Pool 已存在<ul>
+<li>检查 Pool 的价格，若为 0，调用<code>Pool.initialize(sqrtPriceX96)</code>对 Pool 初始化</li>
+</ul>
+</li>
+</ul>
+<h4 id="mint"><a href="#mint" class="headerlink" title="mint"></a>mint</h4><p>铸造代表流动性头寸的ERC721代币返回给用户</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Dapp-Learning-DAO/Dapp-Learning/blob/main/defi/Uniswap-V3/contractGuide/img/add-liquidity.png"><img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/add-liquidity.png" alt="添加流动性对流程图"></a></p>
+<p>用户调用 <code>Manager.mint</code>创建Position并添加流动性：</p>
+<ul>
+<li>Manager内部调用 <code>Manager.addLiquidity</code></li>
+<li>Manager调用<code>Pool.mint</code><ul>
+<li>修改用户的position状态</li>
+<li>调用manager的mint回调函数，进行token的转帐操作</li>
+</ul>
+</li>
+<li>Manager内部调用<code>Manager.mint</code>，返回<code>amount0</code> <code>amount1</code>(token0,token1 的实际注入数量)<ul>
+<li>将代表相关流动性postion的ERC721代币返回给用户</li>
+<li>创建流动性头寸存入Manager</li>
+</ul>
+</li>
+<li>广播 <code>IncreaseLiquidity(tokenId, liquidity, amount0, amount1)</code></li>
+</ul>
+<h4 id="increaseLiquidity"><a href="#increaseLiquidity" class="headerlink" title="increaseLiquidity"></a>increaseLiquidity</h4><p>用户调用 <code>Manager.increaseLiquidity</code> 向已有Position添加流动性：</p>
+<ul>
+<li>Manager内部调用 <code>Manager.addLiquidity</code></li>
+<li>从Pool中获取position最新的手续费数值</li>
+<li>将手续费加到position的记录中（两种token分别记录）</li>
+<li>广播 <code>IncreaseLiquidity(tokenId, liquidity, amount0, amount1)</code></li>
+</ul>
+<p>注意：<strong>添加或移除流动性都会触发Manager从Pool中更新手续费数据</strong>，但不会提取</p>
+<h4 id="decreaseLiquidity"><a href="#decreaseLiquidity" class="headerlink" title="decreaseLiquidity"></a>decreaseLiquidity</h4><p>用户调用 <code>Manager.decreaseLiquidity</code> 移除已有Position的流动性：</p>
+<ul>
+<li>检查入参，position现有流动性 &gt;&#x3D; 传入的流动性</li>
+<li>调用<code>Pool.burn</code> 返回实际移除的流动性转换为token的数量（amount0, amount1）</li>
+<li>回收用户在Pool中积累的手续费<ul>
+<li>先获取Pool中手续费数值</li>
+<li>手续费增量 &#x3D; Pool手续费数值 - position中记录的手续费数值</li>
+<li>将手续费增量累加到position的待取token数量中</li>
+<li>更新 position中记录的手续费数值</li>
+</ul>
+</li>
+<li>更新 position中记录的流动性</li>
+<li>广播 <code>IncreaseLiquidity(tokenId, liquidity, amount0, amount1)</code></li>
+</ul>
+<h4 id="collect"><a href="#collect" class="headerlink" title="collect"></a>collect</h4><p>用户调用 <code>Manager.collect</code> 回收Pool中累计的手续费收益：</p>
+<ul>
+<li>检查入参<ul>
+<li>回收手续费最大数量需要 &gt; 0</li>
+<li>当入参recipient为0，设为本Manager合约地址</li>
+</ul>
+</li>
+<li>如果position流动性 &gt; 0，触发Pool更新手续费相关数据的快照<ul>
+<li>调用<code>Pool.burn</code>触发更新手续费相关的数据，这里数量传0，并不会真的移除流动性</li>
+<li>Pool的手续费 - Manager中记录的手续费 &#x3D; 手续费增量（即本次可取的手续费数量）</li>
+<li>期望取回的手续费数量 &#x3D; max(手续费增量，入参的手续费最大值)</li>
+</ul>
+</li>
+<li>调用 <code>Pool.collect</code> ，Pool将手续费转给接收者，返回实际取回的手续费数量</li>
+<li>更新Manager中手续费数据与Pool同步</li>
+<li>广播 <code>Collect(params.tokenId, recipient, amount0Collect, amount1Collect)</code></li>
+</ul>
+<h4 id="burn"><a href="#burn" class="headerlink" title="burn"></a>burn</h4><p>用户调用 <code>Manager.burn</code>，移除position，并销毁ERC721token</p>
+<h3 id="SwapRouter"><a href="#SwapRouter" class="headerlink" title="SwapRouter"></a>SwapRouter</h3><h4 id="exactInput"><a href="#exactInput" class="headerlink" title="exactInput"></a>exactInput</h4><p>指定交易对路径，给出期望的输入数量，返回实际的交易数量。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Dapp-Learning-DAO/Dapp-Learning/blob/main/defi/Uniswap-V3/contractGuide/img/swap-exact-input.png"><img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/img/swap-exact-input.png" alt="exactInput"></a></p>
+<h5 id="路径选择"><a href="#路径选择" class="headerlink" title="路径选择"></a>路径选择</h5><p>在进行两个代币交易时，是首先需要在链下计算出交易的路径，例如使用 <code>ETH</code> -&gt; <code>DAI</code> ：</p>
+<ul>
+<li>可以直接通过 <code>ETH</code>&#x2F;<code>DAI</code> 的交易池完成</li>
+<li>也可以通过 <code>ETH</code> -&gt; <code>USDC</code> -&gt; <code>DAI</code> 路径，即经过 <code>ETH/USDC</code>, <code>USDC/DAI</code> 两个交易池完成交易</li>
+<li>token地址没有排序限制</li>
+</ul>
+<h5 id="执行过程"><a href="#执行过程" class="headerlink" title="执行过程"></a>执行过程</h5><p>这里流程比较多，建议配合xmind流程图梳理。</p>
+<p>用户调用 <code>Router.exactInput</code>：</p>
+<ol>
+<li><p>将支付者payer设置为交易发起者（用户）</p>
+</li>
+<li><p>进入while循环，对当前交易对执行具体的交易操作</p>
+</li>
+<li><p>获取 <code>hasMultiplePools</code> </p>
+<p>a. <code>path.length &gt;= 3 * tokenAddressLength + 2 * feeLength</code> 的布尔值</p>
+<p>b. <code>token + fee + token</code> 组成一个交易对，即 PoolKey </p>
+<p>c. 这里是判断是否存在1个以上的交易对，即交易是否需要中转交易（A-&gt;B-&gt;C)</p>
+</li>
+<li><p>调用<code>Router.exactInputInternal</code>exactInput的内部方法 </p>
+<p>a. recipient若为0，则改为本router合约地址 </p>
+<p>b. 从交易链路path中解析出tokenIn,fee, tokenOut, 即当前第一个 Pool 的关键信息，以此可计算出Pool的地址 </p>
+<p>c. 获取zeroForOne，即tokenIn &lt; tokenOut的布尔值</p>
+<ul>
+<li>在Pool中价格始终以 <code>y/x</code> 表示，这里 <code>address(x) &lt; address(y)</code></li>
+<li><code>zeroForOne</code> 代表的是交易的方向，即<code>tokenIn</code>是作为x还是y，<code>tokenOut</code>反之 d. 调用 <code>Pool.swap</code> 执行实际的交易方法</li>
+<li><code>amountIn</code> 入参是 <code>int256</code> 类型，即有符号，若传负数，则表示 exactOutinput 模式，这里是 exactInput，传入的是正数</li>
+<li><code>priceLimit</code> 是交易执行的价格限制，一旦触及即停止交易。这里传0，代表以市价执行交易</li>
+<li><code>SwapCallbackData</code> 是交易回调函数</li>
+<li>在<code>Pool.swap</code>中交易是分段执行，具体细节参见其代码。swap函数在计算完实际交易量后，会先把输出token转账给接收者，然后调用回调将输入token从发送者转账到Pool合约 e. 返回实际的输入输出交易数量</li>
+</ul>
+</li>
+<li><p>根据hasMultiplePools判断循环是否继续 a. true 交易路径中仍有待执行的交易对</p>
+<ul>
+<li>将支付者payer设为本router合约地址</li>
+<li><code>path</code>剔除掉第一个token和fee的信息，继续使用后续的token地址和fee信息组成交易对</li>
+<li>回到2继续执行 b. false 交易完成，跳出while循环，返回 <code>amountOut</code> 实际的输出token数量</li>
+</ul>
+</li>
+<li><p>最后检查交易实际的输出量是否满足用户设置的最小输出数量</p>
+</li>
+</ol>
+<h4 id="exactOutput"><a href="#exactOutput" class="headerlink" title="exactOutput"></a>exactOutput</h4><p>指定交易对路径，给出期望的输出数量，返回实际的交易数量。</p>
+<p>程序逻辑和 exactInput 类似</p>
+<h3 id="flash-swap"><a href="#flash-swap" class="headerlink" title="flash swap"></a>flash swap</h3><p>闪电贷接口，无需抵押和零信任的借贷，借贷到还贷需要在一个区块内完成。</p>
+<p>Uniswap v3 版本中，和 v2 一样也有两种闪电贷的方式，但是是通过不同的函数接口来完成的。</p>
+<ul>
+<li><code>Pool.flash</code> 借出和归还是同一币种</li>
+<li><code>Pool.swap</code> 借出swap函数先将输出token转给接收者，再通过回调将输入token转给Pool的机制，实现了借出和归还不同币种的闪电贷</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/01/22/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UniswapV3/V3%E5%90%88%E7%BA%A6%E5%AF%BC%E8%AF%BB/" title="V3合约导读">https://kongpengyq.com/2023/01/22/区块链/区块链知识点总结/UniswapV3/V3合约导读/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" rel="tag"># 区块链知识点总结</a>
+              <a href="/tags/UniswapV3/" rel="tag"># UniswapV3</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/01/22/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/UnswapV4/UnsiwapV4/" rel="prev" title="UnsiwapV4">
+      <i class="fa fa-chevron-left"></i> UnsiwapV4
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/01/23/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/2-pow-pos/" rel="next" title="2-pow-pos">
+      2-pow-pos <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#UniswapV3-%E5%90%88%E7%BA%A6%E5%AF%BC%E8%AF%BB"><span class="nav-text">UniswapV3 合约导读</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84"><span class="nav-text">基本架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#core"><span class="nav-text">core</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#periphery"><span class="nav-text">periphery</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86"><span class="nav-text">流程梳理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#NonfungiblePositionManager"><span class="nav-text">NonfungiblePositionManager</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#CreatePool"><span class="nav-text">CreatePool</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mint"><span class="nav-text">mint</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#increaseLiquidity"><span class="nav-text">increaseLiquidity</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#decreaseLiquidity"><span class="nav-text">decreaseLiquidity</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#collect"><span class="nav-text">collect</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#burn"><span class="nav-text">burn</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SwapRouter"><span class="nav-text">SwapRouter</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#exactInput"><span class="nav-text">exactInput</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%B7%AF%E5%BE%84%E9%80%89%E6%8B%A9"><span class="nav-text">路径选择</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B"><span class="nav-text">执行过程</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#exactOutput"><span class="nav-text">exactOutput</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#flash-swap"><span class="nav-text">flash swap</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Solidity 编译器在编译的时候自动生成xx_metadata.json的 JSON 文件，中文叫合约的元数据，其中包含了当前合约的相关信息。 metadata 包含信息元数据文件具有以下格式。 下面的例子将以人类可读的方式呈现。正确格式化的元数据应正确使用引号，将空白减少到最小，并对所有对象的键值进行排序以得到唯一的格式。（下面的代码注释是不允许的，这里仅用于解释目的。） 123456789">
+<meta property="og:type" content="article">
+<meta property="og:title" content="17-metadata元数据">
+<meta property="og:url" content="https://kongpengyq.com/2022/07/25/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/17-metadata%E5%85%83%E6%95%B0%E6%8D%AE/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="Solidity 编译器在编译的时候自动生成xx_metadata.json的 JSON 文件，中文叫合约的元数据，其中包含了当前合约的相关信息。 metadata 包含信息元数据文件具有以下格式。 下面的例子将以人类可读的方式呈现。正确格式化的元数据应正确使用引号，将空白减少到最小，并对所有对象的键值进行排序以得到唯一的格式。（下面的代码注释是不允许的，这里仅用于解释目的。） 123456789">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-24T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.691Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="Solidity0.8.17">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/07/25/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/17-metadata%E5%85%83%E6%95%B0%E6%8D%AE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>17-metadata元数据 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/07/25/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/17-metadata%E5%85%83%E6%95%B0%E6%8D%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          17-metadata元数据
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-25 00:00:00" itemprop="dateCreated datePublished" datetime="2022-07-25T00:00:00+08:00">2022-07-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Solidity0-8-17/" itemprop="url" rel="index">
+                    <span itemprop="name">Solidity0.8.17</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Solidity 编译器在编译的时候自动生成<code>xx_metadata.json</code>的 JSON 文件，中文叫合约的元数据，其中包含了当前合约的相关信息。</p>
+<h1 id="metadata-包含信息"><a href="#metadata-包含信息" class="headerlink" title="metadata 包含信息"></a>metadata 包含信息</h1><p>元数据文件具有以下格式。 下面的例子将以人类可读的方式呈现。正确格式化的元数据应正确使用引号，将空白减少到最小，并对所有对象的键值进行排序以得到唯一的格式。（下面的代码注释是不允许的，这里仅用于解释目的。）</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="comment">// 必选：元数据格式的版本(注意和Solidity版本不是同一个version )</span></span><br><span class="line">  <span class="attr">&quot;version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;1&quot;</span><span class="punctuation">,</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 必选：源代码的编程语言，一般会选择规范的“子版本”</span></span><br><span class="line">  <span class="attr">&quot;language&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Solidity&quot;</span><span class="punctuation">,</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 必选：编译器的细节，内容视语言而定。</span></span><br><span class="line">  <span class="attr">&quot;compiler&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="comment">// 对 Solidity 来说是必须的：编译器的版本</span></span><br><span class="line">    <span class="attr">&quot;version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0.8.7+commit.e28d00a7&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="comment">// 可选： 生成此输出的编译器二进制文件的哈希值</span></span><br><span class="line">    <span class="attr">&quot;keccak256&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0x123...&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 必选：合约的生成信息</span></span><br><span class="line">  <span class="attr">&quot;output&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="comment">// 必选：合约的 ABI 定义</span></span><br><span class="line">    <span class="attr">&quot;abi&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span> <span class="comment">/*...*/</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="comment">// 必选：合约的 NatSpec 用户文档</span></span><br><span class="line">    <span class="attr">&quot;userdoc&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span> <span class="comment">/*...*/</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="comment">// 必选：合约的 NatSpec 开发者文档</span></span><br><span class="line">    <span class="attr">&quot;devdoc&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span> <span class="comment">/*...*/</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 必选：编译器的设置</span></span><br><span class="line">  <span class="attr">&quot;settings&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;compilationTarget&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;a.sol&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Sum&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;evmVersion&quot;</span><span class="punctuation">:</span> <span class="string">&quot;london&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;libraries&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span><span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;metadata&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="comment">// Reflects the setting used in the input json, defaults to false</span></span><br><span class="line">      <span class="attr">&quot;useLiteralContent&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// Reflects the setting used in the input json, defaults to &quot;ipfs&quot;</span></span><br><span class="line">      <span class="attr">&quot;bytecodeHash&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ipfs&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="comment">// 可选： 优化器的设置（ enabled 默认设为 false ）</span></span><br><span class="line">    <span class="attr">&quot;optimizer&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;enabled&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;runs&quot;</span><span class="punctuation">:</span> <span class="number">200</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="comment">// 对 Solidity 来说是必须的： 已排序的重定向列表</span></span><br><span class="line">    <span class="attr">&quot;remappings&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;:g/dir&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 必选：编译的源文件／源单位，键值为文件名</span></span><br><span class="line">  <span class="attr">&quot;sources&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;myFile.sol&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="comment">// 必选：源文件的 keccak256 哈希值</span></span><br><span class="line">      <span class="attr">&quot;keccak256&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0x123...&quot;</span><span class="punctuation">,</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">// Optional: 在源文件中定义的 SPDX license 标识</span></span><br><span class="line">      <span class="attr">&quot;license&quot;</span><span class="punctuation">:</span> <span class="string">&quot;MIT&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 必选（除非定义了 content，详见下文）：</span></span><br><span class="line">      <span class="comment">// 已排序的源文件的URL，URL的协议可以是任意的，但建议使用 Swarm 的URL</span></span><br><span class="line">      <span class="attr">&quot;urls&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">        <span class="string">&quot;bzz-raw://fd33d...&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="string">&quot;dweb:/ipfs/Qme8Vrt&quot;</span></span><br><span class="line">      <span class="punctuation">]</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="comment">// 可选</span></span><br><span class="line">    <span class="attr">&quot;mortal&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="comment">// 必选：源文件的 keccak256 哈希值</span></span><br><span class="line">      <span class="attr">&quot;keccak256&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0x234...&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 必选（除非定义了“urls”）： 源文件的字面内容</span></span><br><span class="line">      <span class="attr">&quot;content&quot;</span><span class="punctuation">:</span> <span class="string">&quot;contract mortal is owned &#123; function kill() &#123;</span></span><br><span class="line"><span class="string">        if (msg.sender == owner) selfdestruct(owner); &#125; &#125;&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="metadata-的作用"><a href="#metadata-的作用" class="headerlink" title="metadata 的作用"></a>metadata 的作用</h3><p>metadata 主要是为了更安全地与合约进行交互并验证其源代码。</p>
+<ul>
+<li>查询编译器版本</li>
+<li>所使用的源代码</li>
+<li>ABI</li>
+<li>natspec 文档</li>
+</ul>
+<p>编译器会将元数据文件的 Swarm 哈希值附加到每个合约的字节码末尾（详情请参阅下文），以便你可以以认证的方式获取该文件，而不必求助于中心化的数据提供者。当然，你必须将元数据文件发布到 Swarm（或其他服务），以便其他人可以访问它。 该文件可以通过使用<code>solc --metadata</code> 来生成，并被命名为 <code>ContractName_meta.json</code> 。 它将包含源代码的在 Swarm 上的引用，因此你必须上传所有源文件和元数据文件。</p>
+<hr>
+<p>⚠️ 警告: 由于生成的合约的字节码包含元数据的哈希值，因此对元数据的任何更改都会导致字节码的更改。<br>此外，由于元数据包含所有使用的源代码的哈希值，所以任何源代码中的，哪怕是一个空格的变化都将导致不同的元数据，并随后产生不同的字节代码。</p>
+<p>⚠️ 警告: 需注意，上面的 ABI 没有固定的顺序，随编译器的版本而不同。</p>
+<h1 id="字节码中元数据哈希的编码"><a href="#字节码中元数据哈希的编码" class="headerlink" title="字节码中元数据哈希的编码"></a>字节码中元数据哈希的编码</h1><p>由于在将来可能会支持其他方式来获取元数据文件， 类似<code>&#123;&quot;bzzr0&quot;：&lt;Swarm hash&gt;&#125;</code> 的键值对，将会以<br>CBOR (<a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc7049">https://tools.ietf.org/html/rfc7049</a>) 编码来存储。由于这种编码的起始位不容易找到，因此添加两个字节来表述其长度，以大端方式编码。所以，当前版本的 Solidity 编译器，将以下内容添加到部署的字节码的末尾</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">0xa2</span><br><span class="line">0x64 &#x27;i&#x27; &#x27;p&#x27; &#x27;f&#x27; &#x27;s&#x27; 0x58 0x22 &lt;34 bytes IPFS hash&gt;</span><br><span class="line">0x64 &#x27;s&#x27; &#x27;o&#x27; &#x27;l&#x27; &#x27;c&#x27; 0x43 &lt;3 byte version encoding&gt;</span><br><span class="line">0x00 0x33</span><br></pre></td></tr></table></figure>
+
+<p>因此，为了检索数据，可以检查已部署字节码的末尾以匹配该模式，并使用 IPFS 哈希来检索文件。</p>
+<p>solc 的发布版本使用如上所示的版本的 3 字节编码（major, minor and patch version number 版本号各一个字节），而预发布版本将使用完整的版本字符串，包括提交哈希和构建日期。</p>
+<p>CBOR 映射还可以包含其他密钥，因此最好完全解码数据而不是依赖以 <code>0xa264</code> 开头的数据。 例如，如果使用任何影响代码生成的实验性功能，则映射也将包含 <code>&quot;experimental&quot;：true</code>。</p>
+<p>编译器目前默认使用元数据的 IPFS 哈希，但将来也可能使用 bzzr1 哈希或其他一些哈希，因此不要依赖此序列以 <code>0xa2 0x64 &#39;i&#39; &#39;p&#39; &#39;f&#39; &#39;s&#39;</code> 开头 的。 我们可能还会向此 CBOR 结构中添加其他数据，因此最好的选择是使用适当的 CBOR 解析器。</p>
+<h1 id="自动化接口生成和-natspec-使用"><a href="#自动化接口生成和-natspec-使用" class="headerlink" title="自动化接口生成和 natspec 使用"></a>自动化接口生成和 natspec 使用</h1><p>元数据以下列方式使用：通过钱包想要与合约交互时检索合约代码，然后检索文件的 IPFS&#x2F;Swarm 哈希。该文件被 JSON 解码为上面的结构。</p>
+<p>组件可以使用 ABI 自动为合约生成一个基本的用户界面。</p>
+<p>此外，钱包可以使用 NatSpec 用户文档，在用户与合约交互，授权请求签名时候做辅助工作。</p>
+<h1 id="源代码如何验证？"><a href="#源代码如何验证？" class="headerlink" title="源代码如何验证？"></a>源代码如何验证？</h1><p>为了验证编译，可以通过元数据文件中的链接从 IPFS&#x2F;Swarm 中获取源代码。获取到的源码，会根据元数据中指定的设置，被正确版本的编译器所处理。处理得到的字节码会与创建交易的数据或者 <code>CREATE</code> 操作码使用的数据进行比较。这会自动验证元数据，因为它的哈希值是字节码的一部分。而额外的数据，则是与基于接口进行编码并展示给用户的构造输入数据相符的。</p>
+<p>在 <a target="_blank" rel="noopener" href="https://github.com/ethereum/sourcify">sourcify</a> 库(<a target="_blank" rel="noopener" href="https://www.npmjs.com/package/source-verify">npm package</a>)可以看到如何使用该特性的示例代码。</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/07/25/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/17-metadata%E5%85%83%E6%95%B0%E6%8D%AE/" title="17-metadata元数据">https://kongpengyq.com/2022/07/25/区块链/Solidity0.8/17-metadata元数据/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/Solidity0-8-17/" rel="tag"># Solidity0.8.17</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/22/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/16-Assembly%E5%86%85%E8%81%94%E6%B1%87%E7%BC%96/" rel="prev" title="16-Assembly内联汇编">
+      <i class="fa fa-chevron-left"></i> 16-Assembly内联汇编
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/26/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/18-ABI%E7%BC%96%E7%A0%81/" rel="next" title="18-ABI编码">
+      18-ABI编码 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#metadata-%E5%8C%85%E5%90%AB%E4%BF%A1%E6%81%AF"><span class="nav-text">metadata 包含信息</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#metadata-%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-text">metadata 的作用</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AD%97%E8%8A%82%E7%A0%81%E4%B8%AD%E5%85%83%E6%95%B0%E6%8D%AE%E5%93%88%E5%B8%8C%E7%9A%84%E7%BC%96%E7%A0%81"><span class="nav-text">字节码中元数据哈希的编码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A5%E5%8F%A3%E7%94%9F%E6%88%90%E5%92%8C-natspec-%E4%BD%BF%E7%94%A8"><span class="nav-text">自动化接口生成和 natspec 使用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%BA%90%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E9%AA%8C%E8%AF%81%EF%BC%9F"><span class="nav-text">源代码如何验证？</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="fmt向外输出PrintPrint系列函数会将内容输出到系统的标准输出，区别在于Print函数直接输出内容，Printf函数支持格式化输出字符串，Println函数会在输出内容的结尾添加一个换行符。 123func Print(a ...interface&amp;#123;&amp;#125;) (n int, err error)func Printf(format string, a ...interfac">
+<meta property="og:type" content="article">
+<meta property="og:title" content="6.常用标准库">
+<meta property="og:url" content="https://kongpengyq.com/2022/03/07/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E7%AC%94%E8%AE%B0/6.%E5%B8%B8%E7%94%A8%E6%A0%87%E5%87%86%E5%BA%93/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="fmt向外输出PrintPrint系列函数会将内容输出到系统的标准输出，区别在于Print函数直接输出内容，Printf函数支持格式化输出字符串，Println函数会在输出内容的结尾添加一个换行符。 123func Print(a ...interface&amp;#123;&amp;#125;) (n int, err error)func Printf(format string, a ...interfac">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-03-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.630Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="Go知识点">
+<meta property="article:tag" content="Go笔记">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/03/07/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E7%AC%94%E8%AE%B0/6.%E5%B8%B8%E7%94%A8%E6%A0%87%E5%87%86%E5%BA%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>6.常用标准库 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/03/07/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E7%AC%94%E8%AE%B0/6.%E5%B8%B8%E7%94%A8%E6%A0%87%E5%87%86%E5%BA%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          6.常用标准库
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-03-07 00:00:00" itemprop="dateCreated datePublished" datetime="2022-03-07T00:00:00+08:00">2022-03-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">Go笔记</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>15k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>14 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="fmt"><a href="#fmt" class="headerlink" title="fmt"></a>fmt</h2><h3 id="向外输出"><a href="#向外输出" class="headerlink" title="向外输出"></a>向外输出</h3><h4 id="Print"><a href="#Print" class="headerlink" title="Print"></a>Print</h4><p>Print系列函数会将内容输出到系统的标准输出，区别在于Print函数直接输出内容，Printf函数支持格式化输出字符串，Println函数会在输出内容的结尾添加一个换行符。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Print</span><span class="params">(a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Printf</span><span class="params">(format <span class="type">string</span>, a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Println</span><span class="params">(a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br></pre></td></tr></table></figure>
+
+<h4 id="Fprint"><a href="#Fprint" class="headerlink" title="Fprint"></a>Fprint</h4><p>Fprint系列函数会将内容输出到一个io.Writer接口类型的变量w中，我们通常用这个函数往文件中写入内容。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Fprint</span><span class="params">(w io.Writer, a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Fprintf</span><span class="params">(w io.Writer, format <span class="type">string</span>, a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Fprintln</span><span class="params">(w io.Writer, a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br></pre></td></tr></table></figure>
+
+<p>举个例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 向标准输出写入内容</span></span><br><span class="line">fmt.Fprintln(os.Stdout, <span class="string">&quot;向标准输出写入内容&quot;</span>)</span><br><span class="line">fileObj, err := os.OpenFile(<span class="string">&quot;./xx.txt&quot;</span>, os.O_CREATE|os.O_WRONLY|os.O_APPEND, <span class="number">0644</span>)</span><br><span class="line"><span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">    fmt.Println(<span class="string">&quot;打开文件出错，err:&quot;</span>, err)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line">name := <span class="string">&quot;枯藤&quot;</span></span><br><span class="line"><span class="comment">// 向打开的文件句柄中写入内容</span></span><br><span class="line">fmt.Fprintf(fileObj, <span class="string">&quot;往文件中写如信息：%s&quot;</span>, name)</span><br></pre></td></tr></table></figure>
+
+<p>注意，只要满足io.Writer接口的类型都支持写入。</p>
+<h4 id="Sprint"><a href="#Sprint" class="headerlink" title="Sprint"></a>Sprint</h4><p>Sprint系列函数会把传入的数据生成并返回一个字符串。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Sprint</span><span class="params">(a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> <span class="type">string</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Sprintf</span><span class="params">(format <span class="type">string</span>, a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> <span class="type">string</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Sprintln</span><span class="params">(a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> <span class="type">string</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="Errorf"><a href="#Errorf" class="headerlink" title="Errorf"></a>Errorf</h4><p>Errorf函数根据format参数生成格式化字符串并返回一个包含该字符串的错误。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Errorf</span><span class="params">(format <span class="type">string</span>, a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> <span class="type">error</span></span><br></pre></td></tr></table></figure>
+
+<p>通常使用这种方式来自定义错误类型，例如：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">err := fmt.Errorf(<span class="string">&quot;这是一个错误&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h4 id="通用占位符"><a href="#通用占位符" class="headerlink" title="通用占位符"></a>通用占位符</h4><table>
+<thead>
+<tr>
+<th>占位符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>%v</td>
+<td>值的默认格式表示</td>
+</tr>
+<tr>
+<td>%+v</td>
+<td>类似%v，但输出结构体时会添加字段名</td>
+</tr>
+<tr>
+<td>%#v</td>
+<td>值的Go语法表示</td>
+</tr>
+<tr>
+<td>%T</td>
+<td>打印值的类型</td>
+</tr>
+<tr>
+<td>%%</td>
+<td>百分号</td>
+</tr>
+</tbody></table>
+<p>示例代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">fmt.Printf(<span class="string">&quot;%v\n&quot;</span>, <span class="number">100</span>)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%v\n&quot;</span>, <span class="literal">false</span>)</span><br><span class="line">o := <span class="keyword">struct</span>&#123; name <span class="type">string</span> &#125;&#123;<span class="string">&quot;枯藤&quot;</span>&#125;</span><br><span class="line">fmt.Printf(<span class="string">&quot;%v\n&quot;</span>, o)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%#v\n&quot;</span>, o)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%T\n&quot;</span>, o)</span><br><span class="line">fmt.Printf(<span class="string">&quot;100%%\n&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>输出结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">100</span><br><span class="line">false</span><br><span class="line">&#123;枯藤&#125;</span><br><span class="line">struct &#123; name string &#125;&#123;name:&quot;枯藤&quot;&#125;</span><br><span class="line">struct &#123; name string &#125;</span><br><span class="line">100%</span><br></pre></td></tr></table></figure>
+
+<h4 id="布尔型"><a href="#布尔型" class="headerlink" title="布尔型"></a>布尔型</h4><table>
+<thead>
+<tr>
+<th>占位符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>%t</td>
+<td>true或false</td>
+</tr>
+</tbody></table>
+<h4 id="整型"><a href="#整型" class="headerlink" title="整型"></a>整型</h4><table>
+<thead>
+<tr>
+<th>占位符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>%b</td>
+<td>表示为二进制</td>
+</tr>
+<tr>
+<td>%c</td>
+<td>该值对应的unicode码值</td>
+</tr>
+<tr>
+<td>%d</td>
+<td>表示为十进制</td>
+</tr>
+<tr>
+<td>%o</td>
+<td>表示为八进制</td>
+</tr>
+<tr>
+<td>%x</td>
+<td>表示为十六进制，使用a-f</td>
+</tr>
+<tr>
+<td>%X</td>
+<td>表示为十六进制，使用A-F</td>
+</tr>
+<tr>
+<td>%U</td>
+<td>表示为Unicode格式：U+1234，等价于”U+%04X”</td>
+</tr>
+<tr>
+<td>%q</td>
+<td>该值对应的单引号括起来的go语法字符字面值，必要时会采用安全的转义表示</td>
+</tr>
+</tbody></table>
+<p>示例代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">n := <span class="number">65</span></span><br><span class="line">fmt.Printf(<span class="string">&quot;%b\n&quot;</span>, n)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%c\n&quot;</span>, n)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%d\n&quot;</span>, n)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%o\n&quot;</span>, n)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%x\n&quot;</span>, n)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%X\n&quot;</span>, n)</span><br></pre></td></tr></table></figure>
+
+<p>输出结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1000001</span><br><span class="line">A</span><br><span class="line">65</span><br><span class="line">101</span><br><span class="line">41</span><br><span class="line">41</span><br></pre></td></tr></table></figure>
+
+<h4 id="浮点数与复数"><a href="#浮点数与复数" class="headerlink" title="浮点数与复数"></a>浮点数与复数</h4><table>
+<thead>
+<tr>
+<th>占位符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>%b</td>
+<td>无小数部分、二进制指数的科学计数法，如-123456p-78</td>
+</tr>
+<tr>
+<td>%e</td>
+<td>科学计数法，如-1234.456e+78</td>
+</tr>
+<tr>
+<td>%E</td>
+<td>科学计数法，如-1234.456E+78</td>
+</tr>
+<tr>
+<td>%f</td>
+<td>有小数部分但无指数部分，如123.456</td>
+</tr>
+<tr>
+<td>%F</td>
+<td>等价于%f</td>
+</tr>
+<tr>
+<td>%g</td>
+<td>根据实际情况采用%e或%f格式（以获得更简洁、准确的输出）</td>
+</tr>
+<tr>
+<td>%G</td>
+<td>根据实际情况采用%E或%F格式（以获得更简洁、准确的输出）</td>
+</tr>
+</tbody></table>
+<p>示例代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">f := <span class="number">12.34</span></span><br><span class="line">fmt.Printf(<span class="string">&quot;%b\n&quot;</span>, f)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%e\n&quot;</span>, f)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%E\n&quot;</span>, f)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%f\n&quot;</span>, f)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%g\n&quot;</span>, f)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%G\n&quot;</span>, f)</span><br></pre></td></tr></table></figure>
+
+<p>输出结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">6946802425218990p-49</span><br><span class="line">1.234000e+01</span><br><span class="line">1.234000E+01</span><br><span class="line">12.340000</span><br><span class="line">12.34</span><br><span class="line">12.34</span><br></pre></td></tr></table></figure>
+
+<h4 id="字符串和-byte"><a href="#字符串和-byte" class="headerlink" title="字符串和[]byte"></a>字符串和[]byte</h4><table>
+<thead>
+<tr>
+<th>占位符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>%s</td>
+<td>直接输出字符串或者[]byte</td>
+</tr>
+<tr>
+<td>%q</td>
+<td>该值对应的双引号括起来的go语法字符串字面值，必要时会采用安全的转义表示</td>
+</tr>
+<tr>
+<td>%x</td>
+<td>每个字节用两字符十六进制数表示（使用a-f )</td>
+</tr>
+<tr>
+<td>%X</td>
+<td>每个字节用两字符十六进制数表示（使用A-F）</td>
+</tr>
+</tbody></table>
+<p>示例代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">s := <span class="string">&quot;枯藤&quot;</span></span><br><span class="line">fmt.Printf(<span class="string">&quot;%s\n&quot;</span>, s)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%q\n&quot;</span>, s)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%x\n&quot;</span>, s)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%X\n&quot;</span>, s)</span><br></pre></td></tr></table></figure>
+
+<p>输出结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">枯藤</span><br><span class="line">&quot;枯藤&quot;</span><br><span class="line">e69eafe897a4</span><br><span class="line">E69EAFE897A4</span><br></pre></td></tr></table></figure>
+
+<h4 id="指针"><a href="#指针" class="headerlink" title="指针"></a>指针</h4><table>
+<thead>
+<tr>
+<th>占位符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>%p</td>
+<td>表示为十六进制，并加上前导的0x</td>
+</tr>
+</tbody></table>
+<p>示例代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a := <span class="number">18</span></span><br><span class="line">fmt.Printf(<span class="string">&quot;%p\n&quot;</span>, &amp;a)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%#p\n&quot;</span>, &amp;a)</span><br></pre></td></tr></table></figure>
+
+<p>输出结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0xc000054058</span><br><span class="line">c000054058</span><br></pre></td></tr></table></figure>
+
+<h4 id="宽度标识符"><a href="#宽度标识符" class="headerlink" title="宽度标识符"></a>宽度标识符</h4><p>宽度通过一个紧跟在百分号后面的十进制数指定，如果未指定宽度，则表示值时除必需之外不作填充。精度通过（可选的）宽度后跟点号后跟的十进制数指定。如果未指定精度，会使用默认精度；如果点号后没有跟数字，表示精度为0。举例如下</p>
+<table>
+<thead>
+<tr>
+<th>占位符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>%f</td>
+<td>默认宽度，默认精度</td>
+</tr>
+<tr>
+<td>%9f</td>
+<td>宽度9，默认精度</td>
+</tr>
+<tr>
+<td>%.2f</td>
+<td>默认宽度，精度2</td>
+</tr>
+<tr>
+<td>%9.2f</td>
+<td>宽度9，精度2</td>
+</tr>
+<tr>
+<td>%9.f</td>
+<td>宽度9，精度0</td>
+</tr>
+</tbody></table>
+<p>示例代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">n := <span class="number">88.88</span></span><br><span class="line">fmt.Printf(<span class="string">&quot;%f\n&quot;</span>, n)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%9f\n&quot;</span>, n)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%.2f\n&quot;</span>, n)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%9.2f\n&quot;</span>, n)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%9.f\n&quot;</span>, n)</span><br></pre></td></tr></table></figure>
+
+<p>输出结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">88.880000</span><br><span class="line">88.880000</span><br><span class="line">88.88</span><br><span class="line">    88.88</span><br><span class="line">       89</span><br></pre></td></tr></table></figure>
+
+<h4 id="其他falg"><a href="#其他falg" class="headerlink" title="其他falg"></a>其他falg</h4><table>
+<thead>
+<tr>
+<th>占位符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>’+’</td>
+<td>总是输出数值的正负号；对%q（%+q）会生成全部是ASCII字符的输出（通过转义）；</td>
+</tr>
+<tr>
+<td>’ ‘</td>
+<td>对数值，正数前加空格而负数前加负号；对字符串采用%x或%X时（% x或% X）会给各打印的字节之间加空格</td>
+</tr>
+<tr>
+<td>’-’</td>
+<td>在输出右边填充空白而不是默认的左边（即从默认的右对齐切换为左对齐）；</td>
+</tr>
+<tr>
+<td>’#’</td>
+<td>八进制数前加0（%#o），十六进制数前加0x（%#x）或0X（%#X），指针去掉前面的0x（%#p）对%q（%#q），对%U（%#U）会输出空格和单引号括起来的go字面值；</td>
+</tr>
+<tr>
+<td>‘0’</td>
+<td>使用0而不是空格填充，对于数值类型会把填充的0放在正负号后面；</td>
+</tr>
+</tbody></table>
+<p>举个例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">s := <span class="string">&quot;枯藤&quot;</span></span><br><span class="line">fmt.Printf(<span class="string">&quot;%s\n&quot;</span>, s)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%5s\n&quot;</span>, s)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%-5s\n&quot;</span>, s)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%5.7s\n&quot;</span>, s)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%-5.7s\n&quot;</span>, s)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%5.2s\n&quot;</span>, s)</span><br><span class="line">fmt.Printf(<span class="string">&quot;%05s\n&quot;</span>, s)</span><br></pre></td></tr></table></figure>
+
+<p>输出结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">枯藤</span><br><span class="line">   枯藤</span><br><span class="line">枯藤</span><br><span class="line">   枯藤</span><br><span class="line">枯藤</span><br><span class="line">   枯藤</span><br><span class="line">000枯藤</span><br></pre></td></tr></table></figure>
+
+<h3 id="获取输入"><a href="#获取输入" class="headerlink" title="获取输入"></a>获取输入</h3><p>Go语言fmt包下有fmt.Scan、fmt.Scanf、fmt.Scanln三个函数，可以在程序运行过程中从标准输入获取用户的输入。</p>
+<h4 id="fmt-Scan"><a href="#fmt-Scan" class="headerlink" title="fmt.Scan"></a>fmt.Scan</h4><p>函数定签名如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Scan</span><span class="params">(a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Scan从标准输入扫描文本，读取由空白符分隔的值保存到传递给本函数的参数中，换行符视为空白符。</li>
+<li>本函数返回成功扫描的数据个数和遇到的任何错误。如果读取的数据个数比提供的参数少，会返回一个错误报告原因。</li>
+</ul>
+<p>具体代码示例如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> (</span><br><span class="line">        name    <span class="type">string</span></span><br><span class="line">        age     <span class="type">int</span></span><br><span class="line">        married <span class="type">bool</span></span><br><span class="line">    )</span><br><span class="line">    fmt.Scan(&amp;name, &amp;age, &amp;married)</span><br><span class="line">    fmt.Printf(<span class="string">&quot;扫描结果 name:%s age:%d married:%t \n&quot;</span>, name, age, married)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>将上面的代码编译后在终端执行，在终端依次输入枯藤、18和false使用空格分隔。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ./scan_demo </span><br><span class="line">枯藤 18 false</span><br><span class="line">扫描结果 name:枯藤 age:18 married:false</span><br></pre></td></tr></table></figure>
+
+<p>fmt.Scan从标准输入中扫描用户输入的数据，将以空白符分隔的数据分别存入指定的参数。</p>
+<h4 id="fmt-Scanf"><a href="#fmt-Scanf" class="headerlink" title="fmt.Scanf"></a>fmt.Scanf</h4><p>函数签名如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Scanf</span><span class="params">(format <span class="type">string</span>, a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Scanf从标准输入扫描文本，根据format参数指定的格式去读取由空白符分隔的值保存到传递给本函数的参数中。</li>
+<li>本函数返回成功扫描的数据个数和遇到的任何错误。</li>
+</ul>
+<p>代码示例如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> (</span><br><span class="line">        name    <span class="type">string</span></span><br><span class="line">        age     <span class="type">int</span></span><br><span class="line">        married <span class="type">bool</span></span><br><span class="line">    )</span><br><span class="line">    fmt.Scanf(<span class="string">&quot;1:%s 2:%d 3:%t&quot;</span>, &amp;name, &amp;age, &amp;married)</span><br><span class="line">    fmt.Printf(<span class="string">&quot;扫描结果 name:%s age:%d married:%t \n&quot;</span>, name, age, married)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>将上面的代码编译后在终端执行，在终端按照指定的格式依次输入枯藤、18和false。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ./scan_demo </span><br><span class="line">1:枯藤 2:18 3:false</span><br><span class="line">扫描结果 name:枯藤 age:18 married:false</span><br></pre></td></tr></table></figure>
+
+<p>fmt.Scanf不同于fmt.Scan简单的以空格作为输入数据的分隔符，fmt.Scanf为输入数据指定了具体的输入内容格式，只有按照格式输入数据才会被扫描并存入对应变量。</p>
+<p>例如，我们还是按照上个示例中以空格分隔的方式输入，fmt.Scanf就不能正确扫描到输入的数据。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ./scan_demo </span><br><span class="line">枯藤 18 false</span><br><span class="line">扫描结果 name: age:0 married:false</span><br></pre></td></tr></table></figure>
+
+<h4 id="fmt-Scanln"><a href="#fmt-Scanln" class="headerlink" title="fmt.Scanln"></a>fmt.Scanln</h4><p>函数签名如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Scanln</span><span class="params">(a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Scanln类似Scan，它在遇到换行时才停止扫描。最后一个数据后面必须有换行或者到达结束位置。</li>
+<li>本函数返回成功扫描的数据个数和遇到的任何错误。</li>
+</ul>
+<p>具体代码示例如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> (</span><br><span class="line">        name    <span class="type">string</span></span><br><span class="line">        age     <span class="type">int</span></span><br><span class="line">        married <span class="type">bool</span></span><br><span class="line">    )</span><br><span class="line">    fmt.Scanln(&amp;name, &amp;age, &amp;married)</span><br><span class="line">    fmt.Printf(<span class="string">&quot;扫描结果 name:%s age:%d married:%t \n&quot;</span>, name, age, married)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>将上面的代码编译后在终端执行，在终端依次输入枯藤、18和false使用空格分隔。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ./scan_demo </span><br><span class="line">枯藤 18 false</span><br><span class="line">扫描结果 name:枯藤 age:18 married:false</span><br></pre></td></tr></table></figure>
+
+<p>fmt.Scanln遇到回车就结束扫描了，这个比较常用。</p>
+<h4 id="bufio-NewReader"><a href="#bufio-NewReader" class="headerlink" title="bufio.NewReader"></a>bufio.NewReader</h4><p>有时候我们想完整获取输入的内容，而输入的内容可能包含空格，这种情况下可以使用bufio包来实现。示例代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">bufioDemo</span><span class="params">()</span></span> &#123;</span><br><span class="line">    reader := bufio.NewReader(os.Stdin) <span class="comment">// 从标准输入生成读对象</span></span><br><span class="line">    fmt.Print(<span class="string">&quot;请输入内容：&quot;</span>)</span><br><span class="line">    text, _ := reader.ReadString(<span class="string">&#x27;\n&#x27;</span>) <span class="comment">// 读到换行</span></span><br><span class="line">    text = strings.TrimSpace(text)</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%#v\n&quot;</span>, text)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Fscan系列"><a href="#Fscan系列" class="headerlink" title="Fscan系列"></a>Fscan系列</h4><p>这几个函数功能分别类似于fmt.Scan、fmt.Scanf、fmt.Scanln三个函数，只不过它们不是从标准输入中读取数据而是从io.Reader中读取数据。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Fscan</span><span class="params">(r io.Reader, a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Fscanln</span><span class="params">(r io.Reader, a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Fscanf</span><span class="params">(r io.Reader, format <span class="type">string</span>, a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br></pre></td></tr></table></figure>
+
+<h4 id="Sscan系列"><a href="#Sscan系列" class="headerlink" title="Sscan系列"></a>Sscan系列</h4><p>这几个函数功能分别类似于fmt.Scan、fmt.Scanf、fmt.Scanln三个函数，只不过它们不是从标准输入中读取数据而是从指定字符串中读取数据。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Sscan</span><span class="params">(str <span class="type">string</span>, a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Sscanln</span><span class="params">(str <span class="type">string</span>, a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Sscanf</span><span class="params">(str <span class="type">string</span>, format <span class="type">string</span>, a ...<span class="keyword">interface</span>&#123;&#125;)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="Strconv"><a href="#Strconv" class="headerlink" title="Strconv"></a>Strconv</h2><p>strconv包实现了基本数据类型与其字符串表示的转换，主要有以下常用函数： Atoi()、Itia()、parse系列、format系列、append系列</p>
+<h3 id="Atoi"><a href="#Atoi" class="headerlink" title="Atoi()"></a>Atoi()</h3><p>Atoi()函数用于将字符串类型的整数转换为int类型，函数签名如下。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Atoi</span><span class="params">(s <span class="type">string</span>)</span></span> (i <span class="type">int</span>, err <span class="type">error</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Itoa"><a href="#Itoa" class="headerlink" title="Itoa()"></a>Itoa()</h3><p>Itoa()函数用于将int类型数据转换为对应的字符串表示，具体的函数签名如下。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Itoa</span><span class="params">(i <span class="type">int</span>)</span></span> <span class="type">string</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Parse系列函数"><a href="#Parse系列函数" class="headerlink" title="Parse系列函数"></a>Parse系列函数</h3><p>Parse类函数用于转换字符串为给定类型的值：ParseBool()、ParseFloat()、ParseInt()、ParseUint()</p>
+<h3 id="Format系列函数"><a href="#Format系列函数" class="headerlink" title="Format系列函数"></a>Format系列函数</h3><p>Format系列函数实现了将给定类型数据格式化为string类型数据的功能。</p>
+<h2 id="context"><a href="#context" class="headerlink" title="context"></a>context</h2><p>用来简化 对于处理单个请求的多个 goroutine 之间与请求域的数据、取消信号、截止时间等相关操作，这些操作可能涉及多个 API 调用。</p>
+<p>对服务器传入的请求应该创建上下文，而对服务器的传出调用应该接受上下文。它们之间的函数调用链必须传递上下文，或者可以使用WithCancel、WithDeadline、WithTimeout或WithValue创建的派生上下文。当一个上下文被取消时，它派生的所有上下文也被取消。</p>
+<p>context.Context是一个接口，该接口定义了四个需要实现的方法。具体签名如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Context <span class="keyword">interface</span> &#123;</span><br><span class="line">    Deadline() (deadline time.Time, ok <span class="type">bool</span>)</span><br><span class="line">    Done() &lt;-<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line">    Err() <span class="type">error</span></span><br><span class="line">    Value(key <span class="keyword">interface</span>&#123;&#125;) <span class="keyword">interface</span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li>Deadline方法需要返回当前Context被取消的时间，也就是完成工作的截止时间（deadline）；</li>
+<li>Done方法需要返回一个Channel，这个Channel会在当前工作完成或者上下文被取消之后关闭，多次调用Done方法会返回同一个Channel；</li>
+<li>Err方法会返回当前Context结束的原因，它只会在Done返回的Channel被关闭时才会返回非空的值；<ul>
+<li>如果当前Context被取消就会返回Canceled错误；</li>
+<li>如果当前Context超时就会返回DeadlineExceeded错误；</li>
+</ul>
+</li>
+<li>Value方法会从Context中返回键对应的值，对于同一个上下文来说，多次调用Value 并传入相同的Key会返回相同的结果，该方法仅用于传递跨API和进程间跟请求域的数据；</li>
+</ul>
+<h3 id="Background-和TODO"><a href="#Background-和TODO" class="headerlink" title="Background()和TODO()"></a>Background()和TODO()</h3><p>Go内置两个函数：Background()和TODO()，这两个函数分别返回一个实现了Context接口的background和todo。我们代码中最开始都是以这两个内置的上下文对象作为最顶层的partent context，衍生出更多的子上下文对象。</p>
+<p>Background()主要用于main函数、初始化以及测试代码中，作为Context这个树结构的最顶层的Context，也就是根Context。</p>
+<p>TODO()，它目前还不知道具体的使用场景，如果我们不知道该使用什么Context的时候，可以使用这个。</p>
+<p>background和todo本质上都是emptyCtx结构体类型，是一个不可取消，没有设置截止时间，没有携带任何值的Context。</p>
+<h3 id="With系列函数"><a href="#With系列函数" class="headerlink" title="With系列函数"></a>With系列函数</h3><p>此外，context包中还定义了四个With系列函数。</p>
+<h4 id="WithCancel"><a href="#WithCancel" class="headerlink" title="WithCancel"></a>WithCancel</h4><p>WithCancel的函数签名如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">func WithCancel(parent Context) (ctx Context, cancel CancelFunc)</span><br></pre></td></tr></table></figure>
+
+<p>WithCancel返回带有新Done通道的父节点的副本。当调用返回的cancel函数或当关闭父上下文的Done通道时，将关闭返回上下文的Done通道，无论先发生什么情况。</p>
+<p>取消此上下文将释放与其关联的资源，因此代码应该在此上下文中运行的操作完成后立即调用cancel。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">gen</span><span class="params">(ctx context.Context)</span></span> &lt;-<span class="keyword">chan</span> <span class="type">int</span> &#123;</span><br><span class="line">        dst := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="type">int</span>)</span><br><span class="line">        n := <span class="number">1</span></span><br><span class="line">        <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">            <span class="keyword">for</span> &#123;</span><br><span class="line">                <span class="keyword">select</span> &#123;</span><br><span class="line">                <span class="keyword">case</span> &lt;-ctx.Done():</span><br><span class="line">                    <span class="keyword">return</span> <span class="comment">// return结束该goroutine，防止泄露</span></span><br><span class="line">                <span class="keyword">case</span> dst &lt;- n:</span><br><span class="line">                    n++</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;()</span><br><span class="line">        <span class="keyword">return</span> dst</span><br><span class="line">    &#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    ctx, cancel := context.WithCancel(context.Background())</span><br><span class="line">    <span class="keyword">defer</span> cancel() <span class="comment">// 当我们取完需要的整数后调用cancel</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> n := <span class="keyword">range</span> gen(ctx) &#123;</span><br><span class="line">        fmt.Println(n)</span><br><span class="line">        <span class="keyword">if</span> n == <span class="number">5</span> &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的示例代码中，gen函数在单独的goroutine中生成整数并将它们发送到返回的通道。 gen的调用者在使用生成的整数之后需要取消上下文，以免gen启动的内部goroutine发生泄漏。</p>
+<h4 id="WithDeadline"><a href="#WithDeadline" class="headerlink" title="WithDeadline"></a>WithDeadline</h4><p>WithDeadline的函数签名如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">func WithDeadline(parent Context, deadline time.Time) (Context, CancelFunc)</span><br></pre></td></tr></table></figure>
+
+<p>返回父上下文的副本，并将deadline调整为不迟于d。如果父上下文的deadline已经早于d，则WithDeadline(parent, d)在语义上等同于父上下文。当截止日过期时，当调用返回的cancel函数时，或者当父上下文的Done通道关闭时，返回上下文的Done通道将被关闭，以最先发生的情况为准。</p>
+<p>取消此上下文将释放与其关联的资源，因此代码应该在此上下文中运行的操作完成后立即调用cancel。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    d := time.Now().Add(<span class="number">50</span> * time.Millisecond)</span><br><span class="line">    ctx, cancel := context.WithDeadline(context.Background(), d)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 尽管ctx会过期，但在任何情况下调用它的cancel函数都是很好的实践。</span></span><br><span class="line">    <span class="comment">// 如果不这样做，可能会使上下文及其父类存活的时间超过必要的时间。</span></span><br><span class="line">    <span class="keyword">defer</span> cancel()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">select</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> &lt;-time.After(<span class="number">1</span> * time.Second):</span><br><span class="line">        fmt.Println(<span class="string">&quot;overslept&quot;</span>)</span><br><span class="line">    <span class="keyword">case</span> &lt;-ctx.Done():</span><br><span class="line">        fmt.Println(ctx.Err())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的代码中，定义了一个50毫秒之后过期的deadline，然后我们调用context.WithDeadline(context.Background(), d)得到一个上下文（ctx）和一个取消函数（cancel），然后使用一个select让主程序陷入等待：等待1秒后打印overslept退出或者等待ctx过期后退出。 因为ctx50秒后就过期，所以ctx.Done()会先接收到值，上面的代码会打印ctx.Err()取消原因。</p>
+<h4 id="WithTimeout"><a href="#WithTimeout" class="headerlink" title="WithTimeout"></a>WithTimeout</h4><p>WithTimeout的函数签名如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc)</span><br></pre></td></tr></table></figure>
+
+<p>WithTimeout返回WithDeadline(parent, time.Now().Add(timeout))。</p>
+<p>取消此上下文将释放与其相关的资源，因此代码应该在此上下文中运行的操作完成后立即调用cancel，通常用于数据库或者网络连接的超时控制。具体示例如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;context&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;sync&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// context.WithTimeout</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">worker</span><span class="params">(ctx context.Context)</span></span> &#123;</span><br><span class="line">LOOP:</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        fmt.Println(<span class="string">&quot;db connecting ...&quot;</span>)</span><br><span class="line">        time.Sleep(time.Millisecond * <span class="number">10</span>) <span class="comment">// 假设正常连接数据库耗时10毫秒</span></span><br><span class="line">        <span class="keyword">select</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> &lt;-ctx.Done(): <span class="comment">// 50毫秒后自动调用</span></span><br><span class="line">            <span class="keyword">break</span> LOOP</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Println(<span class="string">&quot;worker done!&quot;</span>)</span><br><span class="line">    wg.Done()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// 设置一个50毫秒的超时</span></span><br><span class="line">    ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*<span class="number">50</span>)</span><br><span class="line">    wg.Add(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">go</span> worker(ctx)</span><br><span class="line">    time.Sleep(time.Second * <span class="number">5</span>)</span><br><span class="line">    cancel() <span class="comment">// 通知子goroutine结束</span></span><br><span class="line">    wg.Wait()</span><br><span class="line">    fmt.Println(<span class="string">&quot;over&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="WithValue"><a href="#WithValue" class="headerlink" title="WithValue"></a>WithValue</h4><p>WithValue函数能够将请求作用域的数据与 Context 对象建立关系。声明如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">func WithValue(parent Context, key, val interface&#123;&#125;) Context</span><br></pre></td></tr></table></figure>
+
+<p>WithValue返回父节点的副本，其中与key关联的值为val。</p>
+<p>仅对API和进程间传递请求域的数据使用上下文值，而不是使用它来传递可选参数给函数。</p>
+<p>所提供的键必须是可比较的，并且不应该是string类型或任何其他内置类型，以避免使用上下文在包之间发生冲突。WithValue的用户应该为键定义自己的类型。为了避免在分配给interface{}时进行分配，上下文键通常具有具体类型struct{}。或者，导出的上下文关键变量的静态类型应该是指针或接口。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;context&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;sync&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// context.WithValue</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> TraceCode <span class="type">string</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">worker</span><span class="params">(ctx context.Context)</span></span> &#123;</span><br><span class="line">    key := TraceCode(<span class="string">&quot;TRACE_CODE&quot;</span>)</span><br><span class="line">    traceCode, ok := ctx.Value(key).(<span class="type">string</span>) <span class="comment">// 在子goroutine中获取trace code</span></span><br><span class="line">    <span class="keyword">if</span> !ok &#123;</span><br><span class="line">        fmt.Println(<span class="string">&quot;invalid trace code&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">LOOP:</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        fmt.Printf(<span class="string">&quot;worker, trace code:%s\n&quot;</span>, traceCode)</span><br><span class="line">        time.Sleep(time.Millisecond * <span class="number">10</span>) <span class="comment">// 假设正常连接数据库耗时10毫秒</span></span><br><span class="line">        <span class="keyword">select</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> &lt;-ctx.Done(): <span class="comment">// 50毫秒后自动调用</span></span><br><span class="line">            <span class="keyword">break</span> LOOP</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Println(<span class="string">&quot;worker done!&quot;</span>)</span><br><span class="line">    wg.Done()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// 设置一个50毫秒的超时</span></span><br><span class="line">    ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*<span class="number">50</span>)</span><br><span class="line">    <span class="comment">// 在系统的入口中设置trace code传递给后续启动的goroutine实现日志数据聚合</span></span><br><span class="line">    ctx = context.WithValue(ctx, TraceCode(<span class="string">&quot;TRACE_CODE&quot;</span>), <span class="string">&quot;12512312234&quot;</span>)</span><br><span class="line">    wg.Add(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">go</span> worker(ctx)</span><br><span class="line">    time.Sleep(time.Second * <span class="number">5</span>)</span><br><span class="line">    cancel() <span class="comment">// 通知子goroutine结束</span></span><br><span class="line">    wg.Wait()</span><br><span class="line">    fmt.Println(<span class="string">&quot;over&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用Context的注意事项"><a href="#使用Context的注意事项" class="headerlink" title="使用Context的注意事项"></a>使用Context的注意事项</h4><ul>
+<li>推荐以参数的方式显示传递Context</li>
+<li>以Context作为参数的函数方法，应该把Context作为第一个参数。</li>
+<li>给一个函数方法传递Context的时候，不要传递nil，如果不知道传递什么，就使用context.TODO()</li>
+<li>Context的Value相关方法应该传递请求域的必要数据，不应该用于传递可选参数</li>
+<li>Context是线程安全的，可以放心的在多个goroutine中传递</li>
+</ul>
+<h4 id="客户端超时取消示例"><a href="#客户端超时取消示例" class="headerlink" title="客户端超时取消示例"></a>客户端超时取消示例</h4><p>调用服务端API时如何在客户端实现超时控制？</p>
+<h3 id="server端"><a href="#server端" class="headerlink" title="server端"></a>server端</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// context_timeout/server/main.go</span></span><br><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;math/rand&quot;</span></span><br><span class="line">    <span class="string">&quot;net/http&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// server端，随机出现慢响应</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">indexHandler</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    number := rand.Intn(<span class="number">2</span>)</span><br><span class="line">    <span class="keyword">if</span> number == <span class="number">0</span> &#123;</span><br><span class="line">        time.Sleep(time.Second * <span class="number">10</span>) <span class="comment">// 耗时10秒的慢响应</span></span><br><span class="line">        fmt.Fprintf(w, <span class="string">&quot;slow response&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Fprint(w, <span class="string">&quot;quick response&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    http.HandleFunc(<span class="string">&quot;/&quot;</span>, indexHandler)</span><br><span class="line">    err := http.ListenAndServe(<span class="string">&quot;:8000&quot;</span>, <span class="literal">nil</span>)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(err)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>client端</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// context_timeout/client/main.go</span></span><br><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;context&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;io/ioutil&quot;</span></span><br><span class="line">    <span class="string">&quot;net/http&quot;</span></span><br><span class="line">    <span class="string">&quot;sync&quot;</span></span><br><span class="line">    <span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 客户端</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> respData <span class="keyword">struct</span> &#123;</span><br><span class="line">    resp *http.Response</span><br><span class="line">    err  <span class="type">error</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">doCall</span><span class="params">(ctx context.Context)</span></span> &#123;</span><br><span class="line">    transport := http.Transport&#123;</span><br><span class="line">       <span class="comment">// 请求频繁可定义全局的client对象并启用长链接</span></span><br><span class="line">       <span class="comment">// 请求不频繁使用短链接</span></span><br><span class="line">       DisableKeepAlives: <span class="literal">true</span>,     &#125;</span><br><span class="line">    client := http.Client&#123;</span><br><span class="line">        Transport: &amp;transport,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    respChan := <span class="built_in">make</span>(<span class="keyword">chan</span> *respData, <span class="number">1</span>)</span><br><span class="line">    req, err := http.NewRequest(<span class="string">&quot;GET&quot;</span>, <span class="string">&quot;http://127.0.0.1:8000/&quot;</span>, <span class="literal">nil</span>)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        fmt.Printf(<span class="string">&quot;new requestg failed, err:%v\n&quot;</span>, err)</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    req = req.WithContext(ctx) <span class="comment">// 使用带超时的ctx创建一个新的client request</span></span><br><span class="line">    <span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line">    wg.Add(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">defer</span> wg.Wait()</span><br><span class="line">    <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">        resp, err := client.Do(req)</span><br><span class="line">        fmt.Printf(<span class="string">&quot;client.do resp:%v, err:%v\n&quot;</span>, resp, err)</span><br><span class="line">        rd := &amp;respData&#123;</span><br><span class="line">            resp: resp,</span><br><span class="line">            err:  err,</span><br><span class="line">        &#125;</span><br><span class="line">        respChan &lt;- rd</span><br><span class="line">        wg.Done()</span><br><span class="line">    &#125;()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">select</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> &lt;-ctx.Done():</span><br><span class="line">        <span class="comment">//transport.CancelRequest(req)</span></span><br><span class="line">        fmt.Println(<span class="string">&quot;call api timeout&quot;</span>)</span><br><span class="line">    <span class="keyword">case</span> result := &lt;-respChan:</span><br><span class="line">        fmt.Println(<span class="string">&quot;call server api success&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> result.err != <span class="literal">nil</span> &#123;</span><br><span class="line">            fmt.Printf(<span class="string">&quot;call server api failed, err:%v\n&quot;</span>, result.err)</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">defer</span> result.resp.Body.Close()</span><br><span class="line">        data, _ := ioutil.ReadAll(result.resp.Body)</span><br><span class="line">        fmt.Printf(<span class="string">&quot;resp:%v\n&quot;</span>, <span class="type">string</span>(data))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// 定义一个100毫秒的超时</span></span><br><span class="line">    ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*<span class="number">100</span>)</span><br><span class="line">    <span class="keyword">defer</span> cancel() <span class="comment">// 调用cancel释放子goroutine资源</span></span><br><span class="line">    doCall(ctx)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="数据格式"><a href="#数据格式" class="headerlink" title="数据格式"></a>数据格式</h2><ul>
+<li><p>json使用go语言内置的encoding&#x2F;json 标准库</p>
+</li>
+<li><p>编码json使用json.Marshal()函数可以对一组数据进行JSON格式的编码</p>
+</li>
+<li><p>解码json使用json.Unmarshal()函数可以对一组数据进行JSON格式的解码</p>
+</li>
+</ul>
+<h3 id="XML"><a href="#XML" class="headerlink" title="XML"></a>XML</h3><ul>
+<li>是可扩展标记语言，包含声明、根标签、子元素和属性</li>
+<li>应用场景：配置文件以及webService</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">    &lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span> ?&gt;</span><br><span class="line">    &lt;servers version=<span class="string">&quot;1&quot;</span>&gt;</span><br><span class="line">        &lt;server&gt;</span><br><span class="line">            &lt;serverName&gt;Shanghai_VPN&lt;/serverName&gt;</span><br><span class="line">            &lt;serverIP&gt;<span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>&lt;/serverIP&gt;</span><br><span class="line">        &lt;/server&gt;</span><br><span class="line">        &lt;server&gt;</span><br><span class="line">            &lt;serverName&gt;Beijing_VPN&lt;/serverName&gt;</span><br><span class="line">            &lt;serverIP&gt;<span class="number">127.0</span><span class="number">.0</span><span class="number">.2</span>&lt;/serverIP&gt;</span><br><span class="line">        &lt;/server&gt;</span><br><span class="line">    &lt;/servers&gt;</span><br><span class="line"></span><br><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">&quot;encoding/xml&quot;</span></span><br><span class="line">   <span class="string">&quot;fmt&quot;</span></span><br><span class="line">   <span class="string">&quot;io/ioutil&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 抽取单个server对象</span></span><br><span class="line"><span class="keyword">type</span> Server <span class="keyword">struct</span> &#123;</span><br><span class="line">   ServerName <span class="type">string</span> <span class="string">`xml:&quot;serverName&quot;`</span></span><br><span class="line">   ServerIP   <span class="type">string</span> <span class="string">`xml:&quot;serverIP&quot;`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Servers <span class="keyword">struct</span> &#123;</span><br><span class="line">   Name    xml.Name <span class="string">`xml:&quot;servers&quot;`</span></span><br><span class="line">   Version <span class="type">int</span>   <span class="string">`xml:&quot;version&quot;`</span></span><br><span class="line">   Servers []Server <span class="string">`xml:&quot;server&quot;`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   data, err := ioutil.ReadFile(<span class="string">&quot;D:/my.xml&quot;</span>)</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      fmt.Println(err)</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">var</span> servers Servers</span><br><span class="line">   err = xml.Unmarshal(data, &amp;servers)</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      fmt.Println(err)</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">   &#125;</span><br><span class="line">   fmt.Printf(<span class="string">&quot;xml: %#v\n&quot;</span>, servers)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2>
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/03/07/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E7%AC%94%E8%AE%B0/6.%E5%B8%B8%E7%94%A8%E6%A0%87%E5%87%86%E5%BA%93/" title="6.常用标准库">https://kongpengyq.com/2022/03/07/Go知识点/Go笔记/6.常用标准库/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go%E7%9F%A5%E8%AF%86%E7%82%B9/" rel="tag"># Go知识点</a>
+              <a href="/tags/Go%E7%AC%94%E8%AE%B0/" rel="tag"># Go笔记</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/01/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E7%AC%94%E8%AE%B0/3.%E6%96%B9%E6%B3%95/" rel="prev" title="3.方法">
+      <i class="fa fa-chevron-left"></i> 3.方法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/03/07/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E7%AC%94%E8%AE%B0/5.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="next" title="5.并发编程">
+      5.并发编程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#fmt"><span class="nav-text">fmt</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%91%E5%A4%96%E8%BE%93%E5%87%BA"><span class="nav-text">向外输出</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Print"><span class="nav-text">Print</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Fprint"><span class="nav-text">Fprint</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sprint"><span class="nav-text">Sprint</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Errorf"><span class="nav-text">Errorf</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%9A%E7%94%A8%E5%8D%A0%E4%BD%8D%E7%AC%A6"><span class="nav-text">通用占位符</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B8%83%E5%B0%94%E5%9E%8B"><span class="nav-text">布尔型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B4%E5%9E%8B"><span class="nav-text">整型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%AE%E7%82%B9%E6%95%B0%E4%B8%8E%E5%A4%8D%E6%95%B0"><span class="nav-text">浮点数与复数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%92%8C-byte"><span class="nav-text">字符串和[]byte</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%87%E9%92%88"><span class="nav-text">指针</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%BD%E5%BA%A6%E6%A0%87%E8%AF%86%E7%AC%A6"><span class="nav-text">宽度标识符</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B6%E4%BB%96falg"><span class="nav-text">其他falg</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E8%BE%93%E5%85%A5"><span class="nav-text">获取输入</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#fmt-Scan"><span class="nav-text">fmt.Scan</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fmt-Scanf"><span class="nav-text">fmt.Scanf</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fmt-Scanln"><span class="nav-text">fmt.Scanln</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#bufio-NewReader"><span class="nav-text">bufio.NewReader</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Fscan%E7%B3%BB%E5%88%97"><span class="nav-text">Fscan系列</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sscan%E7%B3%BB%E5%88%97"><span class="nav-text">Sscan系列</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Strconv"><span class="nav-text">Strconv</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Atoi"><span class="nav-text">Atoi()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Itoa"><span class="nav-text">Itoa()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Parse%E7%B3%BB%E5%88%97%E5%87%BD%E6%95%B0"><span class="nav-text">Parse系列函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Format%E7%B3%BB%E5%88%97%E5%87%BD%E6%95%B0"><span class="nav-text">Format系列函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#context"><span class="nav-text">context</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Background-%E5%92%8CTODO"><span class="nav-text">Background()和TODO()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#With%E7%B3%BB%E5%88%97%E5%87%BD%E6%95%B0"><span class="nav-text">With系列函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#WithCancel"><span class="nav-text">WithCancel</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#WithDeadline"><span class="nav-text">WithDeadline</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#WithTimeout"><span class="nav-text">WithTimeout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#WithValue"><span class="nav-text">WithValue</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Context%E7%9A%84%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-text">使用Context的注意事项</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%B6%85%E6%97%B6%E5%8F%96%E6%B6%88%E7%A4%BA%E4%BE%8B"><span class="nav-text">客户端超时取消示例</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#server%E7%AB%AF"><span class="nav-text">server端</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F"><span class="nav-text">数据格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#XML"><span class="nav-text">XML</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link"><span class="nav-text"></span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

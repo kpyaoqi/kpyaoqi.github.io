@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Gorm介绍GORM是使用Go语言开发的友好的ORM库。 安装1go get -u github.com&#x2F;jinzhu&#x2F;gorm  通用数据库接口sql.DB 从*gorm.DB连接获取通用数据库接口*sql.DB 12345&#x2F;&#x2F; 获取通用数据库对象&#96;*sql.DB&#96;以使用其函数db.DB()&#x2F;&#x2F; Pingdb.DB().Ping()  数据库连接1234567891011121314151617">
+<meta property="og:type" content="article">
+<meta property="og:title" content="1-介绍">
+<meta property="og:url" content="https://kongpengyq.com/2021/11/30/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GORM/1-%E4%BB%8B%E7%BB%8D/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="Gorm介绍GORM是使用Go语言开发的友好的ORM库。 安装1go get -u github.com&#x2F;jinzhu&#x2F;gorm  通用数据库接口sql.DB 从*gorm.DB连接获取通用数据库接口*sql.DB 12345&#x2F;&#x2F; 获取通用数据库对象&#96;*sql.DB&#96;以使用其函数db.DB()&#x2F;&#x2F; Pingdb.DB().Ping()  数据库连接1234567891011121314151617">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-11-29T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.590Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="Go知识点">
+<meta property="article:tag" content="GORM">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2021/11/30/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GORM/1-%E4%BB%8B%E7%BB%8D/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>1-介绍 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2021/11/30/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GORM/1-%E4%BB%8B%E7%BB%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          1-介绍
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-11-30 00:00:00" itemprop="dateCreated datePublished" datetime="2021-11-30T00:00:00+08:00">2021-11-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/GORM/" itemprop="url" rel="index">
+                    <span itemprop="name">GORM</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Gorm介绍"><a href="#Gorm介绍" class="headerlink" title="Gorm介绍"></a>Gorm介绍</h1><p>GORM是使用Go语言开发的友好的ORM库。</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go get -u github.com/jinzhu/gorm</span><br></pre></td></tr></table></figure>
+
+<p>通用数据库接口sql.DB</p>
+<p>从<code>*gorm.DB</code>连接获取通用数据库接口<code>*sql.DB</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// 获取通用数据库对象`*sql.DB`以使用其函数</span><br><span class="line">db.DB()</span><br><span class="line"></span><br><span class="line">// Ping</span><br><span class="line">db.DB().Ping()</span><br></pre></td></tr></table></figure>
+
+<h3 id="数据库连接"><a href="#数据库连接" class="headerlink" title="数据库连接"></a>数据库连接</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;github.com/jinzhu/gorm&quot;</span></span><br><span class="line">    _ <span class="string">&quot;github.com/jinzhu/gorm/dialects/mysql&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// UserInfo 用户信息</span></span><br><span class="line"><span class="keyword">type</span> UserInfo <span class="keyword">struct</span> &#123;</span><br><span class="line">    ID <span class="type">uint</span></span><br><span class="line">    Name <span class="type">string</span></span><br><span class="line">    Gender <span class="type">string</span></span><br><span class="line">    Hobby <span class="type">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    db, err := gorm.Open(<span class="string">&quot;mysql&quot;</span>, <span class="string">&quot;root:root@(127.0.0.1:3306)/db1?charset=utf8mb4&amp;parseTime=True&amp;loc=Local&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> err!= <span class="literal">nil</span>&#123;</span><br><span class="line">        <span class="built_in">panic</span>(err)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">defer</span> db.Close()</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 自动迁移</span></span><br><span class="line">    db.AutoMigrate(&amp;UserInfo&#123;&#125;)</span><br><span class="line"></span><br><span class="line">    u1 := UserInfo&#123;<span class="number">1</span>, <span class="string">&quot;枯藤&quot;</span>, <span class="string">&quot;男&quot;</span>, <span class="string">&quot;篮球&quot;</span>&#125;</span><br><span class="line">    u2 := UserInfo&#123;<span class="number">2</span>, <span class="string">&quot;topgoer.com&quot;</span>, <span class="string">&quot;女&quot;</span>, <span class="string">&quot;足球&quot;</span>&#125;</span><br><span class="line">    <span class="comment">// 创建记录</span></span><br><span class="line">    db.Create(&amp;u1)</span><br><span class="line">    db.Create(&amp;u2)</span><br><span class="line">    <span class="comment">// 查询</span></span><br><span class="line">    <span class="keyword">var</span> u = <span class="built_in">new</span>(UserInfo)</span><br><span class="line">    db.First(u)</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%#v\n&quot;</span>, u)</span><br><span class="line">    <span class="keyword">var</span> uu UserInfo</span><br><span class="line">    db.Find(&amp;uu, <span class="string">&quot;hobby=?&quot;</span>, <span class="string">&quot;足球&quot;</span>)</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%#v\n&quot;</span>, uu)</span><br><span class="line">    <span class="comment">// 更新</span></span><br><span class="line">    db.Model(&amp;u).Update(<span class="string">&quot;hobby&quot;</span>, <span class="string">&quot;双色球&quot;</span>)</span><br><span class="line">    <span class="comment">// 删除</span></span><br><span class="line">    db.Delete(&amp;u)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>连接比较简单，直接调用 gorm.Open 传入数据库地址即可 github.com&#x2F;jinzhu&#x2F;gorm&#x2F;dialects&#x2F;mysql 是 golang 的 mysql 驱动，实际上就是 github.com&#x2F;go-sql-driver&#x2F;mysql 作者这里为了好记，重新弄了个名字 这里我用的 mysql，实际上支持基本上所有主流的关系数据库，连接方式上略有不同</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">db.DB().SetMaxIdleConns(10)</span><br><span class="line">db.DB().SetMaxOpenConns(100)</span><br></pre></td></tr></table></figure>
+
+<p>还可以使用 db.DB() 对象设置连接池信息</p>
+<h3 id="表定义"><a href="#表定义" class="headerlink" title="表定义"></a>表定义</h3><p>先来定义一个点赞表，这里面一条记录表示某个用户在某个时刻对某篇文章点了一个赞，用 ip + ua 来标识用户，title 标识文章标题</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">type Like struct &#123;</span><br><span class="line">    ID        int    `gorm:&quot;primary_key&quot;`</span><br><span class="line">    Ip        string `gorm:&quot;type:varchar(20);not null;index:ip_idx&quot;`</span><br><span class="line">    Ua        string `gorm:&quot;type:varchar(256);not null;&quot;`</span><br><span class="line">    Title     string `gorm:&quot;type:varchar(128);not null;index:title_idx&quot;`</span><br><span class="line">    Hash      uint64 `gorm:&quot;unique_index:hash_idx;&quot;`</span><br><span class="line">    CreatedAt time.Time</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>gorm 用 tag 的方式来标识 mysql 里面的约束</p>
+<p>创建索引只需要直接指定列即可，这里创建了两个索引，ip_idx 和 title_idx；如果需要多列组合索引，直接让索引的名字相同即可；如果需要创建唯一索引，指定为 unique_index 即可</p>
+<p>支持时间类型，直接使用 time.Time 即可</p>
+<h3 id="创建表"><a href="#创建表" class="headerlink" title="创建表"></a>创建表</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if !db.HasTable(&amp;Like&#123;&#125;) &#123;</span><br><span class="line">    if err := db.Set(&quot;gorm:table_options&quot;, &quot;ENGINE=InnoDB DEFAULT CHARSET=utf8&quot;).CreateTable(&amp;Like&#123;&#125;).Error; err != nil &#123;</span><br><span class="line">        panic(err)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>直接通过 db.CreateTable 就可以创建表了，非常方便，还可以通过 db.Set 设置一些额外的表属性</p>
+<h3 id="连接池"><a href="#连接池" class="headerlink" title="连接池"></a>连接池</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">db.DB().SetMaxIdleConns(10)</span><br><span class="line">db.DB().SetMaxOpenConns(100)</span><br></pre></td></tr></table></figure>
+
+<h3 id="复合主键"><a href="#复合主键" class="headerlink" title="复合主键"></a>复合主键</h3><p>将多个字段设置为主键以启用复合主键</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">type Product struct &#123;</span><br><span class="line">    ID           string `gorm:&quot;primary_key&quot;`</span><br><span class="line">    LanguageCode string `gorm:&quot;primary_key&quot;`</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="日志"><a href="#日志" class="headerlink" title="日志"></a>日志</h3><p>Gorm有内置的日志记录器支持，默认情况下，它会打印发生的错误</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// 启用Logger，显示详细日志</span><br><span class="line">db.LogMode(true)</span><br><span class="line"></span><br><span class="line">// 禁用日志记录器，不显示任何日志</span><br><span class="line">db.LogMode(false)</span><br><span class="line"></span><br><span class="line">// 调试单个操作，显示此操作的详细日志</span><br><span class="line">db.Debug().Where(&quot;name = ?&quot;, &quot;jinzhu&quot;).First(&amp;User&#123;&#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="自定义日志"><a href="#自定义日志" class="headerlink" title="自定义日志"></a>自定义日志</h3><p>参考GORM的默认记录器如何自定义它<a target="_blank" rel="noopener" href="https://github.com/jinzhu/gorm/blob/master/logger.go">https://github.com/jinzhu/gorm/blob/master/logger.go</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">db.SetLogger(gorm.Logger&#123;revel.TRACE&#125;)</span><br><span class="line">db.SetLogger(log.New(os.Stdout, &quot;\r\n&quot;, 0))</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2021/11/30/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GORM/1-%E4%BB%8B%E7%BB%8D/" title="1-介绍">https://kongpengyq.com/2021/11/30/Go知识点/GORM/1-介绍/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go%E7%9F%A5%E8%AF%86%E7%82%B9/" rel="tag"># Go知识点</a>
+              <a href="/tags/GORM/" rel="tag"># GORM</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/30/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GORM/2-%E6%9F%A5%E8%AF%A2/" rel="prev" title="2-查询">
+      <i class="fa fa-chevron-left"></i> 2-查询
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/03/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GORM/3-%E6%9B%B4%E6%96%B0/" rel="next" title="3-更新">
+      3-更新 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Gorm%E4%BB%8B%E7%BB%8D"><span class="nav-text">Gorm介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5"><span class="nav-text">数据库连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%A8%E5%AE%9A%E4%B9%89"><span class="nav-text">表定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E8%A1%A8"><span class="nav-text">创建表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9E%E6%8E%A5%E6%B1%A0"><span class="nav-text">连接池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E5%90%88%E4%B8%BB%E9%94%AE"><span class="nav-text">复合主键</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%BF%97"><span class="nav-text">日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E6%97%A5%E5%BF%97"><span class="nav-text">自定义日志</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

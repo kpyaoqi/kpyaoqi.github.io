@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="SingerSigner类是抽象的，不能直接实例化，而是应该使用一个具体的子类，如 Wallet, VoidSigner 或 JsonRpcSigner。 1.1 属性signer*.connect( provider ) ⇒ *Signer:子类必须实现这个，如果更改后的providers是不被支持的话，它们可能仅仅只抛出一个错误。 signer*.getAddress( ) ⇒ *Promis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="5-Singers">
+<meta property="og:url" content="https://kongpengyq.com/2022/08/14/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/5-Singers/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="SingerSigner类是抽象的，不能直接实例化，而是应该使用一个具体的子类，如 Wallet, VoidSigner 或 JsonRpcSigner。 1.1 属性signer*.connect( provider ) ⇒ *Signer:子类必须实现这个，如果更改后的providers是不被支持的话，它们可能仅仅只抛出一个错误。 signer*.getAddress( ) ⇒ *Promis">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-08-13T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.707Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="ether@5.4.js">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/08/14/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/5-Singers/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>5-Singers | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/08/14/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/5-Singers/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          5-Singers
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-08-14 00:00:00" itemprop="dateCreated datePublished" datetime="2022-08-14T00:00:00+08:00">2022-08-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ether-5-4-js/" itemprop="url" rel="index">
+                    <span itemprop="name">ether@5.4.js</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Singer"><a href="#Singer" class="headerlink" title="Singer"></a>Singer</h1><p><strong>Signer</strong>类是抽象的，<strong>不能直接实例化，而是应该使用一个具体的子类</strong>，如 Wallet, VoidSigner 或 JsonRpcSigner。</p>
+<h2 id="1-1-属性"><a href="#1-1-属性" class="headerlink" title="1.1 属性"></a>1.1 属性</h2><p><em><strong>signer*.connect( <em>provider</em> ) ⇒ *Signer</strong></em>:子类<strong>必须</strong>实现这个，如果更改后的providers是不被支持的话，它们可能仅仅只抛出一个错误。</p>
+<p><em><strong>signer*.getAddress( ) ⇒ *Promise&lt; string&lt; 地址(Address) &gt; &gt;</strong></em>:返回一个解析为帐户地址的Promise。</p>
+<p>​	子类<strong>必须</strong>实现这个,这是一个Promise，因此一个<strong>Signer</strong>可以围绕一个异步源进行设计，如硬钱包。</p>
+<p><em><strong>Signer*.isSigner( <em>object</em> ) ⇒ *boolean</strong></em>:当且仅当 <em>object</em> 是一个<strong>Signer</strong>时返回true。</p>
+<h2 id="1-2-Blockchain-方法"><a href="#1-2-Blockchain-方法" class="headerlink" title="1.2 Blockchain 方法"></a>1.2 <strong>Blockchain</strong> 方法</h2><h3 id="1-2-1-getBalance"><a href="#1-2-1-getBalance" class="headerlink" title="1.2.1 getBalance"></a>1.2.1 getBalance</h3><p><em>signer</em>.<strong>getBalance</strong>( [ <em>blockTag</em> &#x3D; “<em>latest</em>“ ] ) ⇒ <em>Promise&lt; 大数(**BigNumber**) &gt;</em></p>
+<p>在指定的<em>blockTag</em>下返回这个钱包的余额。</p>
+<h3 id="1-2-2-getChainId"><a href="#1-2-2-getChainId" class="headerlink" title="1.2.2  getChainId"></a>1.2.2  getChainId</h3><p><em>signer</em>.<strong>getChainId</strong>( ) ⇒ <em>Promise&lt; **number** &gt;</em></p>
+<p>返回这个钱包连接的链 ID。</p>
+<h3 id="1-2-3-getGasPrice"><a href="#1-2-3-getGasPrice" class="headerlink" title="1.2.3 getGasPrice"></a>1.2.3 getGasPrice</h3><p><em>signer</em>.<strong>getGasPrice</strong>( ) ⇒ <em>Promise&lt; 大数(**BigNumber**) &gt;</em></p>
+<p>返回当前的gas price。</p>
+<h3 id="1-2-4-getTransactionCount"><a href="#1-2-4-getTransactionCount" class="headerlink" title="1.2.4 getTransactionCount"></a>1.2.4 getTransactionCount</h3><p><em>signer</em>.<strong>getTransactionCount</strong>( [ <em>blockTag</em> &#x3D; “<em>latest</em>“ ] ) ⇒ <em>Promise&lt; **number** &gt;</em></p>
+<p>返回此帐户曾经发送的交易数量，交易中的中nonce依赖这个值。</p>
+<h3 id="1-2-5-call"><a href="#1-2-5-call" class="headerlink" title="1.2.5 call"></a>1.2.5 call</h3><p><em>signer</em>.<strong>call</strong>( <em>transactionRequest</em> ) ⇒ <em>Promise&lt; string&lt; **DataHexString** &gt; &gt;</em></p>
+<p>返回<em>transactionRequest</em>调用的结果，此帐户地址用作<code>from</code> 字段。</p>
+<h3 id="1-2-6-estimateGas"><a href="#1-2-6-estimateGas" class="headerlink" title="1.2.6 estimateGas"></a>1.2.6 estimateGas</h3><p><em>signer</em>.<strong>estimateGas</strong>( <em>transactionRequest</em> ) ⇒ <em>Promise&lt; 大数(**BigNumber**) &gt;</em></p>
+<p>返回发送<em>transactionRequest</em>的估算费用，在使用这个方法之前先用账户地址填充<code>from</code>字段。</p>
+<h3 id="1-2-7-resolveName"><a href="#1-2-7-resolveName" class="headerlink" title="1.2.7 resolveName"></a>1.2.7 resolveName</h3><p><em>signer</em>.<strong>resolveName</strong>( <em>ensName</em> ) ⇒ <em>Promise&lt; string&lt; 地址(**Address**) &gt; &gt;</em></p>
+<p>返回与<em>ensName</em>关联的地址。</p>
+<h2 id="1-3-Signing方法"><a href="#1-3-Signing方法" class="headerlink" title="1.3 Signing方法"></a>1.3 <strong>Signing</strong>方法</h2><h3 id="1-3-1-signMessage"><a href="#1-3-1-signMessage" class="headerlink" title="1.3.1 signMessage"></a>1.3.1 signMessage</h3><p><em>signer</em>.<strong>signMessage</strong>( <em>message</em> ) ⇒ <em>Promise&lt; string&lt; **RawSignature** &gt; &gt;</em></p>
+<p>这将返回一个解析为消息的Raw Signature Promise。</p>
+<p>由于使用的是hashMessage方法，因此它是EIP-191兼容的。 如果在Solidity中恢复地址，则需要这个前缀来创建一个匹配的哈希。</p>
+<p>子类<strong>必须</strong>实现这个方法。 如果不支持签名消息可能会抛出错误，比如在基于合约的钱包或基于元交易的钱包中使用时。</p>
+<h3 id="1-3-2-signTransaction"><a href="#1-3-2-signTransaction" class="headerlink" title="1.3.2 signTransaction"></a>1.3.2 signTransaction</h3><p><em>signer</em>.<strong>signTransaction</strong>( <em>transactionRequest</em> ) ⇒ <em>Promise&lt; string&lt; **DataHexString** &gt; &gt;</em></p>
+<p>返回一个解析为<em>transactionRequest</em>中<strong>已签名的交易</strong>的Promise。 此方法不填充任何缺少的字段。</p>
+<p>子类<strong>必须</strong>实现这个，如果不支持签名消息可能会抛出错误，出于安全这在许多客户端中是常见的。</p>
+<h3 id="1-3-3-sendTransaction"><a href="#1-3-3-sendTransaction" class="headerlink" title="1.3.3 sendTransaction"></a>1.3.3 sendTransaction</h3><p><em>signer</em>.<strong>sendTransaction</strong>( <em>transactionRequest</em> ) ⇒ <em>Promise&lt; **TransactionResponse** &gt;</em></p>
+<p>该方法使用populate Transaction填充缺少字段的transactionRequest，并返回一个解析成交易的Promise。</p>
+<h3 id="1-3-4-signTypedData"><a href="#1-3-4-signTypedData" class="headerlink" title="1.3.4 _signTypedData"></a>1.3.4 _signTypedData</h3><p><em>signer</em>.<strong>_signTypedData</strong>( <em>domain</em> , <em>types</em> , <em>value</em> ) ⇒ <em>Promise&lt; string&lt; **RawSignature** &gt; &gt;</em></p>
+<blockquote>
+<p>实验中的功能。如果使用它，请<strong>指定</strong>您正在使用的ethers的确切版本(例如指定<code>&quot;5.0.18&quot;</code>，而不是<code>&quot;^5.0.18&quot;</code>)， 因为方法名将从<code>_signTypedData</code>重命名为<code>signTypedData</code>。</p>
+</blockquote>
+<h2 id="1-4-Sub-Classes"><a href="#1-4-Sub-Classes" class="headerlink" title="1.4 Sub-Classes"></a>1.4 <strong>Sub-Classes</strong></h2><p><strong>Signer</strong>的所有重要属性都是不可变的，这一点非常重要。由于以太坊是异步的，并处理关键数据(如ether和其他潜在有价值的加密资产)， 整个Signer的生命周期中保持<em>provider</em>和 <em>address</em>等属性是静态的有助于防止严重的问题的出现， 而且许多其他类和库也是认定<em>provider</em>和 <em>address</em>等属性是静态的。</p>
+<p>子类<strong>必须</strong>扩展Signer，并且<strong>必须</strong>调用<code>super()</code>。</p>
+<h3 id="1-4-1-checkTransaction"><a href="#1-4-1-checkTransaction" class="headerlink" title="1.4.1 checkTransaction"></a>1.4.1 <strong>checkTransaction</strong></h3><p><em>signer</em>.<strong>checkTransaction</strong>( <em>transactionRequest</em> ) ⇒ <em><strong>TransactionRequest</strong></em></p>
+<p>这应该返回一个<em>transactionRequest</em>的副本，包含<code>call</code>、<code>estimateGas</code>和<code>populateTransaction</code> (sendTransaction使用的)所需的任何属性。 如果指定了任何未知的key，它会抛出一个错误。</p>
+<p>默认的实现只<strong>验证有效的TransactionRequest属性是否存在</strong>，如果不存在，则将<code>from</code>添加到交易中。</p>
+<p>如果存在<code>from</code>字段，则<strong>必须</strong>验证它与 Signer的地址是否相等。</p>
+<h3 id="1-4-2-populateTransaction"><a href="#1-4-2-populateTransaction" class="headerlink" title="1.4.2 populateTransaction"></a>1.4.2 <strong>populateTransaction</strong></h3><p><em>signer</em>.<strong>populateTransaction</strong>( <em>transactionRequest</em> ) ⇒ <em>Promise&lt; **TransactionRequest** &gt;</em></p>
+<p>这应该返回一个<em>transactionRequest</em>的副本，遵循与<code>checkTransaction</code>相同的过程， 并填写发送交易所需的任何属性。</p>
+<p>返回的结果都是promises，可以使用<strong>resolvePropertiesutility</strong>函数来解析。</p>
+<p>默认实现调用<code>checkTransaction</code>，如果它是一个ENS name就会解析它，并根据Signer上的相关操作添加<code>gasPrice</code>, <code>nonce</code>, <code>gasLimit</code>和<code>chainId</code></p>
+<h1 id="Wallet"><a href="#Wallet" class="headerlink" title="Wallet"></a>Wallet</h1><p>Wallet类继承了Signer，可以使用私钥作为外部拥有帐户(EOA)的标准对交易和消息进行签名</p>
+<p><strong>new <em>ethers</em>.Wallet( <em>privateKey</em> [ , <em>provider</em> ] )</strong></p>
+<p>为<em>privateKey</em>创建一个新的钱包实例，并可选地连接到<em>provider</em>。</p>
+<h2 id="2-1-方法"><a href="#2-1-方法" class="headerlink" title="2.1 方法"></a>2.1 方法</h2><h3 id="2-1-1-createRandom"><a href="#2-1-1-createRandom" class="headerlink" title="2.1.1 createRandom"></a>2.1.1 createRandom</h3><p><em>ethers</em>.<em>Wallet</em>.<strong>createRandom</strong>( [ <em>options</em> &#x3D; {} ] ) ⇒ <em><strong>Wallet</strong></em></p>
+<p>返回一个带有随机私钥的新钱包，由加密安全的熵源生成。如果当前环境没有安全的熵源，则会抛出错误。</p>
+<p>使用此方法创建的钱包将具有助记词。</p>
+<h3 id="2-1-2-fromEncryptedJson"><a href="#2-1-2-fromEncryptedJson" class="headerlink" title="2.1.2 fromEncryptedJson"></a>2.1.2 fromEncryptedJson</h3><p><em>ethers</em>.<em>Wallet</em>.<strong>fromEncryptedJson</strong>( <em>json</em> , <em>password</em> [ , <em>progress</em> ] ) ⇒ <em>Promise&lt; **Wallet** &gt;</em></p>
+<p>从加密的JSON钱包创建一个实例。</p>
+<p>如果提供了<em>进度</em>，它将在解密期间被调用，其值介于0到1之间，表示一个完成进度。</p>
+<h3 id="2-1-3-fromEncryptedJsonSync"><a href="#2-1-3-fromEncryptedJsonSync" class="headerlink" title="2.1.3 fromEncryptedJsonSync"></a>2.1.3 fromEncryptedJsonSync</h3><p><em>ethers</em>.<em>Wallet</em>.<strong>fromEncryptedJsonSync</strong>( <em>json</em> , <em>password</em> ) ⇒ <em><strong>Wallet</strong></em></p>
+<p>从加密的JSON钱包创建一个实例。</p>
+<p>此操作将同步操作，从而锁定用户界面一段时间。 大多数应用程序应该使用异步的<code>fromEncryptedJson</code>。</p>
+<h3 id="2-1-4-fromMnemonic"><a href="#2-1-4-fromMnemonic" class="headerlink" title="2.1.4 fromMnemonic"></a>2.1.4 fromMnemonic</h3><p><em>ethers</em>.<em>Wallet</em>.<strong>fromMnemonic</strong>( <em>mnemonic</em> [ , <em>path</em> , [ <em>wordlist</em> ] ] ) ⇒ <em><strong>Wallet</strong></em></p>
+<p>从助记短语中创建实例如果没有指定path，则使用的默认path路径(<code>m/44&#39;/60&#39;/0&#39;/0/0</code>),如果不指定wordlist，则使用English Wordlist</p>
+<h3 id="2-1-5-encrypt"><a href="#2-1-5-encrypt" class="headerlink" title="2.1.5 encrypt"></a>2.1.5 encrypt</h3><p><em>wallet</em>.<strong>encrypt</strong>( <em>password</em> , [ <em>options</em> &#x3D; {} , [ <em>progress</em> ] ] ) ⇒ <em>Promise&lt; **string** &gt;</em></p>
+<p>加密钱包，使用<em>password</em>返回一个解析为JSON钱包的Promise。</p>
+<p>如果提供了<em>进度</em>，它将在解密期间被调用，其值介于0到1之间，表示一个完成进度。</p>
+<h2 id="2-2-属性"><a href="#2-2-属性" class="headerlink" title="2.2 属性"></a>2.2 属性</h2><p>**<em>wallet</em>.address ⇒ *string&lt; 地址(Address) &gt;*：**此钱包表示的帐户的地址。</p>
+<p><strong><em>wallet</em>.provider ⇒ <em>Provider</em>：</strong>这个钱包所连接的provider，它将用于任何Blockchain Methods的方法，它也可以是null。</p>
+<blockquote>
+<p>一个<strong>钱包</strong>实例是不可变的，因此如果您希望更改Provider，您可以使用connect方法创建一个连接到所需的provider的新实例。</p>
+</blockquote>
+<p>**<em>wallet</em>.publicKey ⇒ *string&lt; DataHexString&lt; 65 &gt; &gt;***：此钱包的未压缩的公钥</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 通过助记词创建一个钱包实例</span></span><br><span class="line">mnemonic = <span class="string">&quot;announce room limb pattern dry unit scale effort smooth jazz weasel alcohol&quot;</span></span><br><span class="line">walletMnemonic = <span class="title class_">Wallet</span>.<span class="title function_">fromMnemonic</span>(mnemonic)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 或者通过私钥创建一个钱包实例</span></span><br><span class="line">walletPrivateKey = <span class="keyword">new</span> <span class="title class_">Wallet</span>(walletMnemonic.<span class="property">privateKey</span>)</span><br><span class="line"></span><br><span class="line">walletMnemonic.<span class="property">address</span> === walletPrivateKey.<span class="property">address</span></span><br><span class="line"><span class="comment">// true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 有着每个Signer API的地址，是一个Promise对象</span></span><br><span class="line"><span class="keyword">await</span> walletMnemonic.<span class="title function_">getAddress</span>()</span><br><span class="line"><span class="comment">// &#x27;0x71CB05EE1b1F506fF321Da3dac38f25c0c9ce6E1&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 一个钱包地址，也可用同步的方式获得</span></span><br><span class="line">walletMnemonic.<span class="property">address</span></span><br><span class="line"><span class="comment">// &#x27;0x71CB05EE1b1F506fF321Da3dac38f25c0c9ce6E1&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 内部加密组件</span></span><br><span class="line">walletMnemonic.<span class="property">privateKey</span></span><br><span class="line"><span class="comment">// &#x27;0x1da6847600b0ee25e9ad9a52abbd786dd2502fa4005dd5af9310b7cc7a3b25db&#x27;</span></span><br><span class="line">walletMnemonic.<span class="property">publicKey</span></span><br><span class="line"><span class="comment">// &#x27;0x04b9e72dfd423bcf95b3801ac93f4392be5ff22143f9980eb78b3a860c4843bfd04829ae61cdba4b3b1978ac5fc64f5cc2f4350e35a108a9c9a92a81200a60cd64&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 钱包助记词</span></span><br><span class="line">walletMnemonic.<span class="property">mnemonic</span></span><br><span class="line"><span class="comment">// &#123;</span></span><br><span class="line"><span class="comment">//   locale: &#x27;en&#x27;,</span></span><br><span class="line"><span class="comment">//   path: &quot;m/44&#x27;/60&#x27;/0&#x27;/0/0&quot;,</span></span><br><span class="line"><span class="comment">//   phrase: &#x27;announce room limb pattern dry unit scale effort smooth jazz weasel alcohol&#x27;</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Note: 通过私钥创建的钱包实例没有助记词，因为从数学上无法推导</span></span><br><span class="line">walletPrivateKey.<span class="property">mnemonic</span></span><br><span class="line"><span class="comment">// null</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 签名消息</span></span><br><span class="line"><span class="keyword">await</span> walletMnemonic.<span class="title function_">signMessage</span>(<span class="string">&quot;Hello World&quot;</span>)</span><br><span class="line"><span class="comment">// &#x27;0x14280e5885a19f60e536de50097e96e3738c7acae4e9e62d67272d794b8127d31c03d9cd59781d4ee31fb4e1b893bd9b020ec67dfa65cfb51e2bdadbb1de26d91c&#x27;</span></span><br><span class="line"></span><br><span class="line">tx = &#123;</span><br><span class="line">  <span class="attr">to</span>: <span class="string">&quot;0x8ba1f109551bD432803012645Ac136ddd64DBA72&quot;</span>,</span><br><span class="line">  <span class="attr">value</span>: utils.<span class="title function_">parseEther</span>(<span class="string">&quot;1.0&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 签名交易</span></span><br><span class="line"><span class="keyword">await</span> walletMnemonic.<span class="title function_">signTransaction</span>(tx)</span><br><span class="line"><span class="comment">// &#x27;0xf865808080948ba1f109551bd432803012645ac136ddd64dba72880de0b6b3a7640000801ca0918e294306d177ab7bd664f5e141436563854ebe0a3e523b9690b4922bbb52b8a01181612cec9c431c4257a79b8c9f0c980a2c49bb5a0e6ac52949163eeb565dfc&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// connect方法返回一个连接到provider的新钱包实例</span></span><br><span class="line">wallet = walletMnemonic.<span class="title function_">connect</span>(provider)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 从网络中查询</span></span><br><span class="line"><span class="keyword">await</span> wallet.<span class="title function_">getBalance</span>();</span><br><span class="line"><span class="comment">// &#123; BigNumber: &quot;6846&quot; &#125;</span></span><br><span class="line"><span class="keyword">await</span> wallet.<span class="title function_">getTransactionCount</span>();</span><br><span class="line"><span class="comment">// 3</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 发送 ether</span></span><br><span class="line"><span class="keyword">await</span> wallet.<span class="title function_">sendTransaction</span>(tx)</span><br><span class="line"><span class="comment">// &#123;</span></span><br><span class="line"><span class="comment">//   accessList: [],</span></span><br><span class="line"><span class="comment">//   chainId: 31337,</span></span><br><span class="line"><span class="comment">//   confirmations: 0,</span></span><br><span class="line"><span class="comment">//   data: &#x27;0x&#x27;,</span></span><br><span class="line"><span class="comment">//   from: &#x27;0x894ed91B666FacCe5a4D2FF8261924b4754A5759&#x27;,</span></span><br><span class="line"><span class="comment">//   gasLimit: &#123; BigNumber: &quot;21001&quot; &#125;,</span></span><br><span class="line"><span class="comment">//   gasPrice: null,</span></span><br><span class="line"><span class="comment">//   hash: &#x27;0x1b4a95e9d23bd96d5429c535148eb3eaed326d89118b118e44cc05c26703224e&#x27;,</span></span><br><span class="line"><span class="comment">//   maxFeePerGas: &#123; BigNumber: &quot;1572346688&quot; &#125;,</span></span><br><span class="line"><span class="comment">//   maxPriorityFeePerGas: &#123; BigNumber: &quot;1500000000&quot; &#125;,</span></span><br><span class="line"><span class="comment">//   nonce: 5,</span></span><br><span class="line"><span class="comment">//   r: &#x27;0x5e32c2741700a9120cfa186bc74e88b3d9488393be796a5124fddf08ffdbfdc6&#x27;,</span></span><br><span class="line"><span class="comment">//   s: &#x27;0x2431f3e3274cd22d6de63ed6e23a5c6839c1fabeb97b6683fb15584b9bf1f29d&#x27;,</span></span><br><span class="line"><span class="comment">//   to: &#x27;0x8ba1f109551bD432803012645Ac136ddd64DBA72&#x27;,</span></span><br><span class="line"><span class="comment">//   type: 2,</span></span><br><span class="line"><span class="comment">//   v: 0,</span></span><br><span class="line"><span class="comment">//   value: &#123; BigNumber: &quot;1000000000000000000&quot; &#125;,</span></span><br><span class="line"><span class="comment">//   wait: [Function]</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="VoidSinger"><a href="#VoidSinger" class="headerlink" title="VoidSinger"></a>VoidSinger</h1><p>一个<strong>VoidSigner</strong>是一个简单的Signer，它不能签名。</p>
+<p>当API需要signer作为参数时，它作为只读的signer是有用的，但它只能携带只读的操作。</p>
+<p>比如，在<code>call</code>函数调用期间会自动传递所提供的地址。</p>
+<p><strong>new <em>ethers</em>.VoidSigner( <em>address</em> [ , <em>provider</em> ] ) ⇒ <em>VoidSigner</em>：**为一个地址创建</strong>VoidSigner**实例。</p>
+<p>**<em>voidSigner</em>.address ⇒ *string&lt; 地址(Address) &gt;<em><strong>：</strong>VoidSigner</em>*的地址。</p>
+<h1 id="ExternallyOwnedAccount"><a href="#ExternallyOwnedAccount" class="headerlink" title="ExternallyOwnedAccount"></a><strong>ExternallyOwnedAccount</strong></h1><p>这个接口包含外部拥有帐户（EOA）所需的最小属性集，可以执行某些操作，比如将其编码为JSON钱包。</p>
+<p><em><strong>eoa*.address ⇒ *string&lt; 地址(Address) &gt;：</strong></em>地址(Address)EOA的地址</p>
+<p><em><strong>eoa*.privateKey ⇒ *string&lt; DataHexString&lt; 32 &gt; &gt;：</strong></em>EOA的私钥</p>
+<p><strong><em>eoa</em>.mnemonic ⇒ <em>助记词</em>：</strong>帐户HD的助记词，如果有的话可以打印出来。EOA账户源不编码助记符，如HD extended keys。</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/08/14/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/5-Singers/" title="5-Singers">https://kongpengyq.com/2022/08/14/区块链/ether@5.4/5-Singers/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/ether-5-4-js/" rel="tag"># ether@5.4.js</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/08/09/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/4-Types/" rel="prev" title="4-Types">
+      <i class="fa fa-chevron-left"></i> 4-Types
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/08/20/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/6-%E5%90%88%E7%BA%A6(contract)/" rel="next" title="6-合约(contract)">
+      6-合约(contract) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Singer"><span class="nav-text">Singer</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-%E5%B1%9E%E6%80%A7"><span class="nav-text">1.1 属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-Blockchain-%E6%96%B9%E6%B3%95"><span class="nav-text">1.2 Blockchain 方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-1-getBalance"><span class="nav-text">1.2.1 getBalance</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-2-getChainId"><span class="nav-text">1.2.2  getChainId</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-3-getGasPrice"><span class="nav-text">1.2.3 getGasPrice</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-4-getTransactionCount"><span class="nav-text">1.2.4 getTransactionCount</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-5-call"><span class="nav-text">1.2.5 call</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-6-estimateGas"><span class="nav-text">1.2.6 estimateGas</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-7-resolveName"><span class="nav-text">1.2.7 resolveName</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-Signing%E6%96%B9%E6%B3%95"><span class="nav-text">1.3 Signing方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-1-signMessage"><span class="nav-text">1.3.1 signMessage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-2-signTransaction"><span class="nav-text">1.3.2 signTransaction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-3-sendTransaction"><span class="nav-text">1.3.3 sendTransaction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-4-signTypedData"><span class="nav-text">1.3.4 _signTypedData</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4-Sub-Classes"><span class="nav-text">1.4 Sub-Classes</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-1-checkTransaction"><span class="nav-text">1.4.1 checkTransaction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-2-populateTransaction"><span class="nav-text">1.4.2 populateTransaction</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Wallet"><span class="nav-text">Wallet</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E6%96%B9%E6%B3%95"><span class="nav-text">2.1 方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-1-createRandom"><span class="nav-text">2.1.1 createRandom</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-2-fromEncryptedJson"><span class="nav-text">2.1.2 fromEncryptedJson</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-3-fromEncryptedJsonSync"><span class="nav-text">2.1.3 fromEncryptedJsonSync</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-4-fromMnemonic"><span class="nav-text">2.1.4 fromMnemonic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-5-encrypt"><span class="nav-text">2.1.5 encrypt</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-%E5%B1%9E%E6%80%A7"><span class="nav-text">2.2 属性</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#VoidSinger"><span class="nav-text">VoidSinger</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ExternallyOwnedAccount"><span class="nav-text">ExternallyOwnedAccount</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

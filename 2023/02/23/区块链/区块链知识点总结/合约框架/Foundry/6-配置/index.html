@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="使用 foundry.toml 配置概述配置可以由配置文件命名空间。默认配置文件名为 default，所有其他配置文件都继承自该配置文件。  您可以自由自定义 default 配置文件，并根据需要添加任意数量的新配置文件。 让我们看一下包含两个配置文件的配置文件：始终启用优化器的默认配置文件，以及始终显示跟踪的 CI 配置文件： 123456[profile.default]optimizer &#x3D;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="6-配置">
+<meta property="og:url" content="https://kongpengyq.com/2023/02/23/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/6-%E9%85%8D%E7%BD%AE/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="使用 foundry.toml 配置概述配置可以由配置文件命名空间。默认配置文件名为 default，所有其他配置文件都继承自该配置文件。  您可以自由自定义 default 配置文件，并根据需要添加任意数量的新配置文件。 让我们看一下包含两个配置文件的配置文件：始终启用优化器的默认配置文件，以及始终显示跟踪的 CI 配置文件： 123456[profile.default]optimizer &#x3D;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-02-22T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.802Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链知识点总结">
+<meta property="article:tag" content="合约框架">
+<meta property="article:tag" content="Foundry">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/02/23/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/6-%E9%85%8D%E7%BD%AE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>6-配置 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/02/23/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/6-%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          6-配置
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-02-23 00:00:00" itemprop="dateCreated datePublished" datetime="2023-02-23T00:00:00+08:00">2023-02-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Foundry/" itemprop="url" rel="index">
+                    <span itemprop="name">Foundry</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>13k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>12 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="使用-foundry-toml-配置"><a href="#使用-foundry-toml-配置" class="headerlink" title="使用 foundry.toml 配置"></a>使用 foundry.toml 配置</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>配置可以由配置文件命名空间。默认配置文件名为 default，所有其他配置文件都继承自该配置文件。</p>
+<p> 您可以自由自定义 default 配置文件，并根据需要添加任意数量的新配置文件。</p>
+<p>让我们看一下包含两个配置文件的配置文件：始终启用优化器的默认配置文件，以及始终显示跟踪的 CI 配置文件：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[profile.default]</span></span><br><span class="line"><span class="attr">optimizer</span> = <span class="literal">true</span></span><br><span class="line"><span class="attr">optimizer_runs</span> = <span class="number">20_000</span></span><br><span class="line"></span><br><span class="line"><span class="section">[profile.ci]</span></span><br><span class="line"><span class="attr">verbosity</span> = <span class="number">4</span></span><br></pre></td></tr></table></figure>
+
+<p>运行 forge 时，您可以使用 FOUNDRY_PROFILE 环境变量指定要使用的配置文件。</p>
+<p>除了配置文件部分，配置文件还可以包含独立部分（[fmt]、[fuzz]、[invariant] 等）。 </p>
+<p>默认情况下，每个独立部分都属于 default 配置文件。 即 [fmt] 等同于 [profile.default.fmt]。</p>
+<p>要为 default 以外的不同配置文件配置独立部分，请使用语法 [profile.<profile name>.<standalone>]。 即 [profile.ci.fuzz]。</p>
+<h2 id="Project：通常与项目相关的配置"><a href="#Project：通常与项目相关的配置" class="headerlink" title="Project：通常与项目相关的配置"></a>Project：通常与项目相关的配置</h2><ol>
+<li>src：类型: string，默认值: src，环境变量: FOUNDRY_SRC 或 DAPP_SRC，相对于项目根目录的合约源代码的路径。</li>
+<li>test：类型: string，默认值: test，环境变量: FOUNDRY_TEST 或 DAPP_TEST，相对于项目根目录的合约测试源代码的路径。</li>
+<li>out：类型: string，默认值: out，环境变量: FOUNDRY_OUT 或 DAPP_OUT放置合约输出的路径，相对于项目根目录。</li>
+<li>libs：类型: 字符串数组 (路径)，默认值: lib，环境变量: FOUNDRY_LIBS 或 DAPP_LIBS一个包含库的路径数组，相对于项目根目录。</li>
+<li>cache：类型: boolean，默认值: true，环境变量: FOUNDRY_CACHE 或 DAPP_CACHE是否启用缓存，如果启用，编译源代码、测试和依赖关系的结果将缓存在 cache 中。</li>
+<li>cache_path：类型: string，默认值: cache，环境变量: FOUNDRY_CACHE_PATH 或 DAPP_CACHE_PATH缓存的路径，相对于项目根目录。</li>
+<li>broadcast：类型: string，默认值: broadcast，广播交易日志的路径，相对于项目根目录。</li>
+<li>force：类型: boolean，默认值: false，环境变量: FOUNDRY_FORCE 或 DAPP_FORCE是否执行干净构建，丢弃缓存。</li>
+</ol>
+<h2 id="Solidity编译器：与-Solidity-编译器的行为有关的配置"><a href="#Solidity编译器：与-Solidity-编译器的行为有关的配置" class="headerlink" title="Solidity编译器：与 Solidity 编译器的行为有关的配置"></a>Solidity编译器：与 Solidity 编译器的行为有关的配置</h2><ol>
+<li><p>remappings：类型: 字符串数组 (remappings)，默认值: none，环境变量: FOUNDRY_REMAPPINGS 或 DAPP_REMAPPINGS</p>
+<p>一个格式如下的重映射数组: <name>&#x3D;<target>，一个重映射 让 Solidity 从不同的目录导入。例如，下面的重映射：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@openzeppelin/=node_modules/@openzeppelin/openzeppelin-contracts/</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">import &quot;@openzeppelin/contracts/utils/Context.sol&quot;;</span><br><span class="line">// 相当于</span><br><span class="line">import &quot;node_modules/@openzeppelin/openzeppelin-contracts/contracts/utils/Context.sol&quot;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>auto_detect_remappings：类型: boolean，默认值: true，环境变量: FOUNDRY_AUTO_DETECT_REMAPPINGS 或 DAPP_AUTO_DETECT_REMAPPINGS</p>
+<p>如果启用，Foundry 将自动尝试通过扫描 libs 文件夹来自动检测重映射，如果设置为 false，则只使用 foundry.toml 和 remappings.txt 中的重映射。</p>
+</li>
+<li><p>allow_paths：类型: array of strings (paths)，默认值: none，环境变量: FOUNDRY_ALLOW_PATHS 或 DAPP_ALLOW_PATHS</p>
+<p>告诉 solc 允许从其他目录读取源文件。这主要适用于由 pnmp 或类似文件管理的复杂工作区。</p>
+</li>
+<li><p>include_paths：类型: array of strings (paths)，默认值: none，环境变量: FOUNDRY_INCLUDE_PATHS 或 DAPP_INCLUDE_PATHS</p>
+<p>为默认导入回调提供一个额外的源代码目录。如果你想导入与你的主源码树相比位置不固定的合约，例如，使用软件包管理器安装的第三方库，请使用此选项。可以多次使用。只有当基本路径有一个非空值时才能使用。</p>
+</li>
+<li><p>libraries：类型: array of strings (libraries)，默认值: none，环境变量: FOUNDRY_LIBRARIES 或 DAPP_LIBRARIES</p>
+<p>一个要链接的库的数组，格式如下。<file>:<lib>:<address>，例如：src&#x2F;MyLibrary.sol:MyLibrary:0xfD88CeE74f7D78697775aBDAE53f9Da1559728E4。</p>
+</li>
+<li><p>solc_version：类型: string (semver)，默认值: none，环境变量: FOUNDRY_SOLC_VERSION 或 DAPP_SOLC_VERSION</p>
+<p>如果指定，则覆盖自动检测系统（更多内容见下文）并为项目使用单一的 Solidity 编译器版本，只支持严格的版本（即 0.8.11 有效，但 ^0.8.0 无效）。</p>
+</li>
+<li><p>auto_detect_solc：类型: boolean，默认值: true，环境变量: FOUNDRY_AUTO_DETECT_SOLC or DAPP_AUTO_DETECT_SOLC</p>
+<p>如果启用，Foundry 将自动尝试解决适当的 Solidity 编译器版本来编译您的项目，如果设置了 solc_version，这个键就会被忽略</p>
+</li>
+<li><p>offline：类型: boolean，默认值: false，环境变量: FOUNDRY_OFFLINE or DAPP_OFFLINE</p>
+<p>如果启用，Foundry 将不会尝试下载任何丢失的 solc 版本，如果 offline 和 auto-detect-solc 都被设置为 true，所需的 solc 版本将被自动检测，但任何缺失的版本将不会被安装。</p>
+</li>
+<li><p>ignored_error_codes：类型: array of integers，默认值: none for source, SPDX license identifiers and contract size for tests，环境变量: FOUNDRY_IGNORED_ERROR_CODES or DAPP_IGNORED_ERROR_CODES</p>
+<p>Solidity 编译器错误代码的数组，以便在构建期间忽略，例如警告。</p>
+</li>
+<li><p>evm_version：类型: string，默认值: london，环境变量: FOUNDRY_EVM_VERSION or DAPP_EVM_VERSION</p>
+<p>测试中使用的 EVM 版本。该值必须是 EVM 的硬分叉名称，如 london，byzantium 等等。</p>
+</li>
+<li><p>revert_strings：类型: string，默认值: default，环境变量: FOUNDRY_REVERT_STRINGS or DAPP_REVERT_STRINGS</p>
+<p>有效值为：</p>
+<ul>
+<li><p>default 不注入编译器生成的 revert 字符串，而是保留用户提供的 revert 字符串。</p>
+</li>
+<li><p>strip 删除所有的 revert 字符串（如果可能的话，即如果使用了字面量），以保持副作用。</p>
+</li>
+<li><p>debug 为编译器生成的内部 revert 注入字符串，目前为ABI编码器 V1 和 V2 实现。</p>
+</li>
+<li><p>verboseDebug 甚至为用户提供的 revert 字符串添加进一步的信息（尚未实现）。</p>
+</li>
+</ul>
+</li>
+<li><p>extra_output_files：类型: array of strings，默认值: none，环境变量: N&#x2F;A</p>
+<p>来自 Solidity 编译器的额外输出，应该被写入 artifacts 目录中的文件。</p>
+<p>有效值为：</p>
+<ul>
+<li><p>metadata: 在 artifacts 目录中写入 metadata.json 文件</p>
+</li>
+<li><p>ir: 在 artifacts 目录中写入 .ir 文件</p>
+</li>
+<li><p>irOptimized: 在 artifacts 目录中写入 .iropt 文件</p>
+</li>
+<li><p>ewasm: 在 artifacts 目录中写入 .ewasm 文件</p>
+</li>
+<li><p>evm.assembly: 在 artifacts 目录中写入 .asm 文件</p>
+</li>
+</ul>
+</li>
+<li><p>extra_output：类型: array of strings，默认值: see below，环境变量: N&#x2F;A</p>
+<p>在合约 artifact 目录中的额外输出，以下数值总是被设置，因为它们是Forge所需要的：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">extra_output</span> = [</span><br><span class="line">  <span class="string">&quot;abi&quot;</span>,</span><br><span class="line">  <span class="string">&quot;evm.bytecode&quot;</span>,</span><br><span class="line">  <span class="string">&quot;evm.deployedBytecode&quot;</span>,</span><br><span class="line">  <span class="string">&quot;evm.methodIdentifiers&quot;</span>,</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>bytecode_hash：类型: string，默认值: ipfs，环境变量: FOUNDRY_BYTECODE_HASH or DAPP_BYTECODE_HASH</p>
+<p>确定附加到字节码上的元数据哈希值的哈希方法。有效值为：ipfs (default)、bzzr1、none</p>
+</li>
+<li><p>sparse_mode：类型: boolean，默认值: false，环境变量: FOUNDRY_SPARSE_MODE or DAPP_SPARSE_MODE</p>
+<p>启用 sparse mode 进行构建。</p>
+</li>
+</ol>
+<h3 id="Optimizer：与-Solidity-优化器有关的配置"><a href="#Optimizer：与-Solidity-优化器有关的配置" class="headerlink" title="Optimizer：与 Solidity 优化器有关的配置"></a>Optimizer：与 Solidity 优化器有关的配置</h3><ol>
+<li><p>optimizer：类型: boolean，默认值: true，环境变量: FOUNDRY_OPTIMIZER 或 DAPP_OPTIMIZER</p>
+<p>是否要启用 Solidity 优化器。</p>
+</li>
+<li><p>optimizer_runs：类型: integer，默认值: 200，环境变量: FOUNDRY_OPTIMIZER_RUNS 或 DAPP_OPTIMIZER_RUNS</p>
+<p>要执行的优化器 runs 的数量。</p>
+</li>
+<li><p>via_ir：类型: boolean，默认值: false，环境变量: FOUNDRY_VIA_IR 或 DAPP_VIA_IR</p>
+<p>如果设置为 true，通过新的 IR 优化器改变编译管道.</p>
+<p>[optimizer_details]:优化器细节部分用于调整 Solidity 优化器的行为方式</p>
+<p>在此部分有几个可配置的值（每个都是布尔值）：</p>
+<p>peephole、inliner、jumpdest_remover、order_literals、deduplicate、cse、constant_optimizer、yul</p>
+<p>[optimizer_details.yul_details]:优化器细节部分的 Yul 细节小节是用来调整新的 IR 优化器的行为方式的</p>
+<p>有两个配置值：</p>
+<p>stack_allocation: 试图通过提前释放堆栈槽来改善堆栈槽的分配。</p>
+<p>optimizer_steps: 选择要应用的优化器步骤。</p>
+<blockquote>
+<p>如果你在使用 via_ir 时遇到编译器错误，请明确启用传统的 optimizer，并将optimizer_steps 设为空字符串。</p>
+</blockquote>
+</li>
+</ol>
+<h3 id="Model-checker"><a href="#Model-checker" class="headerlink" title="Model checker"></a>Model checker</h3><p>Solidity 模型检查器是一个内置的选择模块，可用于 OSX 和 Linux 的 Solidity 编译器中</p>
+<blockquote>
+<p>模型检查器需要在 Linux 上的 z3 版本为 4.8.8 或 4.8.14。</p>
+</blockquote>
+<p>模型检查器的设置是在配置的 <a href="%E5%9C%A8%E6%A8%A1%E5%9E%8B%E6%A3%80%E6%9F%A5%E5%99%A8%E9%83%A8%E5%88%86%E6%9C%89%E4%BB%A5%E4%B8%8B%E9%94%AE%E3%80%82">model_checker</a> 部分配置的</p>
+<p>当调用 forge build 时，模型检查器将运行，任何发现将显示为警告。</p>
+<p>以下是使用模型检查器时的推荐设置：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[profile.default.model_checker]</span></span><br><span class="line"><span class="attr">contracts</span> = &#123;<span class="string">&#x27;/path/to/project/src/Contract.sol&#x27;</span> = [<span class="string">&#x27;Contract&#x27;</span>]&#125;</span><br><span class="line"><span class="attr">engine</span> = <span class="string">&#x27;chc&#x27;</span></span><br><span class="line"><span class="attr">timeout</span> = <span class="number">10000</span></span><br><span class="line"><span class="attr">targets</span> = [<span class="string">&#x27;assert&#x27;</span>]</span><br></pre></td></tr></table></figure>
+
+<p>设置哪个合约需要被验证是非常重要的，否则所有可用的合约都会被验证，这可能需要很长的时间。</p>
+<p>推荐的引擎是 chc，但 bmc 和 all (同时运行) 也可以接受。</p>
+<p>设置适当的超时（以毫秒为单位）也很重要，因为给底层编码器的默认时间可能是不够的。</p>
+<p>如果没有给出验证目标，将只检查断言。</p>
+<ol>
+<li><p>model_checker.contracts：类型: table，默认值: all，环境变量: N&#x2F;A</p>
+<p>指定模型检查器分析哪些合约。table 的键是源文件的路径，而值是要检查的合约名称的数组。</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[profile.default.model_checker]</span></span><br><span class="line"><span class="attr">contracts</span> = &#123; <span class="string">&quot;src/MyContracts.sol&quot;</span> = [<span class="string">&quot;ContractA&quot;</span>, <span class="string">&quot;ContractB&quot;</span>] &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>model_checker.engine：类型: string (see below)，默认值: all，环境变量: N&#x2F;A</p>
+<p>指定要运行的模型检查器引擎。有效值是：</p>
+<ul>
+<li><p>chc: 受约束 horn clauses 引擎</p>
+</li>
+<li><p>bmc: 有界限的模型检查器引擎</p>
+</li>
+<li><p>all: 同时运行两种引擎</p>
+</li>
+</ul>
+</li>
+<li><p>model_checker.timeout：类型: number (milliseconds)，默认值: N&#x2F;A，环境变量: N&#x2F;A</p>
+<p>设置底层模型检查器引擎的超时（以毫秒为单位）。</p>
+</li>
+<li><p>model_checker.targets：类型: array of strings，默认值: assert，环境变量: N&#x2F;A</p>
+<p>设置模型检查器的目标。有效值是：</p>
+<ul>
+<li><p>assert: 断言</p>
+</li>
+<li><p>underflow: 算术下溢</p>
+</li>
+<li><p>overflow: 算术溢出</p>
+</li>
+<li><p>divByZero: 除以零</p>
+</li>
+<li><p>constantCondition: 琐碎的条件和无法到达的代码</p>
+</li>
+<li><p>popEmptyArray: 弹出一个空数组</p>
+</li>
+<li><p>outOfBounds: 越界的数组&#x2F;固定字节索引访问</p>
+</li>
+<li><p>default: 以上所有（注意：不是Forge的默认值）</p>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="Test测试与-forge-test-的行为有关的配置"><a href="#Test测试与-forge-test-的行为有关的配置" class="headerlink" title="Test测试与 forge test 的行为有关的配置"></a>Test测试与 forge test 的行为有关的配置</h2><h3 id="General"><a href="#General" class="headerlink" title="General"></a>General</h3><h4 id="verbosity"><a href="#verbosity" class="headerlink" title="verbosity"></a>verbosity</h4><ul>
+<li>类型: integer</li>
+<li>默认值: 0</li>
+<li>环境变量: FOUNDRY_VERBOSITY 或 DAPP_VERBOSITY</li>
+</ul>
+<p><strong>在测试中使用的详细日志级别。</strong></p>
+<ul>
+<li>Level 2 (-vv): 显示测试中的触发的事件(日志)。</li>
+<li>Level 3 (-vvv): 显示失败测试的堆栈跟踪。</li>
+<li>Level 4 (-vvvv): 显示所有测试的堆栈跟踪，并显示失败测试的设置跟踪。</li>
+<li>Level 5 (-vvvvv): 堆栈跟踪和设置跟踪总是被显示。</li>
+</ul>
+<h4 id="ffi"><a href="#ffi" class="headerlink" title="ffi"></a>ffi</h4><ul>
+<li>类型: boolean</li>
+<li>默认值: false</li>
+<li>环境变量: FOUNDRY_FFI 或 DAPP_FFI</li>
+</ul>
+<p><strong>是否启用 ffi 作弊代码。</strong></p>
+<p>警告: 启用这个作弊代码对你的项目有安全影响，因为它允许测试代码在你的计算机上执行任意程序。</p>
+<h4 id="sender"><a href="#sender" class="headerlink" title="sender"></a>sender</h4><ul>
+<li>类型: string (address)</li>
+<li>默认值: 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38</li>
+<li>环境变量: FOUNDRY_SENDER 或 DAPP_SENDER</li>
+</ul>
+<p><strong>测试中 msg.sender 的值</strong>。</p>
+<h4 id="tx-origin"><a href="#tx-origin" class="headerlink" title="tx_origin"></a>tx_origin</h4><ul>
+<li>类型: string (address)</li>
+<li>默认值: 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38</li>
+<li>环境变量: FOUNDRY_TX_ORIGIN 或 DAPP_TX_ORIGIN</li>
+</ul>
+<p><strong>测试中 tx.origin 的值</strong>。</p>
+<h4 id="initial-balance"><a href="#initial-balance" class="headerlink" title="initial_balance"></a>initial_balance</h4><ul>
+<li>类型: string (hexadecimal)</li>
+<li>默认值: 0xffffffffffffffffffffffff</li>
+<li>环境变量: FOUNDRY_INITIAL_BALANCE 或 DAPP_INITIAL_BALANCE</li>
+</ul>
+<p><strong>测试合约的初始余额为Wei</strong>，以16进制书写。</p>
+<h4 id="block-number"><a href="#block-number" class="headerlink" title="block_number"></a>block_number</h4><ul>
+<li>类型: integer</li>
+<li>默认值: 1</li>
+<li>环境变量: FOUNDRY_BLOCK_NUMBER 或 DAPP_BLOCK_NUMBER</li>
+</ul>
+<p><strong>测试中 block.number 的值</strong>。</p>
+<h4 id="chain-id"><a href="#chain-id" class="headerlink" title="chain_id"></a>chain_id</h4><ul>
+<li>类型: integer</li>
+<li>默认值: 31337</li>
+<li>环境变量: FOUNDRY_CHAIN_ID 或 DAPP_CHAIN_ID</li>
+</ul>
+<p><strong>测试中 chainid 操作码的值</strong>。</p>
+<h4 id="gas-limit"><a href="#gas-limit" class="headerlink" title="gas_limit"></a>gas_limit</h4><ul>
+<li>类型: integer or string</li>
+<li>默认值: 9223372036854775807</li>
+<li>环境变量: FOUNDRY_GAS_LIMIT 或 DAPP_GAS_LIMIT</li>
+</ul>
+<p><strong>每个测试用例的 Gas 限制</strong>。</p>
+<blockquote>
+<p>由于 Forge 的一个依赖关系的限制，如果不把数值修改为字符串，就无法修改让 Gas 限制 提高到超过默认值。</p>
+<p>为了使用更高的Gas限制，使用一个字符串：</p>
+</blockquote>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">gas_limit</span> = <span class="string">&quot;18446744073709551615&quot;</span> <span class="comment"># u64::MAX</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="gas-price"><a href="#gas-price" class="headerlink" title="gas_price"></a>gas_price</h4><ul>
+<li>类型: integer</li>
+<li>默认值: 0</li>
+<li>环境变量: FOUNDRY_GAS_PRICE 或 DAPP_GAS_PRICE</li>
+</ul>
+<p><strong>测试中的 Gas 价格</strong>（单位：Wei）。</p>
+<h4 id="block-base-fee-per-gas"><a href="#block-base-fee-per-gas" class="headerlink" title="block_base_fee_per_gas"></a>block_base_fee_per_gas</h4><ul>
+<li>类型: integer</li>
+<li>默认值: 0</li>
+<li>环境变量: FOUNDRY_BLOCK_BASE_FEE_PER_GAS 或 DAPP_BLOCK_BASE_FEE_PER_GAS</li>
+</ul>
+<p><strong>测试中的每 Gas 基础费用</strong>（单位：Wei）。</p>
+<h4 id="block-coinbase"><a href="#block-coinbase" class="headerlink" title="block_coinbase"></a>block_coinbase</h4><ul>
+<li>类型: string (address)</li>
+<li>默认值: 0x0000000000000000000000000000000000000000</li>
+<li>环境变量: FOUNDRY_BLOCK_COINBASE 或 DAPP_BLOCK_COINBASE</li>
+</ul>
+<p><strong>测试中 block.coinbase 的值</strong>。</p>
+<h4 id="block-timestamp"><a href="#block-timestamp" class="headerlink" title="block_timestamp"></a>block_timestamp</h4><ul>
+<li>类型: integer</li>
+<li>默认值: 1</li>
+<li>环境变量: FOUNDRY_BLOCK_TIMESTAMP 或 DAPP_BLOCK_TIMESTAMP</li>
+</ul>
+<p><strong>测试中 block.timestamp 的值</strong>。</p>
+<h4 id="block-difficulty"><a href="#block-difficulty" class="headerlink" title="block_difficulty"></a>block_difficulty</h4><ul>
+<li>类型: integer</li>
+<li>默认值: 0</li>
+<li>环境变量: FOUNDRY_BLOCK_DIFFICULTY 或 DAPP_BLOCK_DIFFICULTY</li>
+</ul>
+<p><strong>测试中 block.difficulty 的值</strong>。</p>
+<h4 id="gas-reports"><a href="#gas-reports" class="headerlink" title="gas_reports"></a>gas_reports</h4><ul>
+<li>类型: array of strings (contract names)</li>
+<li>默认值: [“*”]</li>
+<li>环境变量: FOUNDRY_GAS_REPORTS 或 DAPP_GAS_REPORTS</li>
+</ul>
+<p><strong>打印合约 Gas 报告</strong>。</p>
+<h4 id="no-storage-caching"><a href="#no-storage-caching" class="headerlink" title="no_storage_caching"></a>no_storage_caching</h4><ul>
+<li>类型: boolean</li>
+<li>默认值: false</li>
+<li>环境变量: FOUNDRY_NO_STORAGE_CACHING 或 DAPP_NO_STORAGE_CACHING</li>
+</ul>
+<p><strong>如果设置为 true，那么测试中的 RPC 端点的区块数据将不会被缓存</strong>。否则，数据将被缓存到 $HOME&#x2F;.foundry&#x2F;cache&#x2F;<chain id>&#x2F;<block number>。</p>
+<h5 id="rpc-storage-caching-：区块定义哪些-RPC-端点需要被缓存。"><a href="#rpc-storage-caching-：区块定义哪些-RPC-端点需要被缓存。" class="headerlink" title="[rpc_storage_caching]：区块定义哪些 RPC 端点需要被缓存。"></a>[rpc_storage_caching]：区块定义哪些 RPC 端点需要被缓存。</h5><h6 id="rpc-storage-caching-chains"><a href="#rpc-storage-caching-chains" class="headerlink" title="rpc_storage_caching.chains"></a>rpc_storage_caching.chains</h6><ul>
+<li>类型: string or array of strings (chain names)</li>
+<li>默认值: all</li>
+<li>环境变量: N&#x2F;A</li>
+</ul>
+<p><strong>决定哪些链被缓存。默认情况下，所有链都被缓存。</strong></p>
+<p>有效值为：</p>
+<ul>
+<li>“all”</li>
+<li>链名称列表，例如 [“optimism”, “mainnet”]</li>
+</ul>
+<h6 id="rpc-storage-caching-endpoints"><a href="#rpc-storage-caching-endpoints" class="headerlink" title="rpc_storage_caching.endpoints"></a>rpc_storage_caching.endpoints</h6><ul>
+<li>类型: string 或匹配 URL 的正则数组</li>
+<li>默认值: remote</li>
+<li>环境变量: N&#x2F;A</li>
+</ul>
+<p><strong>决定哪些RPC端点被缓存。默认情况下，只有远程端点被缓存。</strong></p>
+<p>有效值为：</p>
+<ul>
+<li>all</li>
+<li>remote (default)</li>
+<li>一个正则匹配的数组，例如 [“localhost”]</li>
+</ul>
+<h4 id="eth-rpc-url"><a href="#eth-rpc-url" class="headerlink" title="eth_rpc_url"></a>eth_rpc_url</h4><ul>
+<li>类型: string</li>
+<li>默认值: none</li>
+<li>环境变量: FOUNDRY_ETH_RPC_URL 或 DAPP_ETH_RPC_URL</li>
+</ul>
+<p><strong>应该用于任何 rpc 调用的 rpc 服务器的 URL</strong>。</p>
+<h4 id="etherscan-api-key"><a href="#etherscan-api-key" class="headerlink" title="etherscan_api_key"></a>etherscan_api_key</h4><ul>
+<li>类型: string</li>
+<li>默认值: none</li>
+<li>环境变量: FOUNDRY_ETHERSCAN_API_KEY 或 DAPP_ETHERSCAN_API_KEY</li>
+</ul>
+<p><strong>用于 RPC 调用的 etherscan API 密钥。</strong></p>
+<h4 id="test-pattern"><a href="#test-pattern" class="headerlink" title="test_pattern"></a>test_pattern</h4><ul>
+<li>类型: regex</li>
+<li>默认值: none</li>
+<li>环境变量: FOUNDRY_TEST_PATTERN 或 DAPP_TEST_PATTERN</li>
+</ul>
+<p><strong>只运行与正则表达式匹配的测试方法</strong>。 相当于 forge test –match-test <TEST_PATTERN></p>
+<h4 id="test-pattern-inverse"><a href="#test-pattern-inverse" class="headerlink" title="test_pattern_inverse"></a>test_pattern_inverse</h4><ul>
+<li>类型: regex</li>
+<li>默认值: none</li>
+<li>环境变量: FOUNDRY_TEST_PATTERN_INVERSE 或 DAPP_TEST_PATTERN_INVERSE</li>
+</ul>
+<p><strong>只运行与正则表达式不匹配的测试方法</strong>。 相当于 forge test –no-match-test <TEST_PATTERN_INVERSE></p>
+<h4 id="contract-pattern"><a href="#contract-pattern" class="headerlink" title="contract_pattern"></a>contract_pattern</h4><ul>
+<li>类型: regex</li>
+<li>默认值: none</li>
+<li>环境变量: FOUNDRY_CONTRACT_PATTERN 或 DAPP_CONTRACT_PATTERN</li>
+</ul>
+<p><strong>只在与正则表达式匹配的合约里运行测试方法</strong>。 相当于 forge test –match-contract <CONTRACT_PATTERN></p>
+<h4 id="contract-pattern-inverse"><a href="#contract-pattern-inverse" class="headerlink" title="contract_pattern_inverse"></a>contract_pattern_inverse</h4><ul>
+<li>类型: regex</li>
+<li>默认值: none</li>
+<li>环境变量: FOUNDRY_CONTRACT_PATTERN_INVERSE 或 DAPP_CONTRACT_PATTERN_INVERSE</li>
+</ul>
+<p><strong>只在与正则表达式不匹配的合约里运行测试方法。</strong> 相当于 forge test –no-match-contract <CONTRACT_PATTERN_INVERSE></p>
+<h4 id="path-pattern"><a href="#path-pattern" class="headerlink" title="path_pattern"></a>path_pattern</h4><ul>
+<li>类型: regex</li>
+<li>默认值: none</li>
+<li>环境变量: FOUNDRY_PATH_PATTERN 或 DAPP_PATH_PATTERN</li>
+</ul>
+<p><strong>只对匹配路径的文件运行测试方法。</strong></p>
+<h4 id="path-pattern-inverse"><a href="#path-pattern-inverse" class="headerlink" title="path_pattern_inverse"></a>path_pattern_inverse</h4><ul>
+<li>类型: regex</li>
+<li>默认值: none</li>
+<li>环境变量: FOUNDRY_PATH_PATTERN_INVERSE 或 DAPP_PATH_PATTERN_INVERSE</li>
+</ul>
+<p><strong>只在与路径不匹配的文件运行测试方法</strong>。</p>
+<h4 id="block-gas-limit"><a href="#block-gas-limit" class="headerlink" title="block_gas_limit"></a>block_gas_limit</h4><ul>
+<li>类型: integer</li>
+<li>默认值: none</li>
+<li>环境变量: FOUNDRY_BLOCK_GAS_LIMIT 或 DAPP_BLOCK_GAS_LIMIT</li>
+</ul>
+<p>EVM 执行期间的 block.gaslimit 值。</p>
+<h4 id="memory-limit"><a href="#memory-limit" class="headerlink" title="memory_limit"></a>memory_limit</h4><ul>
+<li>类型: integer</li>
+<li>默认值: 33554432</li>
+<li>环境变量: FOUNDRY_MEMORY_LIMIT 或 DAPP_MEMORY_LIMIT</li>
+</ul>
+<p><strong>EVM 的内存限制</strong>（以字节为单位）。</p>
+<h4 id="names"><a href="#names" class="headerlink" title="names"></a>names</h4><ul>
+<li>类型: boolean</li>
+<li>默认值: false</li>
+<li>环境变量: FOUNDRY_NAMES 或 DAPP_NAMES</li>
+</ul>
+<p><strong>打印编译的合约名称</strong>。</p>
+<h4 id="sizes"><a href="#sizes" class="headerlink" title="sizes"></a>sizes</h4><ul>
+<li>类型: boolean</li>
+<li>默认值: false</li>
+<li>环境变量: FOUNDRY_SIZES 或 DAPP_SIZES</li>
+</ul>
+<p><strong>打印编译的合约大小</strong>。</p>
+<h4 id="rpc-endpoints"><a href="#rpc-endpoints" class="headerlink" title="rpc_endpoints"></a>rpc_endpoints</h4><ul>
+<li>类型: table of RPC endpoints</li>
+<li>默认值: none</li>
+<li>环境变量: none</li>
+</ul>
+<p>此部分位于配置文件之外，并<strong>定义了一个 RPC 端点表</strong>，其中键指定 RPC 端点的名称，值是 RPC 端点本身。</p>
+<p>该值可以是有效的 RPC 端点或对环境变量的引用（用 ${} 包裹）。</p>
+<p>这些 RPC 端点可用于测试和 Solidity 脚本（参见 vm.rpc）。</p>
+<p>以下示例定义了一个名为 optimism 的端点和一个名为 mainnet 的端点，它引用了一个环境变量RPC_MAINNET:</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[rpc_endpoints]</span></span><br><span class="line"><span class="attr">optimism</span> = <span class="string">&quot;https://optimism.alchemyapi.io/v2/...&quot;</span></span><br><span class="line"><span class="attr">mainnet</span> = <span class="string">&quot;$&#123;RPC_MAINNET&#125;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Fuzz"><a href="#Fuzz" class="headerlink" title="Fuzz"></a>Fuzz</h3><h4 id="runs"><a href="#runs" class="headerlink" title="runs"></a>runs</h4><ul>
+<li>类型: integer</li>
+<li>默认值: 256</li>
+<li>环境变量: FOUNDRY_FUZZ_RUNS 或 DAPP_FUZZ_RUNS</li>
+</ul>
+<p><strong>每个模糊测试用例要执行的模糊运行量</strong>。更高的值会以测试速度为代价提高结果的可信度。</p>
+<h4 id="max-test-rejects"><a href="#max-test-rejects" class="headerlink" title="max_test_rejects"></a>max_test_rejects</h4><ul>
+<li>类型: integer</li>
+<li>默认值: 65536</li>
+<li>环境变量: FOUNDRY_FUZZ_MAX_TEST_REJECTS</li>
+</ul>
+<p><strong>在整个测试中止之前可以拒绝的组合输入的最大数量</strong>。 “全局” 过滤器适用于整个测试用例。如果测试用例被拒绝，则整个测试用例将重新生成</p>
+<h4 id="seed"><a href="#seed" class="headerlink" title="seed"></a>seed</h4><ul>
+<li>类型: string (hexadecimal)</li>
+<li>默认值: none</li>
+<li>环境变量: FOUNDRY_FUZZ_SEED</li>
+</ul>
+<p><strong>模糊 RNG 算法的可选种子。</strong></p>
+<h4 id="dictionary-weight"><a href="#dictionary-weight" class="headerlink" title="dictionary_weight"></a>dictionary_weight</h4><ul>
+<li>类型: integer (between 0 and 100)</li>
+<li>默认值: 40</li>
+<li>环境变量: FOUNDRY_FUZZ_DICTIONARY_WEIGHT</li>
+</ul>
+<p><strong>字典的权重。</strong></p>
+<h4 id="include-storage"><a href="#include-storage" class="headerlink" title="include_storage"></a>include_storage</h4><ul>
+<li>类型: boolean</li>
+<li>默认值: true</li>
+<li>环境变量: FOUNDRY_FUZZ_INCLUDE_STORAGE</li>
+</ul>
+<p><strong>标志是否包含存储中的值。</strong></p>
+<h4 id="include-push-bytes"><a href="#include-push-bytes" class="headerlink" title="include_push_bytes"></a>include_push_bytes</h4><ul>
+<li>类型: boolean</li>
+<li>默认值: true</li>
+<li>环境变量: FOUNDRY_FUZZ_INCLUDE_PUSH_BYTES</li>
+</ul>
+<p><strong>标志是否包含推送字节值。</strong></p>
+<h3 id="Invariant"><a href="#Invariant" class="headerlink" title="Invariant"></a>Invariant</h3><p>[invariant] 部分的配置具有回退逻辑 对于常见的配置条目（runs、seed、dictionary_weight 等）。</p>
+<ul>
+<li>如果在任一部分中都没有设置条目，则将使用默认值。</li>
+<li>如果条目在 [fuzz] 部分中设置，但未在 [invariant] 中设置条目, 这些值将自动设置为指定的值在 [fuzz] 条目.</li>
+<li>对于default以外的任何配置文件：<ul>
+<li>如果在 [invariant] 中设置公共条目 (类似 [profile.default.invariant]) 条目, 从 [invariant] 条目的值会被使用。</li>
+<li>如果公共条目未在 [invariant] 部分中设置， 但是在 [fuzz] 条目中设置 (类似 [profile.default.fuzz]) , 然后将使用 [fuzz] 部分的值。</li>
+<li>如果不是上述任何一种情况， 则将使用默认值。</li>
+</ul>
+</li>
+</ul>
+<h4 id="runs-1"><a href="#runs-1" class="headerlink" title="runs"></a>runs</h4><ul>
+<li>类型: integer</li>
+<li>默认值: 256</li>
+<li>环境变量: FOUNDRY_INVARIANT_RUNS</li>
+</ul>
+<p><strong>必须为每个不变测试组执行的运行次数</strong>。 另见 fuzz.runs</p>
+<h4 id="depth"><a href="#depth" class="headerlink" title="depth"></a>depth</h4><ul>
+<li>类型: integer</li>
+<li>默认值: 256</li>
+<li>环境变量: FOUNDRY_INVARIANT_DEPTH</li>
+</ul>
+<p><strong>在一次运行中为尝试破坏不变量而执行的调用次数</strong>。</p>
+<h4 id="fail-on-revert"><a href="#fail-on-revert" class="headerlink" title="fail_on_revert"></a>fail_on_revert</h4><ul>
+<li>类型: boolean</li>
+<li>默认值: false</li>
+<li>环境变量: FOUNDRY_INVARIANT_FAIL_ON_REVERT</li>
+</ul>
+<p><strong>如果发生 revert，不变的模糊测试将失败</strong>。</p>
+<h4 id="call-override"><a href="#call-override" class="headerlink" title="call_override"></a>call_override</h4><ul>
+<li>类型: boolean</li>
+<li>默认值: false</li>
+<li>环境变量: FOUNDRY_INVARIANT_CALL_OVERRIDE</li>
+</ul>
+<p><strong>允许在运行不变测试时覆盖不安全的外部调用</strong>。 例如： 重入检查。</p>
+<h4 id="dictionary-weight-1"><a href="#dictionary-weight-1" class="headerlink" title="dictionary_weight"></a>dictionary_weight</h4><ul>
+<li>类型: integer (between 0 and 100)</li>
+<li>默认值: 80</li>
+<li>环境变量: FOUNDRY_INVARIANT_DICTIONARY_WEIGHT</li>
+</ul>
+<p><strong>字典的权重。</strong>另见 fuzz.dictionary_weight</p>
+<h4 id="include-storage-1"><a href="#include-storage-1" class="headerlink" title="include_storage"></a>include_storage</h4><ul>
+<li>类型: boolean</li>
+<li>默认值: true</li>
+<li>环境变量: FOUNDRY_FUZZ_INCLUDE_STORAGE</li>
+</ul>
+<p>指示<strong>是否包括存储中的值的标志。</strong>另见 fuzz.include_storage</p>
+<h4 id="include-push-bytes-1"><a href="#include-push-bytes-1" class="headerlink" title="include_push_bytes"></a>include_push_bytes</h4><ul>
+<li>类型: boolean</li>
+<li>默认值: true</li>
+<li>环境变量: FOUNDRY_FUZZ_INCLUDE_PUSH_BYTES</li>
+</ul>
+<p><strong>指示是否包含推送字节值的标志</strong>。 另见 fuzz.include_push_bytes</p>
+<h2 id="Formatter与-Forge-格式化器的行为有关的配置。"><a href="#Formatter与-Forge-格式化器的行为有关的配置。" class="headerlink" title="Formatter与 Forge 格式化器的行为有关的配置。"></a>Formatter与 Forge 格式化器的行为有关的配置。</h2><p>关键都在 [fmt] 部分。</p>
+<h4 id="line-length"><a href="#line-length" class="headerlink" title="line_length"></a>line_length</h4><ul>
+<li>类型: number</li>
+<li>默认值: 120</li>
+<li>环境变量: FOUNDRY_FMT_LINE_LENGTH or DAPP_FMT_LINE_LENGTH</li>
+</ul>
+<p><strong>指定格式化程序尝试换行的最大行长</strong>。</p>
+<h4 id="tab-width"><a href="#tab-width" class="headerlink" title="tab_width"></a>tab_width</h4><ul>
+<li>类型: number</li>
+<li>默认值: 4</li>
+<li>环境变量: FOUNDRY_FMT_TAB_WIDTH or DAPP_FMT_TAB_WIDTH</li>
+</ul>
+<p><strong>每个缩进级别的空格数。</strong></p>
+<h4 id="bracket-spacing"><a href="#bracket-spacing" class="headerlink" title="bracket_spacing"></a>bracket_spacing</h4><ul>
+<li>类型: bool</li>
+<li>默认值: false</li>
+<li>环境变量: FOUNDRY_FMT_BRACKET_SPACING or DAPP_FMT_BRACKET_SPACING</li>
+</ul>
+<p><strong>是否在括号之间打印空格。</strong></p>
+<h4 id="int-types"><a href="#int-types" class="headerlink" title="int_types"></a>int_types</h4><ul>
+<li>类型: string</li>
+<li>默认值: long</li>
+<li>环境变量: FOUNDRY_FMT_INT_TYPES or DAPP_FMT_INT_TYPES</li>
+</ul>
+<p>uint&#x2F;int256 类型的风格。 有效值为:</p>
+<ul>
+<li>long (默认): 使用明确的 uint256 或 int256</li>
+<li>short: 使用隐式的 uint 或 int</li>
+<li>preserve: 使用源代码中定义的类型</li>
+</ul>
+<h4 id="func-attrs-with-params-multiline"><a href="#func-attrs-with-params-multiline" class="headerlink" title="func_attrs_with_params_multiline"></a>func_attrs_with_params_multiline</h4><ul>
+<li>类型: bool</li>
+<li>默认值: true</li>
+<li>环境变量: FOUNDRY_FMT_FUNC_ATTRS_WITH_PARAMS_MULTILINE or DAPP_FMT_FUNC_ATTRS_WITH_PARAMS_MULTILINE</li>
+</ul>
+<p><strong>如果函数参数是多行的，那么总是把函数属性放在不同的行上。</strong></p>
+<h4 id="quote-style"><a href="#quote-style" class="headerlink" title="quote_style"></a>quote_style</h4><ul>
+<li>类型: string</li>
+<li>默认值: double</li>
+<li>环境变量: FOUNDRY_FMT_QUOTE_STYLE or DAPP_FMT_QUOTE_STYLE</li>
+</ul>
+<p><strong>定义了引号的样式。</strong> 有效值为：</p>
+<ul>
+<li>double (默认): 尽可能使用双引号 (“)</li>
+<li>single: 尽可能使用单引号 (‘)</li>
+<li>preserve: 使用源代码中定义的引号</li>
+</ul>
+<h4 id="number-underscore"><a href="#number-underscore" class="headerlink" title="number_underscore"></a>number_underscore</h4><ul>
+<li>类型: string</li>
+<li>默认值: preserve</li>
+<li>环境变量: FOUNDRY_FMT_NUMBER_UNDERSCORE or DAPP_FMT_NUMBER_UNDERSCORE</li>
+</ul>
+<p><strong>数字字段中下划线的样式。</strong> 有效值为：</p>
+<ul>
+<li>preserve (默认): 使用源代码中定义的下划线</li>
+<li>thousands: 如果大于 9999，则每 1000 加一个下划线。例如 1000 的格式为 1000，10000 的格式为 10_000</li>
+<li>remove: 去除所有下划线</li>
+</ul>
+<h2 id="Etherscan与-Etherscan-相关的配置"><a href="#Etherscan与-Etherscan-相关的配置" class="headerlink" title="Etherscan与 Etherscan 相关的配置"></a>Etherscan与 Etherscan 相关的配置</h2><p>如 API 密钥， 这个配置被 Forge 用在各个地方。</p>
+<p><code>[etherscan]</code> 部分是密钥与 Etherscan 配置表的映射。Etherscan配置表持有以下键（属性）：</p>
+<ul>
+<li><code>key</code> (字符串) (<strong>必须</strong>): 给定网络的 Etherscan API 密钥。这个属性的值也可以指向一个环境变量。</li>
+<li><code>chain</code>: 该 Etherscan 配置的链的名称或 ID。</li>
+<li><code>url</code>: Etherscan的 API URL。</li>
+</ul>
+<p>如果配置的 key 是一个链的名称，那么就不需要 <code>chain</code>，否则就需要。<code>url</code> 可以用来为不支持名称的链明确设置 Etherscan API URL。</p>
+<p>使用 TOML 内联表语法，所有这些都是有效的:</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[etherscan]</span></span><br><span class="line"><span class="attr">mainnet</span> = &#123; key = <span class="string">&quot;$&#123;ETHERSCAN_MAINNET_KEY&#125;&quot;</span> &#125;</span><br><span class="line"><span class="attr">mainnet2</span> = &#123; key = <span class="string">&quot;ABCDEFG&quot;</span>, chain = <span class="string">&quot;mainnet&quot;</span> &#125;</span><br><span class="line"><span class="attr">optimism</span> = &#123; key = <span class="string">&quot;1234567&quot;</span> &#125;</span><br><span class="line"><span class="attr">unknown_chain</span> = &#123; key = <span class="string">&quot;ABCDEFG&quot;</span>, url = <span class="string">&quot;&lt;etherscan api url for this chain&gt;&quot;</span> &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/02/23/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/6-%E9%85%8D%E7%BD%AE/" title="6-配置">https://kongpengyq.com/2023/02/23/区块链/区块链知识点总结/合约框架/Foundry/6-配置/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" rel="tag"># 区块链知识点总结</a>
+              <a href="/tags/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/" rel="tag"># 合约框架</a>
+              <a href="/tags/Foundry/" rel="tag"># Foundry</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/02/21/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/5-Cast%E4%B8%8EAnvil/" rel="prev" title="5-Cast与Anvil">
+      <i class="fa fa-chevron-left"></i> 5-Cast与Anvil
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/02/23/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/7-DSTest/" rel="next" title="7-DSTest">
+      7-DSTest <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-foundry-toml-%E9%85%8D%E7%BD%AE"><span class="nav-text">使用 foundry.toml 配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Project%EF%BC%9A%E9%80%9A%E5%B8%B8%E4%B8%8E%E9%A1%B9%E7%9B%AE%E7%9B%B8%E5%85%B3%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-text">Project：通常与项目相关的配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Solidity%E7%BC%96%E8%AF%91%E5%99%A8%EF%BC%9A%E4%B8%8E-Solidity-%E7%BC%96%E8%AF%91%E5%99%A8%E7%9A%84%E8%A1%8C%E4%B8%BA%E6%9C%89%E5%85%B3%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-text">Solidity编译器：与 Solidity 编译器的行为有关的配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Optimizer%EF%BC%9A%E4%B8%8E-Solidity-%E4%BC%98%E5%8C%96%E5%99%A8%E6%9C%89%E5%85%B3%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-text">Optimizer：与 Solidity 优化器有关的配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Model-checker"><span class="nav-text">Model checker</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Test%E6%B5%8B%E8%AF%95%E4%B8%8E-forge-test-%E7%9A%84%E8%A1%8C%E4%B8%BA%E6%9C%89%E5%85%B3%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-text">Test测试与 forge test 的行为有关的配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#General"><span class="nav-text">General</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#verbosity"><span class="nav-text">verbosity</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ffi"><span class="nav-text">ffi</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sender"><span class="nav-text">sender</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#tx-origin"><span class="nav-text">tx_origin</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#initial-balance"><span class="nav-text">initial_balance</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#block-number"><span class="nav-text">block_number</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#chain-id"><span class="nav-text">chain_id</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#gas-limit"><span class="nav-text">gas_limit</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#gas-price"><span class="nav-text">gas_price</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#block-base-fee-per-gas"><span class="nav-text">block_base_fee_per_gas</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#block-coinbase"><span class="nav-text">block_coinbase</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#block-timestamp"><span class="nav-text">block_timestamp</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#block-difficulty"><span class="nav-text">block_difficulty</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#gas-reports"><span class="nav-text">gas_reports</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#no-storage-caching"><span class="nav-text">no_storage_caching</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#rpc-storage-caching-%EF%BC%9A%E5%8C%BA%E5%9D%97%E5%AE%9A%E4%B9%89%E5%93%AA%E4%BA%9B-RPC-%E7%AB%AF%E7%82%B9%E9%9C%80%E8%A6%81%E8%A2%AB%E7%BC%93%E5%AD%98%E3%80%82"><span class="nav-text">[rpc_storage_caching]：区块定义哪些 RPC 端点需要被缓存。</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#rpc-storage-caching-chains"><span class="nav-text">rpc_storage_caching.chains</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#rpc-storage-caching-endpoints"><span class="nav-text">rpc_storage_caching.endpoints</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#eth-rpc-url"><span class="nav-text">eth_rpc_url</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#etherscan-api-key"><span class="nav-text">etherscan_api_key</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#test-pattern"><span class="nav-text">test_pattern</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#test-pattern-inverse"><span class="nav-text">test_pattern_inverse</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#contract-pattern"><span class="nav-text">contract_pattern</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#contract-pattern-inverse"><span class="nav-text">contract_pattern_inverse</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#path-pattern"><span class="nav-text">path_pattern</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#path-pattern-inverse"><span class="nav-text">path_pattern_inverse</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#block-gas-limit"><span class="nav-text">block_gas_limit</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#memory-limit"><span class="nav-text">memory_limit</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#names"><span class="nav-text">names</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sizes"><span class="nav-text">sizes</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#rpc-endpoints"><span class="nav-text">rpc_endpoints</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Fuzz"><span class="nav-text">Fuzz</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#runs"><span class="nav-text">runs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#max-test-rejects"><span class="nav-text">max_test_rejects</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#seed"><span class="nav-text">seed</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dictionary-weight"><span class="nav-text">dictionary_weight</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#include-storage"><span class="nav-text">include_storage</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#include-push-bytes"><span class="nav-text">include_push_bytes</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Invariant"><span class="nav-text">Invariant</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#runs-1"><span class="nav-text">runs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#depth"><span class="nav-text">depth</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fail-on-revert"><span class="nav-text">fail_on_revert</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#call-override"><span class="nav-text">call_override</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dictionary-weight-1"><span class="nav-text">dictionary_weight</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#include-storage-1"><span class="nav-text">include_storage</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#include-push-bytes-1"><span class="nav-text">include_push_bytes</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Formatter%E4%B8%8E-Forge-%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%99%A8%E7%9A%84%E8%A1%8C%E4%B8%BA%E6%9C%89%E5%85%B3%E7%9A%84%E9%85%8D%E7%BD%AE%E3%80%82"><span class="nav-text">Formatter与 Forge 格式化器的行为有关的配置。</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#line-length"><span class="nav-text">line_length</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#tab-width"><span class="nav-text">tab_width</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#bracket-spacing"><span class="nav-text">bracket_spacing</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#int-types"><span class="nav-text">int_types</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#func-attrs-with-params-multiline"><span class="nav-text">func_attrs_with_params_multiline</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#quote-style"><span class="nav-text">quote_style</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#number-underscore"><span class="nav-text">number_underscore</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Etherscan%E4%B8%8E-Etherscan-%E7%9B%B8%E5%85%B3%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-text">Etherscan与 Etherscan 相关的配置</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

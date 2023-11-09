@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="重入攻击每当一个智能合约调用另一个智能合约的函数，向其发送以太币，或向其代币转账，那么就有可能出现重入。 重入攻击的类型可以分为：（1）单函数重入（2）跨函数重入（3）跨合约重入 分类单函数重入当一个易受攻击的函数是攻击者试图递归调用的同一个函数时，就会发生单函数重入攻击。在此示例中，注释（1）部分进行资金转移之后，才对注释（2）账户余额状态进行修改。这时候，会让黑客可以在状态修改之前利用fall">
+<meta property="og:type" content="article">
+<meta property="og:title" content="1-重入攻击">
+<meta property="og:url" content="https://kongpengyq.com/2023/04/16/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/1-%E9%87%8D%E5%85%A5%E6%94%BB%E5%87%BB/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="重入攻击每当一个智能合约调用另一个智能合约的函数，向其发送以太币，或向其代币转账，那么就有可能出现重入。 重入攻击的类型可以分为：（1）单函数重入（2）跨函数重入（3）跨合约重入 分类单函数重入当一个易受攻击的函数是攻击者试图递归调用的同一个函数时，就会发生单函数重入攻击。在此示例中，注释（1）部分进行资金转移之后，才对注释（2）账户余额状态进行修改。这时候，会让黑客可以在状态修改之前利用fall">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/img/Z5jDNDcI63130b6cc6bb8.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/img/I2v9TxrD63130b7626179.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/img/cfrZPT1N63130d45b197d.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/img/ndIhRCb363130d4f90527.png">
+<meta property="article:published_time" content="2023-04-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:01:34.859Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="合约安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/img/Z5jDNDcI63130b6cc6bb8.png">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/04/16/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/1-%E9%87%8D%E5%85%A5%E6%94%BB%E5%87%BB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>1-重入攻击 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/04/16/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/1-%E9%87%8D%E5%85%A5%E6%94%BB%E5%87%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          1-重入攻击
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-04-16 00:00:00" itemprop="dateCreated datePublished" datetime="2023-04-16T00:00:00+08:00">2023-04-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:01:34" itemprop="dateModified" datetime="2023-11-09T10:01:34+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/" itemprop="url" rel="index">
+                    <span itemprop="name">合约安全</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>999</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="重入攻击"><a href="#重入攻击" class="headerlink" title="重入攻击"></a>重入攻击</h1><p>每当一个智能合约调用另一个智能合约的函数，向其发送以太币，或向其代币转账，那么就有可能出现重入。</p>
+<p>重入攻击的类型可以分为：<br>（1）单函数重入<br>（2）跨函数重入<br>（3）跨合约重入</p>
+<h2 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h2><h3 id="单函数重入"><a href="#单函数重入" class="headerlink" title="单函数重入"></a>单函数重入</h3><p>当一个易受攻击的函数是攻击者试图递归调用的同一个函数时，就会发生单函数重入攻击。<br><img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/img/Z5jDNDcI63130b6cc6bb8.png" alt="image.png"><br>在此示例中，注释（1）部分进行资金转移之后，才对注释（2）账户余额状态进行修改。这时候，会让黑客可以在状态修改之前利用fallback()函数多次调用该函数，直至取走合约账户内的全部余额。</p>
+<h3 id="跨函数重入"><a href="#跨函数重入" class="headerlink" title="跨函数重入"></a>跨函数重入</h3><p>当一个易受攻击的函数与一个可被攻击者利用的函数共享状态时，就会发生跨函数重入。<br><img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/img/I2v9TxrD63130b7626179.png" alt="image.png"><br>在此示例中，黑客可以利用fallback()操作该合约，外部调用transfer()函数，在合约余额状态设置为0之前，进行转移资金。虽然该合约能接受到取款，但是也可以转移资金。<br>跨函数重入和单函数重入在同一个合约中，也有不在同一个合约，重入可以发生在跨多个合约，便是多个合约共享同一个状态。</p>
+<h3 id="跨合约重入"><a href="#跨合约重入" class="headerlink" title="跨合约重入"></a>跨合约重入</h3><p>当一个合约中的一个状态在另一个合约中使用，但在被调用之前未完全更新时，可能会发生跨合约重入。<br>跨合约重入所需以下条件：<br>（1）一个合约中的状态在另一个合约中共享或者使用<br>（2）攻击者可以通过利用执行流来操纵合约的状态</p>
+<h2 id="预防"><a href="#预防" class="headerlink" title="预防"></a>预防</h2><p>1）对于单函数重入、跨函数重入，可以在合约中实现互斥锁，用来防止重复调用同一个合约中的函数，从而防止重入<br><img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/img/cfrZPT1N63130d45b197d.png" alt="image.png"><br>（2）在调用外部合约或所谓的“检查-生效-交互”模式之前检查并尝试更新所有状态。这样，即使重入，也不会产生任何影响，因为所有状态都已完成更新(先更新后交互)<br><img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/img/ndIhRCb363130d4f90527.png" alt="image.png"><br>（3）防止攻击者利用合约的控制流。设置一组列入白名单的地址，可以防止攻击者将未知的恶意合约注入合约<br>（4）gas限制可以防止重入攻击，但这不应该被视为一种安全策略，因为gas成本取决于以太坊的操作码，这些操作码可能会发生变化。另一方面，智能合约代码是不可变的。无论如何，有必要了解这些函数之间的区别：send，transfer和call。send和transfer的函数本质上是相同的，但如果事务失败，transfer将恢复，而send则不会。关于重入，send和transfer都有2300个单位的gas限制。使用这些函数应该可以防止发生重入攻击，因为这不足以递归回调源函数来利用资金<br>（5)使用自动化的智能合约审计扫描工具或需求专业的第三方审计团队的帮助，也可以帮助检测重入错误。</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/04/16/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/1-%E9%87%8D%E5%85%A5%E6%94%BB%E5%87%BB/" title="1-重入攻击">https://kongpengyq.com/2023/04/16/区块链/合约安全/1-重入攻击/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/" rel="tag"># 合约安全</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/04/10/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/0-%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6/" rel="prev" title="0-安全事件">
+      <i class="fa fa-chevron-left"></i> 0-安全事件
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/04/21/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/2-tx.origin/" rel="next" title="2-tx.origin">
+      2-tx.origin <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%87%8D%E5%85%A5%E6%94%BB%E5%87%BB"><span class="nav-text">重入攻击</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E7%B1%BB"><span class="nav-text">分类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E5%87%BD%E6%95%B0%E9%87%8D%E5%85%A5"><span class="nav-text">单函数重入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%A8%E5%87%BD%E6%95%B0%E9%87%8D%E5%85%A5"><span class="nav-text">跨函数重入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%A8%E5%90%88%E7%BA%A6%E9%87%8D%E5%85%A5"><span class="nav-text">跨合约重入</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E9%98%B2"><span class="nav-text">预防</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="map的底层实现原理Go 语言采用的是哈希查找表，并且使用链表解决哈希冲突。 map 内存模型在源码中，表示 map 的结构体是 hmap，它是 hashmap 的“缩写”： 123456789101112131415161718192021&#x2F;&#x2F; A header for a Go map.type hmap struct &amp;#123;    &#x2F;&#x2F; 元素个数，调用 len(map) 时，直接返回此">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2-哈希表">
+<meta property="og:url" content="https://kongpengyq.com/2021/12/18/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2-%E5%93%88%E5%B8%8C%E8%A1%A8/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="map的底层实现原理Go 语言采用的是哈希查找表，并且使用链表解决哈希冲突。 map 内存模型在源码中，表示 map 的结构体是 hmap，它是 hashmap 的“缩写”： 123456789101112131415161718192021&#x2F;&#x2F; A header for a Go map.type hmap struct &amp;#123;    &#x2F;&#x2F; 元素个数，调用 len(map) 时，直接返回此">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/image-20230614154516323.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/image-20230614154819161.png">
+<meta property="article:published_time" content="2021-12-17T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:01:34.859Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="Go知识点">
+<meta property="article:tag" content="GO基础知识">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/image-20230614154516323.png">
+
+<link rel="canonical" href="https://kongpengyq.com/2021/12/18/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2-%E5%93%88%E5%B8%8C%E8%A1%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>2-哈希表 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2021/12/18/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2-%E5%93%88%E5%B8%8C%E8%A1%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2-哈希表
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-12-18 00:00:00" itemprop="dateCreated datePublished" datetime="2021-12-18T00:00:00+08:00">2021-12-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:01:34" itemprop="dateModified" datetime="2023-11-09T10:01:34+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" itemprop="url" rel="index">
+                    <span itemprop="name">GO基础知识</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="map的底层实现原理"><a href="#map的底层实现原理" class="headerlink" title="map的底层实现原理"></a>map的底层实现原理</h1><p>Go 语言采用的是哈希查找表，并且使用链表解决哈希冲突。</p>
+<h2 id="map-内存模型"><a href="#map-内存模型" class="headerlink" title="map 内存模型"></a>map 内存模型</h2><p>在源码中，表示 map 的结构体是 hmap，它是 hashmap 的“缩写”：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A header for a Go map.</span></span><br><span class="line"><span class="keyword">type</span> hmap <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 元素个数，调用 len(map) 时，直接返回此值</span></span><br><span class="line">	count     <span class="type">int</span></span><br><span class="line">	flags     <span class="type">uint8</span></span><br><span class="line">	<span class="comment">// buckets 的对数 log_2</span></span><br><span class="line">	B         <span class="type">uint8</span></span><br><span class="line">	<span class="comment">// overflow 的 bucket 近似数</span></span><br><span class="line">	noverflow <span class="type">uint16</span></span><br><span class="line">	<span class="comment">// 计算 key 的哈希的时候会传入哈希函数</span></span><br><span class="line">	hash0     <span class="type">uint32</span></span><br><span class="line">    <span class="comment">// 指向 buckets 数组，大小为 2^B</span></span><br><span class="line">    <span class="comment">// 如果元素个数为0，就为 nil</span></span><br><span class="line">	buckets    unsafe.Pointer</span><br><span class="line">	<span class="comment">// 等量扩容的时候，buckets 长度和 oldbuckets 相等</span></span><br><span class="line">	<span class="comment">// 双倍扩容的时候，buckets 长度会是 oldbuckets 的两倍</span></span><br><span class="line">	oldbuckets unsafe.Pointer</span><br><span class="line">	<span class="comment">// 指示扩容进度，小于此地址的 buckets 迁移完成</span></span><br><span class="line">	nevacuate  <span class="type">uintptr</span></span><br><span class="line">	extra *mapextra <span class="comment">// optional fields</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>说明一下，<code>B</code> 是 buckets 数组的长度的对数，也就是说 buckets 数组的长度就是 2^B。<strong>bucket 里面存储了 key 和 value</strong>，后面会再讲。</p>
+<p>buckets 是一个指针，最终它指向的是一个结构体：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> bmap <span class="keyword">struct</span> &#123;</span><br><span class="line">	tophash [bucketCnt]<span class="type">uint8</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但这只是表面(src&#x2F;runtime&#x2F;hashmap.go)的结构，编译期间会给它加料，动态地创建一个新的结构：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> bmap <span class="keyword">struct</span> &#123;</span><br><span class="line">    topbits  [<span class="number">8</span>]<span class="type">uint8</span></span><br><span class="line">    keys     [<span class="number">8</span>]keytype</span><br><span class="line">    values   [<span class="number">8</span>]valuetype</span><br><span class="line">    pad      <span class="type">uintptr</span></span><br><span class="line">    overflow <span class="type">uintptr</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>bmap</code> 就是我们常说的“桶”，桶里面会最多装 8 个 key，这些 key 之所以会落入同一个桶，是因为它们经过哈希计算后，哈希结果是“一类”的。在桶内，又会根据 key 计算出来的 hash 值的高 8 位来决定 key 到底落入桶内的哪个位置</strong>（一个桶内最多有8个位置）。</p>
+<p>来一个整体的图：</p>
+<img src="/noteimg/Go知识点/GO基础知识/img/image-20230614154516323.png" alt="image-20230614154516323" style="zoom:80%;" /> 
+
+<p>bmap 是存放 k-v 的地方，我们把视角拉近，仔细看 bmap 的内部组成。</p>
+<img src="/noteimg/Go知识点/GO基础知识/img/image-20230614154819161.png" alt="image-20230614154819161" style="zoom:50%;" /> 
+
+<p>上图就是 bucket 的内存模型，<code>HOB Hash</code> 指的就是 top hash。 注意到 key 和 value 是各自放在一起的，并不是 <code>key/value/key/value/...</code> 这样的形式。源码里说明这样的好处是在某些情况下可以省略掉 padding 字段，节省内存空间。</p>
+<p><strong>每个 bucket 设计成最多只能放 8 个 key-value 对，如果有第 9 个 key-value 落入当前的 bucket，那就需要再构建一个 bucket ，通过 <code>overflow</code> 指针连接起来。</strong></p>
+<h2 id="创建-map"><a href="#创建-map" class="headerlink" title="创建 map"></a>创建 map</h2><p>从语法层面上来说，创建 map 很简单：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ageMp := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>)</span><br><span class="line"><span class="comment">// 指定 map 长度</span></span><br><span class="line">ageMp := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>, <span class="number">8</span>)</span><br><span class="line"><span class="comment">// ageMp 为 nil，不能向其添加元素，会直接panic</span></span><br><span class="line"><span class="keyword">var</span> ageMp <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span></span><br></pre></td></tr></table></figure>
+
+<p>通过汇编语言可以看到，实际上底层调用的是 <code>makemap</code> 函数，主要做的工作就是初始化 <code>hmap</code> 结构体的各种字段，例如计算 B 的大小，设置哈希种子 hash0 等等。</p>
+<h3 id="slice-和-map-分别作为函数参数时有什么区别？"><a href="#slice-和-map-分别作为函数参数时有什么区别？" class="headerlink" title="slice 和 map 分别作为函数参数时有什么区别？"></a>slice 和 map 分别作为函数参数时有什么区别？</h3><blockquote>
+<p>注意，<code>makemap</code> 函数返回的结果：<code>*hmap</code>，它是一个指针，而我们之前讲过的 <code>makeslice</code> 函数返回的是 <code>Slice</code> 结构体：</p>
+</blockquote>
+<p>当 map 和 slice 作为函数参数时，在函数参数内部对 map 的操作会影响 map 自身；而对 slice 却不会。</p>
+<p>主要原因：一个是指针（<code>*hmap</code>），一个是结构体（<code>slice</code>）。Go 语言中的函数传参都是值传递，在函数内部，参数会被 copy 到本地。<code>*hmap</code>指针 copy 完之后，仍然指向同一个 map，因此函数内部对 map 的操作会影响实参。而 slice 被 copy 后，会成为一个新的 slice，对它进行的操作不会影响到实参。</p>
+<h2 id="哈希函数"><a href="#哈希函数" class="headerlink" title="哈希函数"></a>哈希函数</h2><p>map 的一个关键点在于，哈希函数的选择。在程序启动时，会检测 cpu 是否支持 aes，如果支持，则使用 aes hash，否则使用 memhash。这是在函数 <code>alginit()</code> 中完成</p>
+<h1 id="如何实现两种get操作"><a href="#如何实现两种get操作" class="headerlink" title="如何实现两种get操作"></a>如何实现两种get操作</h1><p>Go 语言中读取 map 有两种语法：带 comma 和 不带 comma。当要查询的 key 不在 map 里，带 comma 的用法会返回一个 bool 型变量提示 key 是否在 map 中；而不带 comma 的语句则会返回一个 key 对应 value 类型的零值。如果 value 是 int 型就会返回 0，如果 value 是 string 类型，就会返回空字符串。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	ageMap := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>)</span><br><span class="line">	ageMap[<span class="string">&quot;qcrao&quot;</span>] = <span class="number">18</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 不带 comma 用法</span></span><br><span class="line">	age1 := ageMap[<span class="string">&quot;stefno&quot;</span>]</span><br><span class="line">	fmt.Println(age1)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 带 comma 用法</span></span><br><span class="line">	age2, ok := ageMap[<span class="string">&quot;stefno&quot;</span>]</span><br><span class="line">	fmt.Println(age2, ok)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//结果：</span></span><br><span class="line"><span class="number">0</span></span><br><span class="line"><span class="number">0</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="map的遍历过程"><a href="#map的遍历过程" class="headerlink" title="map的遍历过程"></a>map的遍历过程</h1><p>map 是无序的数据结构，所以迭代的顺序不一定与添加键-值对的顺序一致。需要注意的是，<strong>在遍历过程中，如果在循环体内修改了 map 的内容</strong>，可能<strong>会导致不确定的行为。如果你需要修改 map 的同时进行遍历，可以考虑先将需要修改的键存储到一个临时的切片中，然后再进行遍历和修改操作。</strong></p>
+<h1 id="map的扩容过程"><a href="#map的扩容过程" class="headerlink" title="map的扩容过程"></a>map的扩容过程</h1><p>map 是一种动态大小的数据结构，<strong>当 map 中的键-值对数量超过当前容量的时候，Go 会自动重新分配更大的内存空间</strong>，并<strong>将现有的键-值对重新哈希到新的内存位置</strong>。扩容过程中，Go 会<strong>创建一个新的内存区域来存储扩容后的 map 数据，并将原有的键-值对重新哈希到新的内存位置</strong>。扩容完成后，原有的内存区域会被释放。</p>
+<h1 id="key为什么是无序的"><a href="#key为什么是无序的" class="headerlink" title="key为什么是无序的"></a>key为什么是无序的</h1><p><strong>map 在扩容后，会发生 key 的搬迁，原来落在同一个 bucket 中的 key，搬迁后，key 的位置发生了重大的变化，有些 key 飞上高枝，有些 key 则原地不动。</strong>这样，<strong>遍历 map 的结果就不可能按原来的顺序了。</strong></p>
+<p>当我们<strong>在遍历 map 时，并不是固定地从 0 号 bucket 开始遍历，每次都是从一个随机值序号的 bucket 开始遍历，</strong>并且是从这个 bucket 的一个随机序号的 cell 开始遍历。这样，即使你是一个写死的 map，仅仅只是遍历它，也不太可能会返回一个固定序列的 key&#x2F;value 对了。</p>
+<h1 id="可以对-map-的元素取地址吗"><a href="#可以对-map-的元素取地址吗" class="headerlink" title="可以对 map 的元素取地址吗"></a>可以对 map 的元素取地址吗</h1><p>无法对 map 的 key 或 value 进行取址</p>
+<p>如果通过其他 hack 的方式，例如 unsafe.Pointer 等获取到了 key 或 value 的地址，也不能长期持有，因为一旦发生扩容，key 和 value 的位置就会改变，之前保存的地址也就失效了。</p>
+<h1 id="如何比较两个-map-相等"><a href="#如何比较两个-map-相等" class="headerlink" title="如何比较两个 map 相等"></a>如何比较两个 map 相等</h1><p>不能直接使用 <code>==</code> 运算符来比较两个 map 是否相等。这是因为 map 是引用类型，即使两个 map 存储的键-值对内容相同，它们的指针地址不同，所以直接使用 <code>==</code> 运算符比较的结果会始终为 false。</p>
+<p>要比较两个 map 是否相等，可以使用以下步骤：</p>
+<ol>
+<li>首先，比较两个 map 的长度（键-值对的数量）。如果长度不相等，可以立即确定两个 map 不相等。</li>
+<li>接下来，逐个比较两个 map 中的键-值对。对于每个键-值对，在第一个 map 中查找对应的值，并进行比较。如果存在不同的键或对应的值不相等，可以确定两个 map 不相等。</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mapsAreEqual</span><span class="params">(map1, map2 <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>)</span></span> <span class="type">bool</span> &#123;</span><br><span class="line">    <span class="comment">// 比较长度</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(map1) != <span class="built_in">len</span>(map2) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 逐个比较键-值对</span></span><br><span class="line">    <span class="keyword">for</span> key, value1 := <span class="keyword">range</span> map1 &#123;</span><br><span class="line">        value2, ok := map2[key]</span><br><span class="line">        <span class="keyword">if</span> !ok || value1 != value2 &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>reflect.DeepEqual(map1,map2)</p>
+</blockquote>
+<p>map 不是线程安全的。</p>
+<h1 id="map是线程安全的吗"><a href="#map是线程安全的吗" class="headerlink" title="map是线程安全的吗"></a>map是线程安全的吗</h1><p>在查找、赋值、遍历、删除的过程中都会检测写标志，一旦发现写标志置位（等于1），则直接 panic。</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2021/12/18/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2-%E5%93%88%E5%B8%8C%E8%A1%A8/" title="2-哈希表">https://kongpengyq.com/2021/12/18/Go知识点/GO基础知识/2-哈希表/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go%E7%9F%A5%E8%AF%86%E7%82%B9/" rel="tag"># Go知识点</a>
+              <a href="/tags/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" rel="tag"># GO基础知识</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/12/12/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/1-%E6%95%B0%E7%BB%84%E4%B8%8E%E5%88%87%E7%89%87/" rel="prev" title="1-数组与切片">
+      <i class="fa fa-chevron-left"></i> 1-数组与切片
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/21/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/4-%E9%80%9A%E9%81%93/" rel="next" title="4-通道">
+      4-通道 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#map%E7%9A%84%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="nav-text">map的底层实现原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#map-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B"><span class="nav-text">map 内存模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA-map"><span class="nav-text">创建 map</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#slice-%E5%92%8C-map-%E5%88%86%E5%88%AB%E4%BD%9C%E4%B8%BA%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E6%97%B6%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="nav-text">slice 和 map 分别作为函数参数时有什么区别？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0"><span class="nav-text">哈希函数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E4%B8%A4%E7%A7%8Dget%E6%93%8D%E4%BD%9C"><span class="nav-text">如何实现两种get操作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#map%E7%9A%84%E9%81%8D%E5%8E%86%E8%BF%87%E7%A8%8B"><span class="nav-text">map的遍历过程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#map%E7%9A%84%E6%89%A9%E5%AE%B9%E8%BF%87%E7%A8%8B"><span class="nav-text">map的扩容过程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#key%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E6%97%A0%E5%BA%8F%E7%9A%84"><span class="nav-text">key为什么是无序的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%AF%E4%BB%A5%E5%AF%B9-map-%E7%9A%84%E5%85%83%E7%B4%A0%E5%8F%96%E5%9C%B0%E5%9D%80%E5%90%97"><span class="nav-text">可以对 map 的元素取地址吗</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E6%AF%94%E8%BE%83%E4%B8%A4%E4%B8%AA-map-%E7%9B%B8%E7%AD%89"><span class="nav-text">如何比较两个 map 相等</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#map%E6%98%AF%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%E5%90%97"><span class="nav-text">map是线程安全的吗</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

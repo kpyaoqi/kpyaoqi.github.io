@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="命令account                账户管理 attach                启动一个交互式JavaScript环境(连接到节点) console                启动一个交互式JavaScript环境 db    数据库低级操作 dump    从存储中转储指定块 dumpconfig   以TOML格式导出配置值 dumpgenesi   s将创世块JS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="1-Geth启动命令">
+<meta property="og:url" content="https://kongpengyq.com/2023/11/05/Geth/1-Geth%E5%90%AF%E5%8A%A8%E5%91%BD%E4%BB%A4/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="命令account                账户管理 attach                启动一个交互式JavaScript环境(连接到节点) console                启动一个交互式JavaScript环境 db    数据库低级操作 dump    从存储中转储指定块 dumpconfig   以TOML格式导出配置值 dumpgenesi   s将创世块JS">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-11-04T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:00:14.627Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="Geth">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/11/05/Geth/1-Geth%E5%90%AF%E5%8A%A8%E5%91%BD%E4%BB%A4/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>1-Geth启动命令 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/11/05/Geth/1-Geth%E5%90%AF%E5%8A%A8%E5%91%BD%E4%BB%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          1-Geth启动命令
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-11-05 00:00:00" itemprop="dateCreated datePublished" datetime="2023-11-05T00:00:00+08:00">2023-11-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:00:14" itemprop="dateModified" datetime="2023-11-09T10:00:14+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Geth/" itemprop="url" rel="index">
+                    <span itemprop="name">Geth</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="命令"><a href="#命令" class="headerlink" title="命令"></a>命令</h1><p>account                账户管理</p>
+<p>attach                启动一个交互式JavaScript环境(连接到节点)</p>
+<p>console                启动一个交互式JavaScript环境</p>
+<p>db    数据库低级操作</p>
+<p>dump    从存储中转储指定块</p>
+<p>dumpconfig   以TOML格式导出配置值</p>
+<p>dumpgenesi   s将创世块JSON配置转储到stdout</p>
+<p>export                 导出区块链到文件</p>
+<p>export-preimages       将预映像数据库导出为RLP流</p>
+<p>import                 导入区块链文件</p>
+<p>import-preimages       从RLP流导入预映像数据库</p>
+<p>init                   Bootstrap并初始化一个新的创世块</p>
+<p>js                     (DEPRECATED)执行指定的JavaScript文件</p>
+<p>license	显示license信息</p>
+<p>removedb	删除区块链和状态数据库</p>
+<p>Show -deprecated-flags	显示已弃用的标志</p>
+<p>snapshot	基于快照的命令集</p>
+<p>verkle	一组实验性的verkle树管理命令</p>
+<p>version	打印版本号</p>
+<p>version-check	检查(在线)已知的Geth安全漏洞</p>
+<p>wallet                 管理以太坊预售钱包</p>
+<p>help, h	显示命令列表或命令的帮助信息</p>
+<h1 id="全局选项"><a href="#全局选项" class="headerlink" title="全局选项"></a>全局选项</h1><h2 id="账户"><a href="#账户" class="headerlink" title="账户"></a>账户</h2><p>​    –allow-insecure-unlock        (default: false)<br>​          当http协议暴露了与帐号相关的rpc时，允许不安全的帐号解锁</p>
+<p>​    –keystore value<br>​          密钥存储库的目录 (default &#x3D; inside the datadir)</p>
+<p>​    –lightkdf                     (default: false)<br>​          以牺牲KDF强度为代价减少密钥派生RAM和CPU的使用</p>
+<p>​    –password value<br>​          用于非交互式密码输入的密码文件</p>
+<p>​    –pcscdpath value<br>​         智能卡守护进程(pcscd)套接字文件的路径</p>
+<p>​    –signer value<br>​          外部签名者(url或路径到ipc文件)</p>
+<p>​    –unlock value<br>​          要解锁的帐户列表，以逗号分隔</p>
+<p>​    –usb                          (default: false)<br>​         启用USB硬件钱包的监控和管理</p>
+<h2 id="别名-弃用"><a href="#别名-弃用" class="headerlink" title="别名(弃用)"></a>别名(弃用)</h2><p>​    –nousb                        (default: false)<br>​        禁止监控和管理USB硬件钱包(已弃用)</p>
+<p>–whitelist value<br>      逗号分隔的块编号到哈希值的映射强制执行(<number>&#x3D;<hash>)</p>
+<p>​	(已弃用，支持——eth.requiredblocks)</p>
+<h2 id="API和控制台"><a href="#API和控制台" class="headerlink" title="API和控制台"></a>API和控制台</h2><p>​    –authrpc.addr value           (default: “localhost”)<br>​         已认证api的监听地址</p>
+<p>​    –authrpc.jwtsecret value<br>​         用于经过身份验证的RPC端点的JWT秘密的路径</p>
+<p>​    –authrpc.port value           (default: 8551)<br>​         认证api的监听端口</p>
+<p>​    –authrpc.vhosts value         (default: “localhost”)<br>​          接受请求的虚拟主机名列表(服务器强制)，以逗号分隔。接受’*’通配符。</p>
+<p>​    –exec value<br>​          执行JavaScript语句</p>
+<p>–graphql                      (default: false)<br>      在HTTP-RPC服务器上启用GraphQL。注意，GraphQL只能在以下情况下启动：同时也启动了一个HTTP服务器。</p>
+<p>​    –graphql.corsdomain value<br>​          接受跨域请求的域列表，以逗号分隔<br>​          (browser enforced)</p>
+<p>–graphql.vhosts value         (default: “localhost”)<br>    接受请求的虚拟主机名列表(以逗号分隔)。接受’*’通配符。</p>
+<p>–header value, -H value<br>      当使用–remotedb或geth attach时，将自定义报头传递给RPC服务。这个标志可以多次出现。</p>
+<p>​    –http                         (default: false)<br>​        启用HTTP-RPC服务器</p>
+<p>​    –http.addr value              (default: “localhost”)<br>​        HTTP-RPC服务器监听接口</p>
+<p>​    –http.api value<br>​        通过HTTP-RPC接口提供的API</p>
+<p>​    –http.corsdomain value<br>​         接受跨域请求的域列表，以逗号分隔<br>​          (browser enforced)</p>
+<p>​    –http.port value              (default: 8545)<br>​        HTTP-RPC服务器监听端口</p>
+<p>​    –http.rpcprefix value<br>​          HTTP路径JSON-RPC服务的路径前缀。使用’&#x2F;‘服务于所有路径</p>
+<p>–http.vhosts value            (default: “localhost”)<br>      接受请求的虚拟主机名列表(以逗号分隔)接受’*’通配符。</p>
+<p>​    –ipcdisable                   (default: false)<br>​          关闭IPC-RPC服务器</p>
+<p>​    –ipcpath value<br>​        数据目录中IPC套接字&#x2F;管道的文件名(显式路径转义它)</p>
+<p>​    –jspath value                 (default: .)<br>​         loadScript的根路径</p>
+<p>​    –preload value<br>​         要预加载到控制台的JavaScript文件列表，以逗号分隔</p>
+<p>​    –rpc.allow-unprotected-txs    (default: false)<br>​        允许通过RPC提交未受保护(非EIP155签名)的事务</p>
+<p>​    –rpc.enabledeprecatedpersonal (default: false)<br>​          启用(已弃用的)个人名称空间</p>
+<p>​    –rpc.evmtimeout value         (default: 5s)<br>​          设置eth_call (0&#x3D;infinite)的超时时间</p>
+<p>​    –rpc.gascap value             (default: 50000000)<br>​          设置可以在eth_call&#x2F;estimateGas中使用的gas上限(0&#x3D;infinite)</p>
+<p>​    –rpc.txfeecap value           (default: 1)<br>​          设置可以通过RPC api(0 &#x3D;)发送的交易费用上限(以以太为单位)(0 &#x3D;no cap)</p>
+<p>​    –ws                           (default: false)<br>​          启用WS-RPC服务器</p>
+<p>​    –ws.addr value                (default: “localhost”)<br>​          WS-RPC服务器监听接口</p>
+<p>​    –ws.api value<br>​         通过WS-RPC接口提供的API</p>
+<p>​    –ws.origins value<br>​        接受websockets请求的来源</p>
+<p>​    –ws.port value                (default: 8546)<br>​          WS-RPC服务器侦听端口</p>
+<p>​    –ws.rpcprefix value<br>​        为JSON-RPC提供服务的HTTP路径前缀。使用’&#x2F;‘服务于所有路径。</p>
+<h2 id="开发人员链"><a href="#开发人员链" class="headerlink" title="开发人员链"></a>开发人员链</h2><p>​    –dev                          (default: false)<br>​          Ephemeral proof-of-authority network with a pre-funded developer account, mining<br>​          enabled</p>
+<p>​    –dev.gaslimit value           (default: 11500000)<br>​          Initial block gas limit</p>
+<p>​    –dev.period value             (default: 0)<br>​          Block period to use in developer mode (0 &#x3D; mine only if transaction pending)</p>
+<h2 id="以太坊"><a href="#以太坊" class="headerlink" title="以太坊"></a>以太坊</h2><p>​    –bloomfilter.size value       (default: 2048)<br>​          Megabytes of memory allocated to bloom-filter for pruning</p>
+<p>​    –config value<br>​          TOML configuration file</p>
+<p>​    –datadir value                (default: &#x2F;Users&#x2F;fjl&#x2F;Library&#x2F;Ethereum)<br>​          Data directory for the databases and keystore</p>
+<p>​    –datadir.ancient value<br>​          Root directory for ancient data (default &#x3D; inside chaindata)</p>
+<p>​    –datadir.minfreedisk value<br>​          Minimum free disk space in MB, once reached triggers auto shut down (default &#x3D;<br>​          –cache.gc converted to MB, 0 &#x3D; disabled)</p>
+<p>​    –db.engine value              (default: “leveldb”)<br>​          Backing database implementation to use (‘leveldb’ or ‘pebble’)</p>
+<p>​    –eth.requiredblocks value<br>​          Comma separated block number-to-hash mappings to require for peering<br>​          (<number>&#x3D;<hash>)</p>
+<p>​    –exitwhensynced               (default: false)<br>​          Exits after block synchronisation completes</p>
+<p>​    –gcmode value                 (default: “full”)<br>​          Blockchain garbage collection mode (“full”, “archive”)</p>
+<p>​    –goerli                       (default: false)<br>​          Görli network: pre-configured proof-of-authority test network</p>
+<p>​    –mainnet                      (default: false)<br>​          Ethereum mainnet</p>
+<p>​    –networkid value              (default: 1)<br>​          Explicitly set network id (integer)(For testnets: use –rinkeby, –goerli,<br>​          –sepolia instead)</p>
+<p>​    –override.shanghai value      (default: 0)<br>​          Manually specify the Shanghai fork timestamp, overriding the bundled setting</p>
+<p>​    –rinkeby                      (default: false)<br>​          Rinkeby network: pre-configured proof-of-authority test network</p>
+<p>​    –sepolia                      (default: false)<br>​          Sepolia network: pre-configured proof-of-work test network</p>
+<p>​    –snapshot                     (default: true)<br>​          Enables snapshot-database mode (default &#x3D; enable)</p>
+<p>​    –syncmode value               (default: snap)<br>​          Blockchain sync mode (“snap”, “full” or “light”)</p>
+<p>​    –txlookuplimit value          (default: 2350000)<br>​          Number of recent blocks to maintain transactions index for (default &#x3D; about one<br>​          year, 0 &#x3D; entire chain)</p>
+<h2 id="天然气价格预测"><a href="#天然气价格预测" class="headerlink" title="天然气价格预测"></a>天然气价格预测</h2><p>​    –gpo.blocks value             (default: 20)<br>​          Number of recent blocks to check for gas prices</p>
+<p>​    –gpo.ignoreprice value        (default: 2)<br>​          Gas price below which gpo will ignore transactions</p>
+<p>​    –gpo.maxprice value           (default: 500000000000)<br>​          Maximum transaction priority fee (or gasprice before London fork) to be<br>​          recommended by gpo</p>
+<p>​    –gpo.percentile value         (default: 60)<br>​          Suggested gas price is the given percentile of a set of recent transaction gas<br>​          prices</p>
+<h2 id="轻客户端"><a href="#轻客户端" class="headerlink" title="轻客户端"></a>轻客户端</h2><p>​    –light.egress value           (default: 0)<br>​          Outgoing bandwidth limit for serving light clients (kilobytes&#x2F;sec, 0 &#x3D;<br>​          unlimited)</p>
+<p>​    –light.ingress value          (default: 0)<br>​          Incoming bandwidth limit for serving light clients (kilobytes&#x2F;sec, 0 &#x3D;<br>​          unlimited)</p>
+<p>​    –light.maxpeers value         (default: 100)<br>​          Maximum number of light clients to serve, or light servers to attach to</p>
+<p>​    –light.nopruning              (default: false)<br>​          Disable ancient light chain data pruning</p>
+<p>​    –light.nosyncserve            (default: false)<br>​          Enables serving light clients before syncing</p>
+<p>​    –light.serve value            (default: 0)<br>​          Maximum percentage of time allowed for serving LES requests (multi-threaded<br>​          processing allows values over 100)</p>
+<p>​    –ulc.fraction value           (default: 75)<br>​          Minimum % of trusted ultra-light servers required to announce a new head</p>
+<p>​    –ulc.onlyannounce             (default: false)<br>​          Ultra light server sends announcements only</p>
+<p>​    –ulc.servers value<br>​          List of trusted ultra-light servers</p>
+<h2 id="日志记录和调试"><a href="#日志记录和调试" class="headerlink" title="日志记录和调试"></a>日志记录和调试</h2><p>​    –fakepow                      (default: false)<br>​          Disables proof-of-work verification</p>
+<p>​    –log.backtrace value<br>​          Request a stack trace at a specific logging statement (e.g. “block.go:271”)</p>
+<p>​    –log.debug                    (default: false)<br>​          Prepends log messages with call-site location (file and line number)</p>
+<p>​    –log.file value<br>​          Write logs to a file</p>
+<p>​    –log.json                     (default: false)<br>​          Format logs with JSON</p>
+<p>​    –nocompaction                 (default: false)<br>​          Disables db compaction after import</p>
+<p>​    –pprof                        (default: false)<br>​          Enable the pprof HTTP server</p>
+<p>​    –pprof.addr value             (default: “127.0.0.1”)<br>​          pprof HTTP server listening interface</p>
+<p>​    –pprof.blockprofilerate value (default: 0)<br>​          Turn on block profiling with the given rate</p>
+<p>​    –pprof.cpuprofile value<br>​          Write CPU profile to the given file</p>
+<p>​    –pprof.memprofilerate value   (default: 524288)<br>​          Turn on memory profiling with the given rate</p>
+<p>​    –pprof.port value             (default: 6060)<br>​          pprof HTTP server listening port</p>
+<p>​    –remotedb value<br>​          URL for remote database</p>
+<p>​    –trace value<br>​          Write execution trace to the given file</p>
+<p>​    –verbosity value              (default: 3)<br>​          Logging verbosity: 0&#x3D;silent, 1&#x3D;error, 2&#x3D;warn, 3&#x3D;info, 4&#x3D;debug, 5&#x3D;detail</p>
+<p>​    –vmodule value<br>​          Per-module verbosity: comma-separated list of <pattern>&#x3D;<level> (e.g.<br>​          eth&#x2F;*&#x3D;5,p2p&#x3D;4)</p>
+<h2 id="指标和统计数据"><a href="#指标和统计数据" class="headerlink" title="指标和统计数据"></a>指标和统计数据</h2><p>​    –ethstats value<br>​          Reporting URL of a ethstats service (nodename:secret@host:port)</p>
+<p>​    –metrics                      (default: false)<br>​          Enable metrics collection and reporting</p>
+<p>​    –metrics.addr value<br>​          Enable stand-alone metrics HTTP server listening interface.</p>
+<p>​    –metrics.expensive            (default: false)<br>​          Enable expensive metrics collection and reporting</p>
+<p>​    –metrics.influxdb             (default: false)<br>​          Enable metrics export&#x2F;push to an external InfluxDB database</p>
+<p>​    –metrics.influxdb.bucket value (default: “geth”)<br>​          InfluxDB bucket name to push reported metrics to (v2 only)</p>
+<p>​    –metrics.influxdb.database value (default: “geth”)<br>​          InfluxDB database name to push reported metrics to</p>
+<p>​    –metrics.influxdb.endpoint value (default: “<a target="_blank" rel="noopener" href="http://localhost:8086/">http://localhost:8086</a>“)<br>​          InfluxDB API endpoint to report metrics to</p>
+<p>​    –metrics.influxdb.organization value (default: “geth”)<br>​          InfluxDB organization name (v2 only)</p>
+<p>​    –metrics.influxdb.password value (default: “test”)<br>​          Password to authorize access to the database</p>
+<p>​    –metrics.influxdb.tags value  (default: “host&#x3D;localhost”)<br>​          Comma-separated InfluxDB tags (key&#x2F;values) attached to all measurements</p>
+<p>​    –metrics.influxdb.token value (default: “test”)<br>​          Token to authorize access to the database (v2 only)</p>
+<p>​    –metrics.influxdb.username value (default: “test”)<br>​          Username to authorize access to the database</p>
+<p>​    –metrics.influxdbv2           (default: false)<br>​          Enable metrics export&#x2F;push to an external InfluxDB v2 database</p>
+<p>​    –metrics.port value           (default: 6060)<br>​          Metrics HTTP server listening port.<br>​          Please note that –metrics.addr must be set<br>​          to start the server.</p>
+<h2 id="矿工"><a href="#矿工" class="headerlink" title="矿工"></a>矿工</h2><p>​    –mine                         (default: false)<br>​          Enable mining</p>
+<p>​    –miner.etherbase value<br>​          0x prefixed public address for block mining rewards</p>
+<p>​    –miner.extradata value<br>​          Block extra data set by the miner (default &#x3D; client version)</p>
+<p>​    –miner.gaslimit value         (default: 30000000)<br>​          Target gas ceiling for mined blocks</p>
+<p>​    –miner.gasprice value         (default: 0)<br>​          Minimum gas price for mining a transaction</p>
+<p>​    –miner.newpayload-timeout value (default: 2s)<br>​          Specify the maximum time allowance for creating a new payload</p>
+<p>​    –miner.recommit value         (default: 2s)<br>​          Time interval to recreate the block being mined</p>
+<h2 id="MISC"><a href="#MISC" class="headerlink" title="MISC"></a>MISC</h2><p>​    –help, -h                     (default: false)<br>​          show help</p>
+<p>​    –synctarget value<br>​          File for containing the hex-encoded block-rlp as sync target(dev feature)</p>
+<p>​    –version, -v                  (default: false)<br>​          print the version</p>
+<h2 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h2><p>​    –bootnodes value<br>​          Comma separated enode URLs for P2P discovery bootstrap</p>
+<p>​    –discovery.dns value<br>​          Sets DNS discovery entry points (use “” to disable DNS)</p>
+<p>​    –discovery.port value         (default: 30303)<br>​          Use a custom UDP port for P2P discovery</p>
+<p>​    –identity value<br>​          Custom node name</p>
+<p>​    –maxpeers value               (default: 50)<br>​          Maximum number of network peers (network disabled if set to 0)</p>
+<p>​    –maxpendpeers value           (default: 0)<br>​          Maximum number of pending connection attempts (defaults used if set to 0)</p>
+<p>​    –nat value                    (default: “any”)<br>​          NAT port mapping mechanism (any|none|upnp|pmp|pmp:<IP>|extip:<IP>)</p>
+<p>​    –netrestrict value<br>​          Restricts network communication to the given IP networks (CIDR masks)</p>
+<p>​    –nodekey value<br>​          P2P node key file</p>
+<p>​    –nodekeyhex value<br>​          P2P node key as hex (for testing)</p>
+<p>​    –nodiscover                   (default: false)<br>​          Disables the peer discovery mechanism (manual peer addition)</p>
+<p>​    –port value                   (default: 30303)<br>​          Network listening port</p>
+<p>​    –v5disc                       (default: false)<br>​          Enables the experimental RLPx V5 (Topic Discovery) mechanism</p>
+<h2 id="性能调优"><a href="#性能调优" class="headerlink" title="性能调优"></a>性能调优</h2><p>​    –cache value                  (default: 1024)<br>​          Megabytes of memory allocated to internal caching (default &#x3D; 4096 mainnet full<br>​          node, 128 light mode)</p>
+<p>​    –cache.blocklogs value        (default: 32)<br>​          Size (in number of blocks) of the log cache for filtering</p>
+<p>​    –cache.database value         (default: 50)<br>​          Percentage of cache memory allowance to use for database io</p>
+<p>​    –cache.gc value               (default: 25)<br>​          Percentage of cache memory allowance to use for trie pruning (default &#x3D; 25% full<br>​          mode, 0% archive mode)</p>
+<p>​    –cache.noprefetch             (default: false)<br>​          Disable heuristic state prefetch during block import (less CPU and disk IO, more<br>​          time waiting for data)</p>
+<p>​    –cache.preimages              (default: false)<br>​          Enable recording the SHA3&#x2F;keccak preimages of trie keys</p>
+<p>​    –cache.snapshot value         (default: 10)<br>​          Percentage of cache memory allowance to use for snapshot caching (default &#x3D; 10%<br>​          full mode, 20% archive mode)</p>
+<p>​    –cache.trie value             (default: 15)<br>​          Percentage of cache memory allowance to use for trie caching (default &#x3D; 15% full<br>​          mode, 30% archive mode)</p>
+<p>​    –cache.trie.journal value     (default: “triecache”)<br>​          Disk journal directory for trie cache to survive node restarts</p>
+<p>​    –cache.trie.rejournal value   (default: 1h0m0s)<br>​          Time interval to regenerate the trie cache journal</p>
+<p>​    –fdlimit value                (default: 0)<br>​          Raise the open file descriptor resource limit (default &#x3D; system fd limit)</p>
+<h2 id="交易池"><a href="#交易池" class="headerlink" title="交易池"></a>交易池</h2><p>​    –txpool.accountqueue value    (default: 64)<br>​          Maximum number of non-executable transaction slots permitted per account</p>
+<p>​    –txpool.accountslots value    (default: 16)<br>​          Minimum number of executable transaction slots guaranteed per account</p>
+<p>​    –txpool.globalqueue value     (default: 1024)<br>​          Maximum number of non-executable transaction slots for all accounts</p>
+<p>​    –txpool.globalslots value     (default: 5120)<br>​          Maximum number of executable transaction slots for all accounts</p>
+<p>​    –txpool.journal value         (default: “transactions.rlp”)<br>​          Disk journal for local transaction to survive node restarts</p>
+<p>​    –txpool.lifetime value        (default: 3h0m0s)<br>​          Maximum amount of time non-executable transaction are queued</p>
+<p>​    –txpool.locals value<br>​          Comma separated accounts to treat as locals (no flush, priority inclusion)</p>
+<p>​    –txpool.nolocals              (default: false)<br>​          Disables price exemptions for locally submitted transactions</p>
+<p>​    –txpool.pricebump value       (default: 10)<br>​          Price bump percentage to replace an already existing transaction</p>
+<p>​    –txpool.pricelimit value      (default: 1)<br>​          Minimum gas price limit to enforce for acceptance into the pool</p>
+<p>​    –txpool.rejournal value       (default: 1h0m0s)<br>​          Time interval to regenerate the local transaction journal</p>
+<h2 id="虚拟机"><a href="#虚拟机" class="headerlink" title="虚拟机"></a>虚拟机</h2><p>​    –vmdebug                      (default: false)<br>​          Record information useful for VM and contract debugging</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/11/05/Geth/1-Geth%E5%90%AF%E5%8A%A8%E5%91%BD%E4%BB%A4/" title="1-Geth启动命令">https://kongpengyq.com/2023/11/05/Geth/1-Geth启动命令/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Geth/" rel="tag"># Geth</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/10/27/Home/" rel="prev" title="Welcome to Yao Qi's personal blog！">
+      <i class="fa fa-chevron-left"></i> Welcome to Yao Qi's personal blog！
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4"><span class="nav-text">命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%A8%E5%B1%80%E9%80%89%E9%A1%B9"><span class="nav-text">全局选项</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%A6%E6%88%B7"><span class="nav-text">账户</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%AB%E5%90%8D-%E5%BC%83%E7%94%A8"><span class="nav-text">别名(弃用)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#API%E5%92%8C%E6%8E%A7%E5%88%B6%E5%8F%B0"><span class="nav-text">API和控制台</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E5%8F%91%E4%BA%BA%E5%91%98%E9%93%BE"><span class="nav-text">开发人员链</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A5%E5%A4%AA%E5%9D%8A"><span class="nav-text">以太坊</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%A9%E7%84%B6%E6%B0%94%E4%BB%B7%E6%A0%BC%E9%A2%84%E6%B5%8B"><span class="nav-text">天然气价格预测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BD%BB%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-text">轻客户端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E5%92%8C%E8%B0%83%E8%AF%95"><span class="nav-text">日志记录和调试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E6%A0%87%E5%92%8C%E7%BB%9F%E8%AE%A1%E6%95%B0%E6%8D%AE"><span class="nav-text">指标和统计数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9F%BF%E5%B7%A5"><span class="nav-text">矿工</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MISC"><span class="nav-text">MISC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C"><span class="nav-text">网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98"><span class="nav-text">性能调优</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%A4%E6%98%93%E6%B1%A0"><span class="nav-text">交易池</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-text">虚拟机</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

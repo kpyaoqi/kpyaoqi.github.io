@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="关于智能合约的反思❓ Is smart contract really smart？智能合约与人工智能无关，其本质上是”自动合约“——以事先写好代码自动执行相应规则。因此，智能合约并不智能，写好之后就不可以再进行修改，实际上就相当于一个”代码合同“。 反思一：smart contract is anything but smart正是区块链的不可篡改性，导致对The DAO中的bug也无法进行修改">
+<meta property="og:type" content="article">
+<meta property="og:title" content="12-反思">
+<meta property="og:url" content="https://kongpengyq.com/2022/10/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A/12-%E5%8F%8D%E6%80%9D/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="关于智能合约的反思❓ Is smart contract really smart？智能合约与人工智能无关，其本质上是”自动合约“——以事先写好代码自动执行相应规则。因此，智能合约并不智能，写好之后就不可以再进行修改，实际上就相当于一个”代码合同“。 反思一：smart contract is anything but smart正是区块链的不可篡改性，导致对The DAO中的bug也无法进行修改">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-10-13T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.734Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="以太坊">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/10/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A/12-%E5%8F%8D%E6%80%9D/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>12-反思 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/10/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A/12-%E5%8F%8D%E6%80%9D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          12-反思
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-10-14 00:00:00" itemprop="dateCreated datePublished" datetime="2022-10-14T00:00:00+08:00">2022-10-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BB%A5%E5%A4%AA%E5%9D%8A/" itemprop="url" rel="index">
+                    <span itemprop="name">以太坊</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="关于智能合约的反思"><a href="#关于智能合约的反思" class="headerlink" title="关于智能合约的反思"></a><strong>关于智能合约的反思</strong></h1><h3 id="❓-Is-smart-contract-really-smart？"><a href="#❓-Is-smart-contract-really-smart？" class="headerlink" title="❓ Is smart contract really smart？"></a><strong>❓ Is smart contract really smart？</strong></h3><p>智能合约与人工智能无关，其本质上是”自动合约“——以事先写好代码自动执行相应规则。因此，智能合约并不智能，写好之后就不可以再进行修改，实际上就相当于一个”代码合同“。</p>
+<h3 id="反思一：smart-contract-is-anything-but-smart"><a href="#反思一：smart-contract-is-anything-but-smart" class="headerlink" title="反思一：smart contract is anything but smart"></a>反思一：smart contract is anything but smart</h3><p>正是区块链的不可篡改性，导致对The DAO中的bug也无法进行修改，最终酿就以太坊的硬分叉。设想你发现银行卡信息被盗，第一反应是通知银行将账户进行冻结。但如果在区块链上，你就只能眼睁睁看着账户中的钱被转移走。</p>
+<p><strong>当时1&#x2F;3的钱被黑客转走后，除了联系以太坊团队还能怎么补救？</strong></p>
+<p>由于无法阻止其他人继续调用智能合约，因此必须将智能合约中的钱转走。而智能合约并没有提供转走钱的方法，那就只能通过黑客的方法将剩余资金转移到新账户中。</p>
+<h3 id="反思二：Irrevocability-is-a-double-edged-sword"><a href="#反思二：Irrevocability-is-a-double-edged-sword" class="headerlink" title="反思二：Irrevocability is a double edged sword"></a>反思二：Irrevocability is a double edged sword</h3><p>我们说不可篡改性是双刃剑，但真的有什么是不可篡改的吗？分叉攻击不就是一种篡改方式吗？以太坊团队通过软件升级强行修改账户状态，实现在未经他人许可下转走别人的钱。因此，不要迷信区块链的不可篡改性，毕竟，代码是死的，而人是活的。没有什么无法被修改。一般来说，区块链上内容难以篡改，但真正遇到类似The DAO这类重大事件，真正想要修改还是可以实现的。</p>
+<h3 id="反思三：Nothing-is-irrevocability"><a href="#反思三：Nothing-is-irrevocability" class="headerlink" title="反思三：Nothing is irrevocability"></a>反思三：Nothing is irrevocability</h3><p>没有任何东西是不可篡改的</p>
+<h1 id="关于语言设计的反思"><a href="#关于语言设计的反思" class="headerlink" title="关于语言设计的反思"></a><strong>关于语言设计的反思</strong></h1><p>为什么会出现”重入攻击“？某种意义上来说，solidity语言的特性是反人类直觉的。一般意义上，A给B转账，B不可能会反过来调用A。然而solidity语言中，A给B转账等于隐性调用了B的failback()函数，而B可以通过fallback()来反过来调用A。由于这与人类常识不符，便容易忽视掉这一漏洞。</p>
+<p>有人提出，应该使用函数式的编程语言，因为函数式语言较为安全，不容易出现类似的安全漏洞，且长远来看，要实现对智能合约理论上正确性的证明。然而，虽然solidity设计存在缺陷，但是否需要采用函数式编程仍然有待探讨。</p>
+<h3 id="反思四：Is-solidity-the-right-programming-language"><a href="#反思四：Is-solidity-the-right-programming-language" class="headerlink" title="反思四：Is solidity the right programming language?"></a>反思四：Is solidity the right programming language?</h3><p>比特币脚本语言简单、表达能力差，很多功能无法表达出现。而以太坊的编程语言是图灵完备的，凡是计算机程序可以完成的，solidity都可以将其实现。然而，图灵完备的表达能力是一种好事吗？</p>
+<p>有人认为应该选择一种适中的语言，既不要比特币脚本语言那么简单，又不要solidity语言那样图灵完备，希望既可以实现智能合约想要实现的功能，但又不容易出现安全漏洞。然而，找到这样一种语言是困难的，因为设计之初我们无法预料到未来的所有应用场景和所有的安全攻击。</p>
+<p>现实生活中是如何解决的？合同语言不够严谨导致执行出现纠纷，我们并未提供一种专门用于合同编写的专用语言，而是通过提供【模板】来解决。这可能是智能合约未来的发展方向，常用的智能合约可能会出现模板，也可能会出现专门编写智能合约的机构。</p>
+<p><strong>反思五：智能合约的历史较短，未来会逐步走向成熟。</strong></p>
+<h1 id="关于开源的反思"><a href="#关于开源的反思" class="headerlink" title="关于开源的反思"></a><strong>关于开源的反思</strong></h1><p>中心化系统经常是非开源的，好比BAT不会公开他们的软件架构一样。而去中心化需要其他人都执行一致的操作，就必然要开源自己的代码，否则不会被大家所信任。有人认为，开源还有一个好处——安全。因为开源代码被众人所审视，其中出现安全漏洞的可能不大。然而，我们已经观察到智能合约代码出现漏洞，其他领域诸多开源软件也出现了各种问题</p>
+<p>这就引发我们思考：为什么全世界这么多人在看着这些代码，他们还是出现了这么多漏洞呢？（many eyeball fallacy）</p>
+<p>理论上大家都可以去看，然而实际上真正有时间和精力查看的人很少，即使看，也不一定大多数人都又足够的专业知识看出其中隐藏的漏洞。有可能我们都认为世界上这么多人，别人肯定看过了，但实际上大家可能都这么想，没有几个人真正看过开源代码。所以：</p>
+<h3 id="反思六：不要认为开源软件必然比非开源软件安全。"><a href="#反思六：不要认为开源软件必然比非开源软件安全。" class="headerlink" title="反思六：不要认为开源软件必然比非开源软件安全。"></a><strong>反思六：不要认为开源软件必然比非开源软件安全。</strong></h3><h1 id="关于去中心化的反思"><a href="#关于去中心化的反思" class="headerlink" title="关于去中心化的反思"></a><strong>关于去中心化的反思</strong></h1><p>追随区块链技术者，一般也都是去中心化理念的拥护者。这些人对于现实中中心化的弊端有所认识，便追随去中心化这一全新管理模式。这也就是为什么在以太坊推出硬分叉后引发巨大分歧的原因，因为仅凭开发团队通过一个软件升级就可以将别人账上钱强行转走了，这就回到了中心化的老路之上，甚至更加中心化，因为现实中要没收他人财产还需要经过司法程序，28天未必能完成。</p>
+<p>但思考一下，硬分叉是单单依靠以太坊开发团队就可以完成吗？What does decentrtilization mean？</p>
+<p>以太坊团队发布升级为什么最终能够成功？因为绝大多数矿工接受了升级软件，以行动支持了分叉方案。即使如此，以太坊团队仍然不能阻止另外一部分人从旧链转移到新链上来。因此，去中心化不意味着完全拒绝人的干预，不意味着完全不能修改，而是要用去中心化的方法来完成修改。</p>
+<h1 id="关于分叉的反思"><a href="#关于分叉的反思" class="headerlink" title="关于分叉的反思"></a><strong>关于分叉的反思</strong></h1><p>一般认为，分叉是一件坏事，分叉导致原有一条链变成了两条。然而，分叉恰恰是去中心化的体现，在中心化系统中，用户是无法进行分叉的，只能选择放弃和接受。</p>
+<p>关于以太坊为什么被V神创建的故事：</p>
+<p>19岁时，喜爱玩魔兽游戏，然而魔兽世界将术士一个技能改掉了。他多次联系暴雪公司反馈，然而暴雪对此并未进行答复。因此，他放弃游戏并反思中心化的缺点，并决定创建去中心化平台，用户不满意就可以进行分叉。因此，存在分叉，恰恰是民主精神的体现。</p>
+<h1 id="关于去中心化和分布式"><a href="#关于去中心化和分布式" class="headerlink" title="关于去中心化和分布式"></a><strong>关于去中心化和分布式</strong></h1><p>一个去中心化系统必然是分布式的，但分布式未必是去中心化。例如百度、阿里、google等都有着大量的分布式应用，依托于成千数万的服务器运行，但这些都掌握在公司自己手中，这仍然是中心化的。</p>
+<p>比特币、以太坊都属于交易驱动的状态机。特点是使得系统中大量节点，通过付出大量代价共同维护相同的状态；然而常用的分布式是多台机器完成不同的工作，从而联合起来完成一个大的任务，从而实现大于单台机器的运算能力。而状态机是维护所有节点共同状态，多台机器完成同一组操作，即使其中一台机器宕机其余机器仍然可以对外提供完整服务，从而满足一些必须24小时对外提供服务的要求。代价是多态计算机合起来，效率反而小于一台计算机。因此，传统应用状态机场景，机器数量较少，从而减少状态对齐付出的代价。而比特币、以太坊这种控制大规模机器是前所未有的。基于此，可见比特币、以太坊并不适用于大规模计算和大规模存储。智能合约是编写控制逻辑的，只有在互不信任的单位之间需要建立共识的操作才需要写在智能合约中。</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/10/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A/12-%E5%8F%8D%E6%80%9D/" title="12-反思">https://kongpengyq.com/2022/10/14/区块链/以太坊/12-反思/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/" rel="tag"># 以太坊</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/10/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/00-geth/" rel="prev" title="00-geth">
+      <i class="fa fa-chevron-left"></i> 00-geth
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/10/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A/11-TheDao/" rel="next" title="11-TheDao">
+      11-TheDao <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E7%9A%84%E5%8F%8D%E6%80%9D"><span class="nav-text">关于智能合约的反思</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9D%93-Is-smart-contract-really-smart%EF%BC%9F"><span class="nav-text">❓ Is smart contract really smart？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8D%E6%80%9D%E4%B8%80%EF%BC%9Asmart-contract-is-anything-but-smart"><span class="nav-text">反思一：smart contract is anything but smart</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8D%E6%80%9D%E4%BA%8C%EF%BC%9AIrrevocability-is-a-double-edged-sword"><span class="nav-text">反思二：Irrevocability is a double edged sword</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8D%E6%80%9D%E4%B8%89%EF%BC%9ANothing-is-irrevocability"><span class="nav-text">反思三：Nothing is irrevocability</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E%E8%AF%AD%E8%A8%80%E8%AE%BE%E8%AE%A1%E7%9A%84%E5%8F%8D%E6%80%9D"><span class="nav-text">关于语言设计的反思</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8D%E6%80%9D%E5%9B%9B%EF%BC%9AIs-solidity-the-right-programming-language"><span class="nav-text">反思四：Is solidity the right programming language?</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E%E5%BC%80%E6%BA%90%E7%9A%84%E5%8F%8D%E6%80%9D"><span class="nav-text">关于开源的反思</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8D%E6%80%9D%E5%85%AD%EF%BC%9A%E4%B8%8D%E8%A6%81%E8%AE%A4%E4%B8%BA%E5%BC%80%E6%BA%90%E8%BD%AF%E4%BB%B6%E5%BF%85%E7%84%B6%E6%AF%94%E9%9D%9E%E5%BC%80%E6%BA%90%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8%E3%80%82"><span class="nav-text">反思六：不要认为开源软件必然比非开源软件安全。</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E%E5%8E%BB%E4%B8%AD%E5%BF%83%E5%8C%96%E7%9A%84%E5%8F%8D%E6%80%9D"><span class="nav-text">关于去中心化的反思</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E%E5%88%86%E5%8F%89%E7%9A%84%E5%8F%8D%E6%80%9D"><span class="nav-text">关于分叉的反思</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E%E5%8E%BB%E4%B8%AD%E5%BF%83%E5%8C%96%E5%92%8C%E5%88%86%E5%B8%83%E5%BC%8F"><span class="nav-text">关于去中心化和分布式</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

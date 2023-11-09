@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="智能合约中如何解决随机数的问题使用区块变量，常见方法是使用block.timestamp 和 block.difficulty 使用API：通过数字签名的方式来证明随机数是取自于某个随机数服务提供并且未被篡改过 Chainlink VRF：提供了一个链上去中心化的解决方案 oracle预言机(oraclize,chainlink,TEE(SGX))在区块链中，智能合约通常只能读取和修改区块链上的数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="区块链">
+<meta property="og:url" content="https://kongpengyq.com/2022/12/18/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/%E5%8C%BA%E5%9D%97%E9%93%BE/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="智能合约中如何解决随机数的问题使用区块变量，常见方法是使用block.timestamp 和 block.difficulty 使用API：通过数字签名的方式来证明随机数是取自于某个随机数服务提供并且未被篡改过 Chainlink VRF：提供了一个链上去中心化的解决方案 oracle预言机(oraclize,chainlink,TEE(SGX))在区块链中，智能合约通常只能读取和修改区块链上的数">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/img/image-20230412220424100.png">
+<meta property="article:published_time" content="2022-12-17T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:01:35.325Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链知识">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/img/image-20230412220424100.png">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/12/18/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/%E5%8C%BA%E5%9D%97%E9%93%BE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>区块链 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/12/18/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/%E5%8C%BA%E5%9D%97%E9%93%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          区块链
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-12-18 00:00:00" itemprop="dateCreated datePublished" datetime="2022-12-18T00:00:00+08:00">2022-12-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:01:35" itemprop="dateModified" datetime="2023-11-09T10:01:35+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/" itemprop="url" rel="index">
+                    <span itemprop="name">区块链知识</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="智能合约中如何解决随机数的问题"><a href="#智能合约中如何解决随机数的问题" class="headerlink" title="智能合约中如何解决随机数的问题"></a>智能合约中如何解决随机数的问题</h1><p>使用区块变量，常见方法是使用<code>block.timestamp</code> 和 <code>block.difficulty</code></p>
+<p>使用API：通过数字签名的方式来证明随机数是取自于某个随机数服务提供并且未被篡改过</p>
+<p>Chainlink VRF：提供了一个链上去中心化的解决方案</p>
+<h1 id="oracle预言机-oraclize-chainlink-TEE-SGX"><a href="#oracle预言机-oraclize-chainlink-TEE-SGX" class="headerlink" title="oracle预言机(oraclize,chainlink,TEE(SGX))"></a>oracle预言机(oraclize,chainlink,TEE(SGX))</h1><p>在区块链中，智能合约通常只能读取和修改区块链上的数据，而无法访问外部的数据源，Oracle预言机被引入到区块链中。Oracle预言机是一种中心化的服务，它可以从外部数据源获取数据，并将数据传递给智能合约。智能合约可以使用这些数据来执行相应的操作。</p>
+<p>分类：</p>
+<ol>
+<li>中心化Oracle预言机：中心化的Oracle预言机是最简单的实现方式。它通常由一个中心化的服务提供商提供，可以从外部数据源获取数据并将数据传递给智能合约。这种实现方式具有简单、易用和高可用的特点，但也存在单点故障和安全性问题。</li>
+<li>分布式Oracle预言机：分布式的Oracle预言机采用多个服务提供商来提供数据。它的实现方式可以基于共识算法（如PoS、PoW等），或者基于多方计算（MPC）协议。这种实现方式可以提高可靠性和安全性，但也增加了复杂度和成本。</li>
+<li>去中心化Oracle预言机：去中心化的Oracle预言机是最安全的实现方式。它通常基于区块链技术实现，使用智能合约来管理Oracle预言机。数据由多个服务提供商提供，并经过验证后提交到智能合约中。这种实现方式具有高可靠性和高安全性的特点，但也存在复杂度高和成本高的问题。</li>
+</ol>
+<h1 id="event-modifier的作用和用法"><a href="#event-modifier的作用和用法" class="headerlink" title="event,modifier的作用和用法"></a>event,modifier的作用和用法</h1><p>event：</p>
+<p>​	作用：应用程序通过以太坊客户端的 RPC 接口订阅和监听这些事件，外部应用程序可以根据这些通知做出相应的响应或者记录区块链的日志，日志与合约的地址关联，并记录到区块链中</p>
+<p>​	用法：event ，emit，indexed关键字表示该参数可以在Event日志中被索引</p>
+<p>modifier：</p>
+<p>​	作用: 将一些通用的操作提取出来，包装为函数修改器，来提高代码的复用性，改善编码效率。是函数高内聚，低耦合的延伸。</p>
+<p>​	用法：常用于在函数执行前检查某种前置条件。</p>
+<h1 id="solidity-各大版本的新特性"><a href="#solidity-各大版本的新特性" class="headerlink" title="solidity 各大版本的新特性"></a>solidity 各大版本的新特性</h1><p>Solidity 0.7.0:</p>
+<ul>
+<li>支持了 try&#x2F;catch 异常处理</li>
+<li>引入了 receive() 和 fallback() 函数，用于接收 Ether</li>
+<li>引入了 contract 关键字，用于定义新的合约类型</li>
+</ul>
+<p>Solidity 0.8.0:</p>
+<ul>
+<li>引入了 calldata 关键字，用于指示函数参数应该在 calldata 中传递</li>
+<li>支持了 struct 和 enum 的本地定义</li>
+<li>支持了抽象合约（abstract contract）</li>
+<li>函数参数可以标记为 immutable</li>
+<li>引入了 error 关键字，用于定义错误类型</li>
+</ul>
+<p>Solidity 0.9.0:</p>
+<ul>
+<li>引入了 revert 可接受一个 string 参数</li>
+<li>引入了内部可变映射（Internal Mutable Mapping）</li>
+<li>引入了枚举元素间的数学操作符</li>
+<li>引入了事件上的 gas 注释</li>
+</ul>
+<h1 id="形式化证明"><a href="#形式化证明" class="headerlink" title="形式化证明"></a>形式化证明</h1><p>形式化验证是指根据形式化规范评估系统正确性的过程。 简言之，形式化验证让我们可以检查系统的行为是否满足某些要求（即，系统按照我们的想法运作）</p>
+<h1 id="contractfuzzer-模糊测试-有什么缺点"><a href="#contractfuzzer-模糊测试-有什么缺点" class="headerlink" title="contractfuzzer(模糊测试)有什么缺点"></a>contractfuzzer(模糊测试)有什么缺点</h1><ol>
+<li>覆盖率限制：模糊测试<strong>通常只能测试少数路径，而不能测试所有路径</strong>，因此存在漏洞被忽略的可能性。这可能导致合约中潜在的漏洞未被发现，从而导致安全风险。</li>
+<li>资源限制：使用模糊测试<strong>需要耗费大量的计算资源和时间</strong>，这可能会使得测试成本变得很高。特别是对于非常大的合约，测试过程可能需要数天或数周才能完成。</li>
+<li>精度问题：尽管模糊测试可以检测出许多常见的漏洞类型，但它可能<strong>无法检测出复杂的漏洞</strong>。例如，对于需要多步操作的漏洞，模糊测试可能无法完全模拟所有必要的操作序列。</li>
+<li>误报率高：模糊测试<strong>可能会产生大量误报</strong>，即将无害的代码标记为漏洞。这可能会导致开发人员在排查问题时浪费时间和精力。</li>
+<li>无法解决语义问题：模糊测试通常只能检查合约的语法正确性，而不能检查合约的<strong>语义正确性</strong>。这意味着即使合约代码通过了模糊测试，仍然可能存在潜在的逻辑问题</li>
+</ol>
+<h1 id="以太坊中nonce的作用-防止重放攻击-，如何获得nonce"><a href="#以太坊中nonce的作用-防止重放攻击-，如何获得nonce" class="headerlink" title="以太坊中nonce的作用(防止重放攻击)，如何获得nonce"></a>以太坊中nonce的作用(防止重放攻击)，如何获得nonce</h1><p>nonce是一个递增的随机数，用于确保每笔交易是唯一的，并防止重放攻击。每个账户都有一个对应的nonce值，用于记录该账户已经发送了多少笔交易。当一个账户发送一笔交易时，交易的nonce值必须是该账户的当前nonce值加1，这样就确保了每笔交易的唯一性。</p>
+<p>nonce值是公开可见的，可以通过区块浏览器等工具查询，或者web3.js、ethers.js</p>
+<h1 id="如何调用他人的合约："><a href="#如何调用他人的合约：" class="headerlink" title="如何调用他人的合约："></a>如何调用他人的合约：</h1><p>通过接口方式调用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">interface AnimalEat &#123;</span><br><span class="line">    function eat() external returns (string memory);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">contract Animal &#123;</span><br><span class="line">    function test(address _addr) external returns (string memory) &#123;</span><br><span class="line">        AnimalEat general = AnimalEat(_addr);</span><br><span class="line">        return general.eat();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过签名方式调用：三个call</p>
+<h1 id="除开EVM，还知道什么虚拟机"><a href="#除开EVM，还知道什么虚拟机" class="headerlink" title="除开EVM，还知道什么虚拟机"></a>除开EVM，还知道什么虚拟机</h1><ol>
+<li>Java虚拟机（JVM）：JVM是用于执行Java字节码的虚拟机，它是Java平台的核心组成部分之一。</li>
+<li>NEO虚拟机（NeoVM）：NEO是一个开源的智能合约平台，它的虚拟机是NeoVM。</li>
+<li>EOS虚拟机（EOS VM）：EOS是一个分散式应用平台，它使用的虚拟机是EOS VM。</li>
+<li>蚂蚁区块链虚拟机（AntChain VM）微众银行虚拟机（WeBank Chain VM）百度区块链虚拟机（XuperVM）万向区块链虚拟机（WASM VM）</li>
+</ol>
+<p>区别：</p>
+<ol>
+<li>虚拟机类型：不同的区块链平台可能会使用不同类型的虚拟机，如<strong>以太坊使用基于堆栈的EVM，NEO使用基于寄存器的NeoVM等等。</strong></li>
+<li>执行效率：不同的虚拟机在执行智能合约时，可能会有<strong>不同的效率和速度，这取决于虚拟机的设计和实现。</strong></li>
+<li>编程语言支持：不同的虚拟机可能<strong>支持不同的编程语言和智能合约开发框架</strong>，例如以太坊支持Solidity、Vyper和Serpent等语言，NEO支持C#和Python等语言。</li>
+<li>安全性和可靠性：虚拟机在执行智能合约时需要确保安全和可靠，不同的虚拟机可能会<strong>采用不同的安全机制和代码审核策略</strong>，以确保智能合约的正确性和安全性。</li>
+<li><strong>社区支持和生态系统</strong>：不同的虚拟机可能有不同的社区支持和生态系统，这对于开发者和用户来说都非常重要，因为这意味着有更多的工具、文档和资源可供使用。</li>
+</ol>
+<h1 id="Merkle树，MPT树如何构建，有何区别-这个经常问"><a href="#Merkle树，MPT树如何构建，有何区别-这个经常问" class="headerlink" title="Merkle树，MPT树如何构建，有何区别(这个经常问)"></a>Merkle树，MPT树如何构建，有何区别(这个经常问)</h1><p>Merkle树和MPT（Merkle Patricia Trie）树都是一种<strong>哈希树数据结构</strong>，通常<strong>用于验证数据的完整性和构建区块链系统中的状态树</strong></p>
+<p>构建方式：</p>
+<ul>
+<li><p>Merkle树：Merkle树由叶子节点和父节点组成，叶子节点是数据块的哈希值，父节点是其两个子节点的哈希值的哈希值。构建Merkle树时，需要将所有数据块的哈希值按顺序排列成叶子节点，并对相邻的叶子节点进行哈希运算，得到它们的父节点。重复这个过程，直到得到根节点，也就是整棵树的哈希值。</p>
+</li>
+<li><p>MPT树：健值对</p>
+<ul>
+<li>扩展节点（Extension Node）：只能有一个子节点。</li>
+<li>分支节点（Branch Node）：可以有多个节点。</li>
+<li>叶子节点（Leaf Node）：没有子节点。</li>
+<li>空节点：空字符串。</li>
+</ul>
+<p> <img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/img/image-20230412220424100.png" alt="image-20230412220424100"></p>
+</li>
+</ul>
+<p>区别：</p>
+<ul>
+<li>数据存储方式不同：<strong>Merkle树是一种二叉树，每个叶节点存储的是数据的哈希值</strong>，而非数据本身。MPT树是一种多叉树，每个节点存储的是<strong>键值对</strong>（Key-Value Pair），其中Key是数据的哈希值，而Value是数据本身。</li>
+<li>数据更新方式不同：Merkle树是一种静态结构，一旦树构建完成，就<strong>不能再添加或修改数据</strong>。如果需要添加或修改数据，就需要重新构建整棵树。MPT树是一种动态结构，<strong>可以动态地添加、修改、删除数据</strong>。</li>
+<li>查询方式不同：Merkle树<strong>只能支持对整个数据块的完整性进行验证</strong>，而不能支持对单个数据的验证和查询。MPT树可以<strong>支持对单个数据的验证和查询</strong>，因为每个节点存储的是Key-Value Pair，可以通过Key快速查找对应的Value。</li>
+</ul>
+<h1 id="以太坊是如何从POW转向POS的-Casper协议"><a href="#以太坊是如何从POW转向POS的-Casper协议" class="headerlink" title="以太坊是如何从POW转向POS的(Casper协议)"></a>以太坊是如何从POW转向POS的(Casper协议)</h1><ol>
+<li>引入Casper：Casper是一种基于权益证明的共识机制，节点被分为两种角色：<strong>验证节点和提案节点。</strong>验证节点验证区块和交易的有效性，并根据其权益大小来选择提案节点。提案节点负责创建新的区块并提交到链上。</li>
+<li>引入Beacon Chain：Beacon Chain是以太坊2.0版本的核心部分，是一个新的区块链，用于管理以太坊2.0中的验证器。验证器是指参与权益证明共识机制的节点，他们会投入自己的以太坊代币（ETH）来获得权益，然后运行验证器软件，对交易进行验证，并参与新块的生成。这两个区块链之间<strong>通过分片技术进行交互</strong>，共同组成了以太坊2.0的整体系统。</li>
+<li>以太坊2.0上线：在经过长时间的开发和测试后，以太坊2.0于2020年12月1日正式上线。</li>
+</ol>
+<h1 id="以太坊使用的密码学，对两者进行介绍"><a href="#以太坊使用的密码学，对两者进行介绍" class="headerlink" title="以太坊使用的密码学，对两者进行介绍"></a>以太坊使用的密码学，对两者进行介绍</h1><p>哈希函数Keccak-256：计算数据的摘要，以确保数据的完整性和一致性</p>
+<p>椭圆曲线加密算法 ECDSA：生成公钥和私钥对，并使用这些密钥对来加密和签名交易数据</p>
+<h1 id="区块链怎么开启新的Epoch"><a href="#区块链怎么开启新的Epoch" class="headerlink" title="区块链怎么开启新的Epoch"></a>区块链怎么开启新的Epoch</h1><p>区块链中的<strong>Epoch是一个时间段，在该时间段内区块链网络采用相同的规则来验证和处理交易</strong>。每个Epoch的长度和开始时间都可以由区块链协议的设计者来定义。一些区块链协议（如Ethereum）使用<strong>基于区块高度的Epoch，而其他协议则使用基于时间的Epoch</strong>。</p>
+<p>要开启一个新的Epoch，需要满足以下条件：</p>
+<ol>
+<li>规定Epoch长度：首先，设计者需要规定一个新的Epoch的长度，这通常是一定的时间段（例如1个月），也可能是特定的区块高度。</li>
+<li>配置新的规则：设计者需要在新的Epoch开始之前确定新的规则，并将这些规则编码到区块链协议中。</li>
+<li>更新协议版本：如果新的Epoch需要更新协议版本，则需要将新版本的协议发布到网络中。在新的Epoch开始之前，节点需要升级到新版本的协议，以确保能够正确地验证和处理交易。</li>
+<li>触发新的Epoch：当达到新的Epoch的开始时间或区块高度时，节点将开始采用新的规则。新的Epoch的开始可能需要一些时间，以便所有节点都可以升级到新的协议版本并开始使用新的规则。</li>
+</ol>
+<p>需要注意的是，开启新的Epoch需要区块链网络中的大多数节点都同意并接受新的规则。因此，设计者需要考虑到网络中各种参与者的需求和利益，以确保新的规则得到广泛的接受和采用。</p>
+<h1 id="每次fork-block的时候具体算法是什么"><a href="#每次fork-block的时候具体算法是什么" class="headerlink" title="每次fork block的时候具体算法是什么"></a>每次fork block的时候具体算法是什么</h1><ol>
+<li>选择分支点：确定要创建新分支的区块链上的分支点。这个分支点通常是一个已经存在的区块，它将成为新分支的起点。</li>
+<li>创建新分支：创建一个新的区块链分支，该分支从分支点开始并包含一组新的交易和一个新的区块。</li>
+<li>确定新分支的长度：为了确定哪个分支是主链，需要确定每个分支的长度。这通常是通过比较每个分支的工作量来完成的。</li>
+<li>解决分支冲突：如果多个节点都创建了一个新的分支，则需要解决分支冲突。这通常是通过选择具有最长长度的分支来解决的。</li>
+<li>更新状态：一旦确定了主链，所有节点都将更新他们的状态，以反映新的交易和新的区块链状态。</li>
+</ol>
+<h1 id="智能合约"><a href="#智能合约" class="headerlink" title="智能合约"></a>智能合约</h1><p>是<strong>存储在区块链上的程序</strong>，它是位于以太坊区块链上一个特定地址的一系列代码（函数）和数据（状态）。 它们<strong>通常用于自动执行协议</strong>，以便所有参与者都可以立即确定结果，而<strong>无需任何中间人参与</strong>，也不会浪费时间。 它们还可以自动完成工作流程，在满足条件时触发下一个操作。</p>
+<h1 id="区块链有哪些应用？"><a href="#区块链有哪些应用？" class="headerlink" title="区块链有哪些应用？"></a>区块链有哪些应用？</h1><ol>
+<li>去中心化：区块链是一种去中心化的技术，没有中央机构或单一实体来管理它。相反，它<strong>由网络中的所有节点共同维护和管理</strong>。</li>
+<li>不可篡改：区块链的数据是以区块的形式记录在链中，并且每个区块都包含前一个区块的哈希值。</li>
+<li>透明性：区块链是公开透明的，任何人都可以查看和验证交易记录。使得区块链非常适合需要公共透明度的领域，如金融和政府监（投票选举）</li>
+<li>安全性：由于区块链采用了加密技术来保护数据的完整性和安全性，因此它被认为是非常安全的技术。这使得区块链非常适合处理敏感数据和交易。</li>
+<li>智能合约：区块链技术还支持智能合约，这是一种自动执行的合约，其中条件和规则被编码到合约中。这使得合约的执行非常透明和可靠，因为它们完全基于代码和算法来执行。</li>
+</ol>
+<p>DeFi，去中心化金融，利用区块链智能合约在链上完成资产兑换、借贷、杠杆、期货等交易。</p>
+<p>数字艺术品&#x2F;NFT：唯一性、稀缺性、可交易性，通过 NFT 可使从产生到交易都可追溯，版权的保护变得更加方便。</p>
+<p>数字存证&#x2F;防伪:数字身份认证确保身份信息的安全和隐私保护,技术可以被用于保护数字版权，以确保知识产权的安全和可追溯性</p>
+<p>游戏:游戏数据不可篡改、玩家数据保护、虚拟物品拥有权等等的新型游戏方式</p>
+<h1 id="以太坊中有哪些树（交易树、收据树、状态树）"><a href="#以太坊中有哪些树（交易树、收据树、状态树）" class="headerlink" title="以太坊中有哪些树（交易树、收据树、状态树）"></a>以太坊中有哪些树（交易树、收据树、状态树）</h1><ol>
+<li>状态树（State Tree）：以太坊中的状态树是一个Merkle树，用于存储整个以太坊网络中所有账户的状态信息，包括余额、智能合约代码、合约存储器中的数据等。</li>
+<li>交易树（Transaction Tree）：交易树是一个Merkle树，用于存储所有交易信息。每个区块中的交易都被添加到这个树中，并用于验证和确定区块的有效性。</li>
+<li>日志树（Receipt Tree）：日志树是一个Merkle树，用于存储交易执行后的日志信息。它包含了交易执行的结果、事件触发信息等。</li>
+</ol>
+<h1 id="为什么需要收据树"><a href="#为什么需要收据树" class="headerlink" title="为什么需要收据树"></a>为什么需要收据树</h1><ul>
+<li>向轻节点提供Merkle Proof</li>
+<li>更加复杂的查找查询，比如查询过去⼗天与某⼀智能合约有关的交易、过去⼗天的众筹事件等</li>
+</ul>
+<h1 id="以太坊里的状态是什么，状态树怎么存的状态"><a href="#以太坊里的状态是什么，状态树怎么存的状态" class="headerlink" title="以太坊里的状态是什么，状态树怎么存的状态"></a>以太坊里的状态是什么，状态树怎么存的状态</h1><p>状态是指所有账户的集合状态，包括它们的余额、合约代码和存储在合约中的数据</p>
+<p>每个账户都有一个唯一的地址（20个字节），它被用作状态树中叶子节点的键。</p>
+<h1 id="以太坊的合约数据的储存形式"><a href="#以太坊的合约数据的储存形式" class="headerlink" title="以太坊的合约数据的储存形式"></a>以太坊的合约数据的储存形式</h1><p>(还是MPT。合约账户中的storage root，对应账户的storage trie)</p>
+<h1 id="比特币里的交易是怎么存的"><a href="#比特币里的交易是怎么存的" class="headerlink" title="比特币里的交易是怎么存的"></a>比特币里的交易是怎么存的</h1><p>（Merkle Tree，MT）</p>
+<h1 id="介绍Merkle-Tree的性质、优点，为什么用Merkle-Tree存"><a href="#介绍Merkle-Tree的性质、优点，为什么用Merkle-Tree存" class="headerlink" title="介绍Merkle Tree的性质、优点，为什么用Merkle Tree存"></a>介绍Merkle Tree的性质、优点，为什么用Merkle Tree存</h1><p>实现SPV、Merkle Proof</p>
+<p>SPV是一种轻量级的验证方式，允许用户验证自己的交易和区块链数据，而无需下载和存储整个区块链的全部数据。相比于完整节点（Full Node），SPV节点只需保存区块头（block header）和一部分交易信息，可以通过少量的数据获取和验证自己的交易。</p>
+<h1 id="为什么以太坊要将MT改成MPT"><a href="#为什么以太坊要将MT改成MPT" class="headerlink" title="为什么以太坊要将MT改成MPT"></a>为什么以太坊要将MT改成MPT</h1><ul>
+<li>数据存储方式不同：<strong>Merkle树是一种二叉树，每个叶节点存储的是数据的哈希值</strong>，而非数据本身。MPT树是一种多叉树，每个节点存储的是<strong>键值对</strong>（Key-Value Pair），其中Key是数据的哈希值，而Value是数据本身。</li>
+<li>数据更新方式不同：Merkle树是一种静态结构，一旦树构建完成，就<strong>不能再添加或修改数据</strong>。如果需要添加或修改数据，就需要重新构建整棵树。MPT树是一种动态结构，<strong>可以动态地添加、修改、删除数据</strong>。</li>
+<li>查询方式不同：Merkle树<strong>只能支持对整个数据块的完整性进行验证</strong>，而不能支持对单个数据的验证和查询。MPT树可以<strong>支持对单个数据的验证和查询</strong>，因为每个节点存储的是Key-Value Pair，可以通过Key快速查找对应的Value。</li>
+</ul>
+<h1 id="介绍比特币的UTXO"><a href="#介绍比特币的UTXO" class="headerlink" title="介绍比特币的UTXO"></a>介绍比特币的UTXO</h1><p>UTXO代表”Unspent Transaction Output”，即未花费的交易输出。UTXO模型是比特币使用的一种账户模型，与传统的账户余额模型不同。</p>
+<p>每当一个比特币交易发生时，输入和输出被创建。交易的输入引用之前交易的输出，而交易的输出定义了新的UTXO。</p>
+<h1 id="比特币查询余额只能从头开始遍历整条链吗，有没有高效方法"><a href="#比特币查询余额只能从头开始遍历整条链吗，有没有高效方法" class="headerlink" title="比特币查询余额只能从头开始遍历整条链吗，有没有高效方法"></a>比特币查询余额只能从头开始遍历整条链吗，有没有高效方法</h1><ol>
+<li>索引和数据库优化：区块链浏览器和钱包服务可以使用索引和数据库优化技术来加快查询速度。通过构建针对地址和UTXO的索引，可以快速定位相关的交易和UTXO，而不需要遍历整个区块链。</li>
+<li>UTXO集合缓存：一些服务会在内存中维护一个UTXO集合的缓存，以提供快速的查询响应。这些缓存通常存储最近使用频繁的UTXO，使得查询余额时无需每次都遍历整个区块链。</li>
+</ol>
+<h1 id="比特币地址是怎么生成的"><a href="#比特币地址是怎么生成的" class="headerlink" title="比特币地址是怎么生成的"></a>比特币地址是怎么生成的</h1><p>（助记词 &lt;-&gt; seed -&gt; 私钥 -&gt; 公钥 -&gt; PubKeyHash &lt;-&gt; address, 其中&lt;-&gt;表可双向转换，-&gt;表单向转换，最后的PubKeyHash转换为address的时候用的是base58编码，base58编码的原理即辗转相除法）</p>
+<h1 id="介绍Bloom-filter特点"><a href="#介绍Bloom-filter特点" class="headerlink" title="介绍Bloom filter特点"></a>介绍Bloom filter特点</h1><p>常数时间内判断一个元素是否可能属于一个集合、位数组相对于存储实际元素的集合所需的内存要小得多有一定的错误率、插入元素只需要对位数组进行哈希操作并设置相应的位删除操作在传统的Bloom filter中是不支持的、可调的错误率错误率取决于位数组的大小和哈希函数的个数</p>
+<h1 id="以太坊智能合约如何执行，介绍EVM底层"><a href="#以太坊智能合约如何执行，介绍EVM底层" class="headerlink" title="以太坊智能合约如何执行，介绍EVM底层"></a>以太坊智能合约如何执行，介绍EVM底层</h1><p>编译为字节码文件 –&gt; 支付gas部署合约 –&gt; 发起交易与合约交互 –&gt; 交易上链后EVM执行合约字节码 –&gt; 合约状态更新 –&gt; 结果返回</p>
+<h1 id="以太坊相比于比特币的创新点"><a href="#以太坊相比于比特币的创新点" class="headerlink" title="以太坊相比于比特币的创新点"></a>以太坊相比于比特币的创新点</h1><ol>
+<li>智能合约：以太坊引入了智能合约的概念，使得开发者可以在区块链上编写和执行具有逻辑和功能的可编程合约。智能合约允许在区块链上进行复杂的业务逻辑，从简单的转账到复杂的去中心化应用（DApp）。</li>
+<li>图灵完备性：与比特币的脚本语言相比，以太坊的智能合约语言Solidity是图灵完备的，这意味着它可以进行更复杂的计算和逻辑运算。这为开发者提供了更大的灵活性和创新空间。</li>
+<li>共识算法：pos节省能源</li>
+</ol>
+<h1 id="geth中的block、transction、log、receipt数据结构"><a href="#geth中的block、transction、log、receipt数据结构" class="headerlink" title="geth中的block、transction、log、receipt数据结构"></a>geth中的block、transction、log、receipt数据结构</h1><h1 id="HP编码、RLP编码"><a href="#HP编码、RLP编码" class="headerlink" title="HP编码、RLP编码"></a>HP编码、RLP编码</h1><p>HP编码主要用于数据压缩和编码方面，通过减少编码长度来节省存储空间和传输带宽。</p>
+<p>RLP编码则更适用于序列化和反序列化数据，特别是在以太坊中作为一种通用的数据编码方式，用于存储和传输合约数据、交易数据等。</p>
+<h1 id="最长链原则"><a href="#最长链原则" class="headerlink" title="最长链原则"></a>最长链原则</h1><p>最长链定义：最长链是指具有最多区块的链，其中每个区块都是经过验证且有效的。</p>
+<h1 id="从架构设计层面说一下以太坊的各个层的作用"><a href="#从架构设计层面说一下以太坊的各个层的作用" class="headerlink" title="从架构设计层面说一下以太坊的各个层的作用"></a>从架构设计层面说一下以太坊的各个层的作用</h1><ol>
+<li>基础设施层（Infrastructure Layer）： 基础设施层是以太坊的底层基础设施，包括<strong>网络协议、点对点通信、数据同步和共识算法</strong>等。这一层负责提供以太坊网络的运行环境和支持，确保节点之间的连接和通信，以及确保区块链的一致性和安全性。</li>
+<li>合约层（Contract Layer）： 合约层是以太坊的智能合约执行层，它<strong>负责处理智能合约的执行和交互</strong>。合约层包括以太坊虚拟机（EVM）和智能合约的执行环境。EVM 是一个隔离且安全的虚拟机环境，负责解释和执行智能合约的字节码。它提供了一组指令集和状态操作，使得智能合约可以在安全的环境中执行。</li>
+<li>表现层（Presentation Layer）： 表现层是以太坊的用户界面层，它提供了用户与以太坊网络进行交互的界面。这包括<strong>钱包应用、区块浏览器、交易界面</strong>等。表现层为用户提供了友好的界面和功能，使他们能够方便地管理钱包、查看交易和与智能合约进行交互。</li>
+<li>应用层（Application Layer）： 应用层是以太坊的最上层，包括去中心化应用（DApp）和智能合约的具体应用场景。在这一层，开发者可以基于智能合约构建各种应用，如<strong>去中心化金融（DeFi）、数字身份、供应链管理</strong>等。应用层利用以太坊提供的智能合约和区块链功能来实现特定的业务逻辑和功能，为用户提供创新和去中心化的应用体验。</li>
+</ol>
+<h1 id="如何理解Ai与web3之间的关系"><a href="#如何理解Ai与web3之间的关系" class="headerlink" title="如何理解Ai与web3之间的关系"></a>如何理解Ai与web3之间的关系</h1><p><strong>AI更多是生产力的发展，Web3则是生产关系的重新定义</strong> </p>
+<p><strong>AI作为一种技术工具，可以在许多领域提高生产效率和效益。通过机器学习和深度学习等技术，AI能够处理大量的数据、自动化任务和决策过程</strong>，从而减少人力资源的需求，提高工作效率。例如，在制造业中，AI可以用于优化生产流程、预测设备故障、提高产品质量等方面，从而提高整体生产力。</p>
+<p>另一方面，<strong>Web3代表了一种新的互联网模式，强调去中心化、自治和用户主权</strong>。它基于区块链和智能合约等技术，重新定义了生产关系和价值交换方式。在传统的Web2模式中，平台拥有者掌握着用户数据和利益分配的权力，<strong>而Web3则通过去中心化的方式，使用户能够更直接地参与到价值创造和分享中。这种重新定义的生产关系可以促进更公平、透明和可持续的经济模式。</strong></p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/12/18/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/%E5%8C%BA%E5%9D%97%E9%93%BE/" title="区块链">https://kongpengyq.com/2022/12/18/区块链/区块链知识/区块链/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/" rel="tag"># 区块链知识</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/12/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/Solidity/" rel="prev" title="Solidity">
+      <i class="fa fa-chevron-left"></i> Solidity
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/12/18/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/" rel="next" title="共识算法">
+      共识算法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E4%B8%AD%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E9%9A%8F%E6%9C%BA%E6%95%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-text">智能合约中如何解决随机数的问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#oracle%E9%A2%84%E8%A8%80%E6%9C%BA-oraclize-chainlink-TEE-SGX"><span class="nav-text">oracle预言机(oraclize,chainlink,TEE(SGX))</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#event-modifier%E7%9A%84%E4%BD%9C%E7%94%A8%E5%92%8C%E7%94%A8%E6%B3%95"><span class="nav-text">event,modifier的作用和用法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#solidity-%E5%90%84%E5%A4%A7%E7%89%88%E6%9C%AC%E7%9A%84%E6%96%B0%E7%89%B9%E6%80%A7"><span class="nav-text">solidity 各大版本的新特性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BD%A2%E5%BC%8F%E5%8C%96%E8%AF%81%E6%98%8E"><span class="nav-text">形式化证明</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#contractfuzzer-%E6%A8%A1%E7%B3%8A%E6%B5%8B%E8%AF%95-%E6%9C%89%E4%BB%80%E4%B9%88%E7%BC%BA%E7%82%B9"><span class="nav-text">contractfuzzer(模糊测试)有什么缺点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A5%E5%A4%AA%E5%9D%8A%E4%B8%ADnonce%E7%9A%84%E4%BD%9C%E7%94%A8-%E9%98%B2%E6%AD%A2%E9%87%8D%E6%94%BE%E6%94%BB%E5%87%BB-%EF%BC%8C%E5%A6%82%E4%BD%95%E8%8E%B7%E5%BE%97nonce"><span class="nav-text">以太坊中nonce的作用(防止重放攻击)，如何获得nonce</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%B0%83%E7%94%A8%E4%BB%96%E4%BA%BA%E7%9A%84%E5%90%88%E7%BA%A6%EF%BC%9A"><span class="nav-text">如何调用他人的合约：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%99%A4%E5%BC%80EVM%EF%BC%8C%E8%BF%98%E7%9F%A5%E9%81%93%E4%BB%80%E4%B9%88%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-text">除开EVM，还知道什么虚拟机</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Merkle%E6%A0%91%EF%BC%8CMPT%E6%A0%91%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%EF%BC%8C%E6%9C%89%E4%BD%95%E5%8C%BA%E5%88%AB-%E8%BF%99%E4%B8%AA%E7%BB%8F%E5%B8%B8%E9%97%AE"><span class="nav-text">Merkle树，MPT树如何构建，有何区别(这个经常问)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%98%AF%E5%A6%82%E4%BD%95%E4%BB%8EPOW%E8%BD%AC%E5%90%91POS%E7%9A%84-Casper%E5%8D%8F%E8%AE%AE"><span class="nav-text">以太坊是如何从POW转向POS的(Casper协议)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A5%E5%A4%AA%E5%9D%8A%E4%BD%BF%E7%94%A8%E7%9A%84%E5%AF%86%E7%A0%81%E5%AD%A6%EF%BC%8C%E5%AF%B9%E4%B8%A4%E8%80%85%E8%BF%9B%E8%A1%8C%E4%BB%8B%E7%BB%8D"><span class="nav-text">以太坊使用的密码学，对两者进行介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8C%BA%E5%9D%97%E9%93%BE%E6%80%8E%E4%B9%88%E5%BC%80%E5%90%AF%E6%96%B0%E7%9A%84Epoch"><span class="nav-text">区块链怎么开启新的Epoch</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AF%8F%E6%AC%A1fork-block%E7%9A%84%E6%97%B6%E5%80%99%E5%85%B7%E4%BD%93%E7%AE%97%E6%B3%95%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-text">每次fork block的时候具体算法是什么</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6"><span class="nav-text">智能合约</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8C%BA%E5%9D%97%E9%93%BE%E6%9C%89%E5%93%AA%E4%BA%9B%E5%BA%94%E7%94%A8%EF%BC%9F"><span class="nav-text">区块链有哪些应用？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A5%E5%A4%AA%E5%9D%8A%E4%B8%AD%E6%9C%89%E5%93%AA%E4%BA%9B%E6%A0%91%EF%BC%88%E4%BA%A4%E6%98%93%E6%A0%91%E3%80%81%E6%94%B6%E6%8D%AE%E6%A0%91%E3%80%81%E7%8A%B6%E6%80%81%E6%A0%91%EF%BC%89"><span class="nav-text">以太坊中有哪些树（交易树、收据树、状态树）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E6%94%B6%E6%8D%AE%E6%A0%91"><span class="nav-text">为什么需要收据树</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A5%E5%A4%AA%E5%9D%8A%E9%87%8C%E7%9A%84%E7%8A%B6%E6%80%81%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%8C%E7%8A%B6%E6%80%81%E6%A0%91%E6%80%8E%E4%B9%88%E5%AD%98%E7%9A%84%E7%8A%B6%E6%80%81"><span class="nav-text">以太坊里的状态是什么，状态树怎么存的状态</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A5%E5%A4%AA%E5%9D%8A%E7%9A%84%E5%90%88%E7%BA%A6%E6%95%B0%E6%8D%AE%E7%9A%84%E5%82%A8%E5%AD%98%E5%BD%A2%E5%BC%8F"><span class="nav-text">以太坊的合约数据的储存形式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AF%94%E7%89%B9%E5%B8%81%E9%87%8C%E7%9A%84%E4%BA%A4%E6%98%93%E6%98%AF%E6%80%8E%E4%B9%88%E5%AD%98%E7%9A%84"><span class="nav-text">比特币里的交易是怎么存的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8DMerkle-Tree%E7%9A%84%E6%80%A7%E8%B4%A8%E3%80%81%E4%BC%98%E7%82%B9%EF%BC%8C%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8Merkle-Tree%E5%AD%98"><span class="nav-text">介绍Merkle Tree的性质、优点，为什么用Merkle Tree存</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BB%A5%E5%A4%AA%E5%9D%8A%E8%A6%81%E5%B0%86MT%E6%94%B9%E6%88%90MPT"><span class="nav-text">为什么以太坊要将MT改成MPT</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D%E6%AF%94%E7%89%B9%E5%B8%81%E7%9A%84UTXO"><span class="nav-text">介绍比特币的UTXO</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AF%94%E7%89%B9%E5%B8%81%E6%9F%A5%E8%AF%A2%E4%BD%99%E9%A2%9D%E5%8F%AA%E8%83%BD%E4%BB%8E%E5%A4%B4%E5%BC%80%E5%A7%8B%E9%81%8D%E5%8E%86%E6%95%B4%E6%9D%A1%E9%93%BE%E5%90%97%EF%BC%8C%E6%9C%89%E6%B2%A1%E6%9C%89%E9%AB%98%E6%95%88%E6%96%B9%E6%B3%95"><span class="nav-text">比特币查询余额只能从头开始遍历整条链吗，有没有高效方法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AF%94%E7%89%B9%E5%B8%81%E5%9C%B0%E5%9D%80%E6%98%AF%E6%80%8E%E4%B9%88%E7%94%9F%E6%88%90%E7%9A%84"><span class="nav-text">比特币地址是怎么生成的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8DBloom-filter%E7%89%B9%E7%82%B9"><span class="nav-text">介绍Bloom filter特点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E5%A6%82%E4%BD%95%E6%89%A7%E8%A1%8C%EF%BC%8C%E4%BB%8B%E7%BB%8DEVM%E5%BA%95%E5%B1%82"><span class="nav-text">以太坊智能合约如何执行，介绍EVM底层</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A5%E5%A4%AA%E5%9D%8A%E7%9B%B8%E6%AF%94%E4%BA%8E%E6%AF%94%E7%89%B9%E5%B8%81%E7%9A%84%E5%88%9B%E6%96%B0%E7%82%B9"><span class="nav-text">以太坊相比于比特币的创新点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#geth%E4%B8%AD%E7%9A%84block%E3%80%81transction%E3%80%81log%E3%80%81receipt%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-text">geth中的block、transction、log、receipt数据结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HP%E7%BC%96%E7%A0%81%E3%80%81RLP%E7%BC%96%E7%A0%81"><span class="nav-text">HP编码、RLP编码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9C%80%E9%95%BF%E9%93%BE%E5%8E%9F%E5%88%99"><span class="nav-text">最长链原则</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%8E%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E5%B1%82%E9%9D%A2%E8%AF%B4%E4%B8%80%E4%B8%8B%E4%BB%A5%E5%A4%AA%E5%9D%8A%E7%9A%84%E5%90%84%E4%B8%AA%E5%B1%82%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-text">从架构设计层面说一下以太坊的各个层的作用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E7%90%86%E8%A7%A3Ai%E4%B8%8Eweb3%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-text">如何理解Ai与web3之间的关系</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

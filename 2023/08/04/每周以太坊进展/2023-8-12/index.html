@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Dencun (Cancun + Deneb) 升级 最新的所有核心开发人员 - 执行 (ACDE)视频会议。Tim Beiko的总结。Tim Beiko和Christine Kim的记录：  Devnet 8 计划于下周初启动  共识层分叉选择过滤逻辑的更改将与 Deneb 版本捆绑在一起   EIP4788（EVM 信标块根）合约草案，欢迎来 gas 优化  最新 Dencun 测试视频会议（">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2023-8-12">
+<meta property="og:url" content="https://kongpengyq.com/2023/08/04/%E6%AF%8F%E5%91%A8%E4%BB%A5%E5%A4%AA%E5%9D%8A%E8%BF%9B%E5%B1%95/2023-8-12/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="Dencun (Cancun + Deneb) 升级 最新的所有核心开发人员 - 执行 (ACDE)视频会议。Tim Beiko的总结。Tim Beiko和Christine Kim的记录：  Devnet 8 计划于下周初启动  共识层分叉选择过滤逻辑的更改将与 Deneb 版本捆绑在一起   EIP4788（EVM 信标块根）合约草案，欢迎来 gas 优化  最新 Dencun 测试视频会议（">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-08-03T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.856Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="每周以太坊进展">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/08/04/%E6%AF%8F%E5%91%A8%E4%BB%A5%E5%A4%AA%E5%9D%8A%E8%BF%9B%E5%B1%95/2023-8-12/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>2023-8-12 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/08/04/%E6%AF%8F%E5%91%A8%E4%BB%A5%E5%A4%AA%E5%9D%8A%E8%BF%9B%E5%B1%95/2023-8-12/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2023-8-12
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-08-04 00:00:00" itemprop="dateCreated datePublished" datetime="2023-08-04T00:00:00+08:00">2023-08-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%AF%8F%E5%91%A8%E4%BB%A5%E5%A4%AA%E5%9D%8A%E8%BF%9B%E5%B1%95/" itemprop="url" rel="index">
+                    <span itemprop="name">每周以太坊进展</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="Dencun-Cancun-Deneb-升级"><a href="#Dencun-Cancun-Deneb-升级" class="headerlink" title="Dencun (Cancun + Deneb) 升级"></a>Dencun (Cancun + Deneb) 升级</h2><ul>
+<li><p>最新的所有核心开发人员 - 执行 (ACDE)视频会议。Tim Beiko的总结。Tim Beiko和Christine Kim的记录：</p>
+<ul>
+<li>Devnet 8 计划于下周初启动 </li>
+<li>共识层分叉选择过滤逻辑的更改将与 Deneb 版本捆绑在一起</li>
+</ul>
+</li>
+<li><p>EIP4788（EVM 信标块根）<a target="_blank" rel="noopener" href="https://github.com/lightclient/4788asm#readme">合约草案</a>，欢迎来 gas 优化</p>
+</li>
+<li><p>最新 Dencun 测试<a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=fQ6ugSRi3DA&t=160s">视频会议</a>（之前的 EIP4844 会议）</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://ceremony.ethereum.org/">KZG 仪式</a>已有 136k 贡献者，将于 8 月 23 日停止接收贡献</p>
+</li>
+</ul>
+<h2 id="Layer-1"><a href="#Layer-1" class="headerlink" title="Layer 1"></a>Layer 1</h2><ul>
+<li>EthereumJS <a target="_blank" rel="noopener" href="https://twitter.com/efjavascript/status/1689653616079208449">v7</a>：支持 ESM ，删除缓冲区，降低依赖性，减小构建大小，现在默认支持上海升级和 Cancun 升级</li>
+<li>EF devops 启动了 3 倍主网规模（210 万验证者）的大型测试网来测试目前的客户端状态能处理多大的网络，三次尝试仍有问题，改为2倍主网规模(140万验证者)后出块速度接近主网，<a target="_blank" rel="noopener" href="https://twitter.com/parithosh_j/status/1689753694487646208">Holešky 测试网会将140万验证者的规模视为稳定起点</a></li>
+<li><a target="_blank" rel="noopener" href="https://ethereum-magicians.org/t/introducing-eth2-package-a-tool-for-spinning-up-private-testnets-in-a-single-command/15390">Kurtosis eth2-package</a>，支持云中多节点执行层&#x2F;共识层测试网和任何客户端组合（包括 Reth），与 Grafana 和 Prometheus 一起开箱即用</li>
+<li>Verkle Tries：<ul>
+<li><a target="_blank" rel="noopener" href="https://hackmd.io/@jsign/vkt-preimage-generation-and-distribution">Verkle 原像</a>生成和分发策略</li>
+<li><a target="_blank" rel="noopener" href="https://notes.ethereum.org/@rudolf/migration">Verkle Trie 迁移选项</a>：只读与可写 Merkle 树</li>
+</ul>
+</li>
+<li><a target="_blank" rel="noopener" href="https://twitter.com/EigenPhi/status/1689887764077273088">Flashbots 构建器故障</a>，在恢复捆绑交易的过程中处理不当</li>
+</ul>
+<h2 id="给质押者"><a href="#给质押者" class="headerlink" title="给质押者"></a>给质押者</h2><ul>
+<li>信标链的<a target="_blank" rel="noopener" href="https://twitter.com/superphiz/status/1689918550050291713">churn 限制已增加到每个 epoch 11 个验证者</a></li>
+<li>目前运行以太坊节点最便宜的配置-<a target="_blank" rel="noopener" href="https://twitter.com/EthereumOnARM/status/1689327953052577804">NanoPC-T6</a>，约 300 美元，可运行完整节点</li>
+<li><a target="_blank" rel="noopener" href="https://twitter.com/bloxroutelabs/status/1690065892778926080">bloXroute Ethical 中继</a>正在逐步废止（过滤广义抢跑交易和夹子交易）</li>
+</ul>
+<h2 id="客户端版本"><a href="#客户端版本" class="headerlink" title="客户端版本"></a>客户端版本</h2><ul>
+<li>执行层：<ul>
+<li>Geth <a target="_blank" rel="noopener" href="https://github.com/ethereum/go-ethereum/releases/tag/v1.12.1">v1.12.1</a>：维护版本，包括 Dencun 的开发</li>
+<li>Reth <a target="_blank" rel="noopener" href="https://github.com/paradigmxyz/reth/releases/tag/v0.1.0-alpha.6">v0.1.0-alpha.6</a>：跟进修复 alpha.5 中处理重组的问题</li>
+</ul>
+</li>
+</ul>
+<h2 id="研究"><a href="#研究" class="headerlink" title="研究"></a>研究</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://ethresear.ch/t/the-second-slot-itch-statistical-analysis-of-reorgs/16333">第二个 slot 重组</a>：slot 指数影响重组的可能性</li>
+<li><a target="_blank" rel="noopener" href="https://ethresear.ch/t/empirical-analysis-of-builders-behavioral-profiles-bbps/16327">Builder 行为概况</a>(BBP)：涵盖 MEV-Boost 拍卖期间构建区块和投标时的功能和策略的指标</li>
+<li><a target="_blank" rel="noopener" href="https://mirror.xyz/ohotties.eth/lBEXiiU7yK91OuSn8QyJPM9Db8GuyDFzCEUAj60BWyI">强制协议提案者承诺</a>(PEPC) 介绍</li>
+<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2023/1197">抗量子弱可验证延迟函数</a>，一种基于纯代数构造的新的抗量子弱可验证延迟函数。它的延迟取决于计算椭圆曲线之间的高度同源性，而其验证则依赖于两条椭圆曲线乘积的同源性计算。</li>
+</ul>
+<h2 id="Layer-2"><a href="#Layer-2" class="headerlink" title="Layer 2"></a>Layer 2</h2><ul>
+<li>Coinbase <a target="_blank" rel="noopener" href="https://base.mirror.xyz/KPrKIukePtM2Iz945_3GpQJ-tgMf1hoato5isStLXJI">Base</a>（OP Stack rollup）向公众开放（<a target="_blank" rel="noopener" href="https://onchainsummer.xyz/">链上夏季</a>促销活动）</li>
+</ul>
+<h2 id="EIP"><a href="#EIP" class="headerlink" title="EIP"></a>EIP</h2><ul>
+<li>EIP：<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/ethereum/EIPs/pull/7480/files">EIP7480</a>：EOF – 数据指令</li>
+</ul>
+</li>
+</ul>
+<h2 id="开发者资料"><a href="#开发者资料" class="headerlink" title="开发者资料"></a>开发者资料</h2><ul>
+<li>Solmate <a target="_blank" rel="noopener" href="https://github.com/transmissions11/solmate/pull/380">v6.2.0</a>：修复 SignedWadMath:wadMul 中的静默溢出问题；这个问题是用 Trail of Bits Medusa<a target="_blank" rel="noopener" href="https://twitter.com/Montyly/status/1688603604062482433">发现</a>的</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/jtriley-eth/iter-sol#readme">Iter</a>：用 Solidity 实现的惰性评估迭代器 </li>
+<li><a target="_blank" rel="noopener" href="https://twitter.com/msolomon44/status/1688656321053425664">Cove</a>：合约验证，alpha 版， 为 Solidity Foundry 项目准备，使用部署 tx 哈希进行合约验证</li>
+<li>EVM Diff <a target="_blank" rel="noopener" href="https://twitter.com/msolomon44/status/1689656505652690945">更新</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/alexfertel/bulloak#readme">Bulloak</a>：基于分支树技术的 Solidity 测试生成器</li>
+<li>深入研究 <a target="_blank" rel="noopener" href="https://jtriley.substack.com/p/the-vyper-compiler">Vyper 编译器</a></li>
+<li>Fe <a target="_blank" rel="noopener" href="https://github.com/ethereum/fe/releases/tag/v0.24.0">v0.24.0</a>：增加支持用户定义库</li>
+<li>Halmos <a target="_blank" rel="noopener" href="https://github.com/a16z/halmos/releases/tag/v0.1.2">v0.1.2</a>（符号测试）：添加支持 DELEGATECALL、CALLCODE、CREATE2、结构类型作为测试参数和库链接</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/Cozy-Finance/agent-buttercup#readme">Agent Buttercup</a>：面向 DeFi 研究人员&#x2F;工程师的基于代理的模拟引擎，使用 revm</li>
+<li>yAcademy <a target="_blank" rel="noopener" href="https://twitter.com/yAcademyDAO/status/1687891681423634432">zk 审计奖学金模块</a>：zk、Rate-limiting Nullifier 和 Spartan-ECDSA</li>
+<li>CTF：<ul>
+<li>Flashbots <a target="_blank" rel="noopener" href="https://github.com/minaminao/ctf-blockchain/tree/main/src/MEVShareCTF#readme">MEV-Share CTF 解决方案</a></li>
+<li>Curta CTF <a target="_blank" rel="noopener" href="https://twitter.com/zachobront/status/1688247687613743105">公牛比利解决方案</a></li>
+</ul>
+</li>
+<li><a target="_blank" rel="noopener" href="https://mirror.xyz/privacy-scaling-explorations.eth/TuLZRdgCQsydC8JJgCNH4F7GzifRBQ6fr31DHGLFVWM">p0tion v1</a>：Groth16 zk 应用程序开发工具包</li>
+<li><a target="_blank" rel="noopener" href="https://blog.phylum.io/typosquat-of-popular-ethereum-package-steals-private-keys/">Noble curvetyposquat</a>：恶意 npm包将私钥发送到远程服务器</li>
+</ul>
+<h2 id="安全"><a href="#安全" class="headerlink" title="安全"></a>安全</h2><ul>
+<li>Steadefi 在 Arbitrum 和 alt-L1 上通过被入侵的协议部署者钱包<a target="_blank" rel="noopener" href="https://twitter.com/steadefi/status/1688638572608552960">被盗 110 万美元</a></li>
+<li><a target="_blank" rel="noopener" href="https://kebabsec.xyz/posts/critical_vulnerability_in_uniswapx/">UniswapX 订单漏洞披露</a>，已修复并支付 20 万美元赏金</li>
+<li><a target="_blank" rel="noopener" href="https://hackmd.io/@vyperlang/HJUgNMhs2">Vyper</a> v0.2.15&#x2F;16 和 v0.3.0 中不可重入锁漏洞的事后分析</li>
+<li><a target="_blank" rel="noopener" href="https://twitter.com/samczsun/status/1688613385565528064">SEAL 911</a>：紧急情况下通过 Telegram 机器人联系安全社区</li>
+</ul>
+<h2 id="生态"><a href="#生态" class="headerlink" title="生态"></a>生态</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://twitter.com/dannyryan/status/1688644951230267392">Danny 回应那些试图让中心化变化变常规的人</a>：Lido 超过 33% 的 ETH 质押对以太坊构成威胁</li>
+<li>EF 下一个十亿奖学金：第 3 组的五个<a target="_blank" rel="noopener" href="https://blog.ethereum.org/2023/08/07/nb-fellows-cohort-3">人物故事</a></li>
+<li>Etherscan<a target="_blank" rel="noopener" href="https://twitter.com/etherscan/status/1689984336274284544">相似合约搜索</a>更新，可以跨 Etherscan 链搜索</li>
+</ul>
+<h2 id="应用层"><a href="#应用层" class="headerlink" title="应用层"></a>应用层</h2><ul>
+<li>Rune 的<a target="_blank" rel="noopener" href="https://twitter.com/runekek/status/1688571159367823360">Maker 终极之战</a>和<a target="_blank" rel="noopener" href="http://forum.makerdao.com/t/sparkdao-spk-pre-farming-airdrop-general-subdao-farming-overview/21595">SubDAO 挖矿概述</a></li>
+<li>Maker<a target="_blank" rel="noopener" href="https://twitter.com/runekek/status/1688991177843019778">增强型 DSR</a>（Dai 储蓄率）从 8% 开始，降至 5.8%</li>
+<li><a target="_blank" rel="noopener" href="https://nexusmutual.io/blog/nexus-mutual-expands-cover-capacity-in-the-uk-with-on-chain-capital">Nexus Mutual</a>通过 Retail Mutual 为英国小型零售商提供覆盖</li>
+<li>安全<a target="_blank" rel="noopener" href="https://twitter.com/safe/status/1689313162817093633">社交登录</a>：在 iOS 上使用 Google 或 Apple ID 注册，实验性</li>
+<li><a target="_blank" rel="noopener" href="https://twitter.com/smoldapp/status/1689998191289139200">MultiSafe</a>：将 Safe 克隆或部署到具有相同地址的多个链</li>
+<li><a target="_blank" rel="noopener" href="https://twitter.com/y00tsNFT/status/1689404417072889867">Y00ts</a> NFT 在之前从 Solana 迁移到 Polygon 后迁移到以太坊</li>
+<li>DAO 关闭并分发 Arbitrum 空投：<a target="_blank" rel="noopener" href="https://www.saddle.community/t/sip-x-protocol-operations-and-treasury-management/632">Saddle</a>（Curve fork）和<a target="_blank" rel="noopener" href="https://twitter.com/hundredfinance/status/1689358397898887168">Hundred Finance</a></li>
+<li>Base 应用：<ul>
+<li><a target="_blank" rel="noopener" href="https://basepaint.xyz/">BasePaint</a>：共享像素画布，每24小时开放版NFT</li>
+<li><a target="_blank" rel="noopener" href="https://twitter.com/0xsmallbrain/status/1689404151166570496">Words3</a>：价格波动的字母拼字游戏，游戏本周末结束</li>
+<li><a target="_blank" rel="noopener" href="https://twitter.com/phabcd/status/1690061905468010496">Friend Tech</a>：在移动设备上通过 DM、PWA 购买人员股份，仅限受邀者</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/08/04/%E6%AF%8F%E5%91%A8%E4%BB%A5%E5%A4%AA%E5%9D%8A%E8%BF%9B%E5%B1%95/2023-8-12/" title="2023-8-12">https://kongpengyq.com/2023/08/04/每周以太坊进展/2023-8-12/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%AF%8F%E5%91%A8%E4%BB%A5%E5%A4%AA%E5%9D%8A%E8%BF%9B%E5%B1%95/" rel="tag"># 每周以太坊进展</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/08/02/%E6%AF%8F%E5%91%A8%E4%BB%A5%E5%A4%AA%E5%9D%8A%E8%BF%9B%E5%B1%95/2023-7-8/" rel="prev" title="2023-7-8">
+      <i class="fa fa-chevron-left"></i> 2023-7-8
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/08/07/%E6%AF%8F%E5%91%A8%E4%BB%A5%E5%A4%AA%E5%9D%8A%E8%BF%9B%E5%B1%95/2023-8-19/" rel="next" title="2023-8-19">
+      2023-8-19 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Dencun-Cancun-Deneb-%E5%8D%87%E7%BA%A7"><span class="nav-text">Dencun (Cancun + Deneb) 升级</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Layer-1"><span class="nav-text">Layer 1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%99%E8%B4%A8%E6%8A%BC%E8%80%85"><span class="nav-text">给质押者</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%89%88%E6%9C%AC"><span class="nav-text">客户端版本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A0%94%E7%A9%B6"><span class="nav-text">研究</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Layer-2"><span class="nav-text">Layer 2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#EIP"><span class="nav-text">EIP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E5%8F%91%E8%80%85%E8%B5%84%E6%96%99"><span class="nav-text">开发者资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E5%85%A8"><span class="nav-text">安全</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E6%80%81"><span class="nav-text">生态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%B1%82"><span class="nav-text">应用层</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

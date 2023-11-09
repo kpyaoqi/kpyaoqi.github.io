@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="介绍Compound 协议由 COMP Token 持有者管理和升级，使用三个不同的组件； COMP Token、治理模块（Governor  Alpha）和 Timelock。这些合约一起，允许社区通过 cToken 或 Comproller  的管理功能提出、投票和实时更改。提案可以包括调整利率模型，到增加对新资产的支持等改变。 任何授权超过 10 万 COMP Token 的地址都可以提出治">
+<meta property="og:type" content="article">
+<meta property="og:title" content="5-治理">
+<meta property="og:url" content="https://kongpengyq.com/2023/01/04/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/5-%E6%B2%BB%E7%90%86/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="介绍Compound 协议由 COMP Token 持有者管理和升级，使用三个不同的组件； COMP Token、治理模块（Governor  Alpha）和 Timelock。这些合约一起，允许社区通过 cToken 或 Comproller  的管理功能提出、投票和实时更改。提案可以包括调整利率模型，到增加对新资产的支持等改变。 任何授权超过 10 万 COMP Token 的地址都可以提出治">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/img/SuUUgiG761828cb5bc421.png">
+<meta property="article:published_time" content="2023-01-03T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:01:35.121Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链知识点总结">
+<meta property="article:tag" content="Compound">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/img/SuUUgiG761828cb5bc421.png">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/01/04/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/5-%E6%B2%BB%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>5-治理 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/01/04/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/5-%E6%B2%BB%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          5-治理
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-01-04 00:00:00" itemprop="dateCreated datePublished" datetime="2023-01-04T00:00:00+08:00">2023-01-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:01:35" itemprop="dateModified" datetime="2023-11-09T10:01:35+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Compound/" itemprop="url" rel="index">
+                    <span itemprop="name">Compound</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>9.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Compound 协议由 COMP Token 持有者管理和升级，使用三个不同的组件； COMP Token、治理模块（Governor  Alpha）和 Timelock。这些合约一起，允许社区通过 cToken 或 Comproller  的管理功能提出、投票和实时更改。提案可以包括调整利率模型，到增加对新资产的支持等改变。</p>
+<p>任何授权超过 10 万 COMP Token 的地址都可以提出治理活动，这些活动都是可执行的代码。提案产生后，社区可以在 3 天的投票期内提交投票。如果投票获得多数、且至少 40 万票以上，就会在 Timlock 中排队，2 天后可以实施。</p>
+<p><img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/img/SuUUgiG761828cb5bc421.png" alt="image.png"></p>
+<h2 id="COMP"><a href="#COMP" class="headerlink" title="COMP"></a>COMP</h2><p>COMP 是一个 <a target="_blank" rel="noopener" href="https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md">ERC-20</a> 代币，允许所有者将投票权委托给任何地址，包括自己的地址。所有者的代币余额会自动调整被委托人的投票权。</p>
+<h2 id="委托-Delegate"><a href="#委托-Delegate" class="headerlink" title="委托(Delegate)"></a>委托(Delegate)</h2><p>将发送者的投票数委托给被委托人。用户每次可以委托给一个地址，被委托人的投票数相当于用户账号的 COMP 代币余额。投票将从当前区块开始进行委托，直到发送者再次委托或者转移其 COMP。</p>
+<p><strong>COMP</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function delegate(address delegatee)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>delegatee : 发送者希望委托投票的地址；</li>
+<li>msg.sender : 试图委托投票的 COMP 代币持有者的地址；</li>
+<li>返回值 : 无返回值，错误时恢复。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 Comp comp = Comp(0x123...); // contract address</span><br><span class="line">2 comp.delegate(delegateeAddress);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const tx = await comp.methods.delegate(delegateeAddress).send(&#123; from: sender &#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="签名委托-Delegate-By-Signature"><a href="#签名委托-Delegate-By-Signature" class="headerlink" title="签名委托(Delegate By Signature)"></a>签名委托(Delegate By Signature)</h2><p>Delegate 投票从签名者到被委托人。这种方法与 Delegate 的目的相同，但它可以离线签名参与Compound 治理投票授权。有关如何创建离线签名的更多细节，请查看 <a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-712">EIP-712</a>。</p>
+<p><strong>COMP</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function delegateBySig(address delegateeAddress,uint256 nonce,uint256 expiry,uint256 v,uint256 r,uint256 s);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>delegatee : 发送者希望委托投票的地址；</li>
+<li>nonce : 合约状态要求与签名相匹配。这一点可以从合同的公共 nonce 映射中检索；</li>
+<li>expiry : 签名过期时间。以 unix epoch (uint) 后的秒数表示的区块时间戳；</li>
+<li>v : 签名恢复字节；</li>
+<li>r :  ECDSA 签名对的一部分；</li>
+<li>s : ECDSA 签名对的一部分；</li>
+<li>返回值 : 无，错误时恢复。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 Comp comp = Comp(0x123...); // contract address</span><br><span class="line">2 comp.delegateBySig(delegateeAddress, nonce, expiry, v, r, s);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const tx = await comp.methods.delegateBySig(delegateeAddress, nonce, expiry, v, r, s).send(&#123;&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="获取当前投票数"><a href="#获取当前投票数" class="headerlink" title="获取当前投票数"></a>获取当前投票数</h2><p>获取一个账户当前区块的票数余额。</p>
+<p><strong>COMP</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function getCurrentVotes(address account) returns (uint96)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>account : 检索票数的账户地址；</li>
+<li>RETURN : 票数（整型）。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 Comp comp = Comp(0x123...); // contract address</span><br><span class="line">2 uint votes = comp.getCurrentVotes(0xabc...);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 const account = &#x27;0x123...&#x27;; // contract address</span><br><span class="line">2 const votes = await comp.methods.getCurrentVotes(account).call();</span><br></pre></td></tr></table></figure>
+
+<h2 id="获取先前投票数"><a href="#获取先前投票数" class="headerlink" title="获取先前投票数"></a>获取先前投票数</h2><p>获取一个账户在特定区块上的投票数。传入的区块高度必须是最终确定的区块，否则函数将revert。</p>
+<p><strong>COMP</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function getPriorVotes(address account, uint blockNumber) returns (uint96)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>account : 检索先前的投票数的账户地址；</li>
+<li>blockNumber : 取回之前的票数的区块高度；</li>
+<li>返回值 : 先前投票数；</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 Comp comp = Comp(0x123...); // contract address</span><br><span class="line">2 uint priorVotes = comp.getPriorVotes(account, blockNumber);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const priorVotes = await comp.methods.getPriorVotes(account, blockNumber).call();</span><br></pre></td></tr></table></figure>
+
+<h2 id="Governor-Alpha"><a href="#Governor-Alpha" class="headerlink" title="Governor Alpha"></a>Governor Alpha</h2><p>Governor Alpha 是协议的治理模块；它允许超过 10 万 COMP 代币的地址提出修改建议。在提案开始时，手握投票权（通过调用 getpriorvotes 方法）的地址可以在 3 天的投票期内提交投票。如果提取被投了多数，且至少有 40 万票，则会在 Timelock  中排队，2 两天后实施。</p>
+<p>Govern Alpha 合约包含一个守卫者地址，由 Compound 团队控制，可以取消提案，或在紧急情况下禁用治理模块。在最初的沙盒期后，守护者可以放弃权利，标志着 COMP 代币持有者开始完全控制。</p>
+<h2 id="法定投票数-Quorum-Votes"><a href="#法定投票数-Quorum-Votes" class="headerlink" title="法定投票数(Quorum Votes)"></a>法定投票数(Quorum Votes)</h2><p>成功支持一项提案的最低票数要求。</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function quorumVotes() public pure returns (uint)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>返回值 : 成功支持一项提案的最低票数。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1GovernorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 uint quorum = gov.quorumVotes();</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const quorum = await gov.methods.quorumVotes().call();</span><br></pre></td></tr></table></figure>
+
+<h2 id="提案门槛-Proposal-Threshold"><a href="#提案门槛-Proposal-Threshold" class="headerlink" title="提案门槛(Proposal Threshold)"></a>提案门槛(Proposal Threshold)</h2><p>账户创建一个提案所需的最低票数；</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function proposalThreshold() returns (uint)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>返回值ETURN : 账户创建一个提案所需的最低票数。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 GovernorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 uint threshold = gov.proposalThreshold();</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const threshold = await gov.methods.proposalThreshold().call();</span><br></pre></td></tr></table></figure>
+
+<h2 id="提案最大操作量-Proposal-Max-Operations"><a href="#提案最大操作量-Proposal-Max-Operations" class="headerlink" title="提案最大操作量(Proposal Max Operations)"></a>提案最大操作量(Proposal Max Operations)</h2><p>提案中可以包含的最大操作数量。操作是指提案成功并执行时将进行的函数调用。</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function proposalMaxOperations() returns (uint)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>返回值 : 提案中可以包含的最大操作数量。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 GovernorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 uint operations = gov.proposalMaxOperations();</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const operations = await gov.methods.proposalMaxOperations().call();</span><br></pre></td></tr></table></figure>
+
+<h2 id="投票延迟-Voting-Delay"><a href="#投票延迟-Voting-Delay" class="headerlink" title="投票延迟(Voting Delay)"></a>投票延迟(Voting Delay)</h2><p>在对一个提案投票前需要等到的以太坊区块数。当创建一个提案时，该值会被添加到当前区块高度上。</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>function <span class="built_in">votingDelay</span>() returns (uint)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>返回值：在对一个提案投票前需要等到的以太坊区块数。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 GovernorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 uint blocks = gov.votingDelay();</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const blocks = await gov.methods.votingDelay().call();</span><br></pre></td></tr></table></figure>
+
+<h2 id="投票期-Voting-Period"><a href="#投票期-Voting-Period" class="headerlink" title="投票期(Voting Period)"></a>投票期(Voting Period)</h2><p>以以太坊区块为单位，对提案进行投票的持续时间。</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function votingPeriod() returns (uint)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>RETURN : 对提案进行投票的持续时间。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 GovernorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 uint blocks = gov.votingPeriod();</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const blocks = await gov.methods.votingPeriod().call();</span><br></pre></td></tr></table></figure>
+
+<h2 id="提案-Propose"><a href="#提案-Propose" class="headerlink" title="提案(Propose)"></a>提案(Propose)</h2><p>创建一个提案来改变协议。比如：一个提案能在 Comproller 上设置 cToken 的利率模型或者风险参数。</p>
+<p>提案将委托投票人进行投票表决。如果在投票期结束前有足够的支持，提案将被自动颁布。已颁布的提案将在 Compound Timelock 合约中排队并执行。</p>
+<p>发送者在紧邻的前一个区块中持有的 COMP 代币必须超过当前的提案阈值（proposalThreshold）。如果阈值是 10 万  COMP 代币，则发送者必须被委托超过所有 COMP 的 1% 才能创建一个提案。提案最多有 10 个操作（基于  proposalMaxOperations() ）。</p>
+<p>如果提案者当前有待处理或活动中的提案，则他们不能创建另一个提案。不可能在同一个区块中排队两个相同的操作（由于 Timelock 中的限制）。因此一个提案中的操作必须是唯一的，共享一个相同操作的唯一提案必须在不同的区块中排队。</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) returns (uint)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>targets : 在提案执行过程中，将被调用的目标地址的有序列表。这个数组的长度必须和这个方法中所有其他数组参数的长度相同；</li>
+<li>values : 在提案执行过程中要传递给调用的值（即msg.value）的有序列表。这个数组的长度必须和这个方法中所有其他数组参数的长度相同；</li>
+<li>signatures : 提案执行过程中要传递的方法签名的有序列表。这个数组的长度必须和这个方法中所有其他数组参数的长度相同；</li>
+<li>calldatas : 在提案执行过程中要传递给每个方法调用的数据的有序列表。这个数组必须和这个方法中所有其他数组参数的长度相同；</li>
+<li>description : 对该提案的可读性说明及其将作出的修改；</li>
+<li>返回值 : 新创建的提案 ID。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 GovernorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 uint proposalId = gov.propose(targets, values, signatures, calldatas, description);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1const tx = gov.methods.propose(targets, values, signatures, calldatas, description).send(&#123; from: sender &#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="队列-Queue"><a href="#队列-Queue" class="headerlink" title="队列(Queue)"></a>队列(Queue)</h2><p>提案通过后，任何地址可以调用 queue 方法将提案转移到  Timelock 队列中。提案只有在成功通过后，才能被排队。</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function queue(uint proposalId)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>proposalId : 已通过的提案 ID；</li>
+<li>返回值 : 无，错误时将 revert。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 GovernorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 gov.queue(proposalId);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const tx = gov.methods.queue(proposalId).send(&#123; from: sender &#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="执行-Execute"><a href="#执行-Execute" class="headerlink" title="执行(Execute)"></a>执行(Execute)</h2><p>在 Timelock 延迟期之后，任何账户都可以调用 execu 方法将提案中的更改应用到目标合约中。这将调用提案中描述的每一个操作。</p>
+<p>这个功能是可支付(payable)的，所以 Timelock 合约可以调用提案中选择的可支付功能。例如，A 提案可以 像cETH 一样在市场上添加准备金，设置 cToken 的利率模型，或者在 Comptroller上设置风险参数。</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1function execute(uint proposalId) payable returns (uint)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>proposalId : 要执行的成功提案 ID；</li>
+<li>返回值 : 无，错误时将 revert。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 GovernorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 gov.execute(proposalId).value(999).gas(999)();</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const tx = gov.methods.execute(proposalId).send(&#123; from: sender, value: 1 &#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="取消-Cancel"><a href="#取消-Cancel" class="headerlink" title="取消(Cancel)"></a>取消(Cancel)</h2><p>取消尚未执行的提案。除非提案人没有维持创建提案所需的委托量，否则监护人是唯一可以执行取消的人。如果提案人的委托人数没有超过提案的阈值，任何人都可以取消该提案。</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function cancel(uint proposalId)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>proposalId : 要取消的提案 ID。提案不能重复取消。</li>
+<li>RETURN : 无，错误时 revert。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 GovernorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 gov.cancel(proposalId);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const tx = gov.methods.cancel(proposalId).send(&#123; from: sender &#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="获取操作-Get-Actions"><a href="#获取操作-Get-Actions" class="headerlink" title="获取操作(Get Actions)"></a>获取操作(Get Actions)</h2><p>获取所选提案的操作列表。传递一个提案 ID，获取该提案的目标对象、值、签名和调用数据。</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function getActions(uint proposalId) returns (uint proposalId) public view returns (address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>proposalId : 拟获取操作的提案 ID。</li>
+<li>RETURN : 如果提案 ID 非法，则 revert 。否则成功时返回以下 4 个 参考信息：<ol>
+<li>提案调用的合约地址数组；</li>
+<li>提案中使用的值 - 无符号整数数组；</li>
+<li>提案签名的字符串数组；</li>
+<li>提案的 calldata 字节数组。</li>
+</ol>
+</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1 GovernorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 uint proposalId = 123;</span><br><span class="line">3 (address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas) = gov.getActions(proposalId);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const &#123;0: targets, 1: values, 2: signatures, 3: calldatas&#125; = gov.methods.getActions(proposalId).call();</span><br></pre></td></tr></table></figure>
+
+<h2 id="获取回执-Get-Receipt"><a href="#获取回执-Get-Receipt" class="headerlink" title="获取回执(Get Receipt)"></a>获取回执(Get Receipt)</h2><p>获得指定投票者的提案选票。</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function getReceipt(uint proposalId, address voter) returns (Receipt memory)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>proposalId : 提案ID，以获取投票者的选票收据；</li>
+<li>voter : 提案投票者的账户地址；</li>
+<li>RETURN : 错误时 revert。成功时返回投票者地址的选票收据结构数据。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 GovernorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 Receipt ballot = gov.getReceipt(proposalId, voterAddress);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span> <span class="keyword">const</span> proposalId = <span class="number">11</span>;</span><br><span class="line"><span class="number">2</span> <span class="keyword">const</span> voterAddress = <span class="string">&#x27;0x123...&#x27;</span>;</span><br><span class="line"><span class="number">3</span> <span class="keyword">const</span> result = <span class="keyword">await</span> gov.methods.getReceipt(proposalId, voterAddress).call();</span><br><span class="line"><span class="number">4</span> <span class="keyword">const</span> &#123; hasVoted, support, votes &#125; = result;</span><br></pre></td></tr></table></figure>
+
+<h2 id="获取提案状态-State"><a href="#获取提案状态-State" class="headerlink" title="获取提案状态(State)"></a>获取提案状态(State)</h2><p>获取指定提案的提案状态。返回值 ProposalState 是一个 Governor Alpha 合约中定义的枚举类型。</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function state(uint proposalId) returns (ProposalState)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>proposalId : 提案ID，以获得其状态；</p>
+</li>
+<li><p>返回值 : 枚举类型 ProposalState。类型有：Pending(等待中)、Active(活动中)、</p>
+<p>Canceled(已取消)、Defeated(已败北)、 Succeeded（已成功）、Queued（已排队）、Expired（已过期）和Executed（已执行）。</p>
+</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 overnorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 GovernorAlpha.ProposalState state = gov.state(123);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1 const proposalStates = [&#x27;Pending&#x27;, &#x27;Active&#x27;, &#x27;Canceled&#x27;, &#x27;Defeated&#x27;, &#x27;Succeeded&#x27;, &#x27;Queued&#x27;, &#x27;Expired&#x27;, &#x27;Executed&#x27;];</span><br><span class="line">2 const proposalId = 123;</span><br><span class="line">3 result = await gov.methods.state(proposalId).call();</span><br><span class="line">4 const proposalState = proposalStates[result];</span><br></pre></td></tr></table></figure>
+
+<h2 id="投票-Cast-Vote"><a href="#投票-Cast-Vote" class="headerlink" title="投票(Cast Vote)"></a>投票(Cast Vote)</h2><p>对某项提案进行投票。该账户的表决权重取决于该账户在提案开始生效时的表决权重。</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function castVote(uint proposalId, bool support)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>proposalId : 提案ID，以进行投票；</li>
+<li>support : 布尔值，赞同提案为 true ，反对为 false；</li>
+<li>RETURN : 无返回值，错误时 revert。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 GovernorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 gov.castVote(proposalId, true);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const tx = gov.methods.castVote(proposalId, false).send(&#123; from: sender &#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="通过签名投票-Cast-Vote-By-Signature"><a href="#通过签名投票-Cast-Vote-By-Signature" class="headerlink" title="通过签名投票(Cast Vote By Signature)"></a>通过签名投票(Cast Vote By Signature)</h2><p>对某项提案进行投票。该账户的投票权重由该账户在该提案状态生效时的投票权重决定。此方法的目的与 “cast vote “相同，但它可以让脱机签名参与 Compound 治理投票。有关如何创建离线签名的详细信息，请查看 EIP-712。</p>
+<p><strong>Governor Alpha</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function castVoteBySig(uint proposalId, bool support, uint8 v, bytes32 r, bytes32 s)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>proposalId : 提案ID，以进行投票；</li>
+<li>support : 布尔值，赞同提案为 true ，反对为 false；</li>
+<li>v : 签名恢复字节；</li>
+<li>r :  ECDSA 签名对的一部分；</li>
+<li>s : ECDSA 签名对的一部分；</li>
+<li>返回值 : 无，错误时恢复。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 GovernorAlpha gov = GovernorAlpha(0x123...); // contract address</span><br><span class="line">2 gov.castVoteBySig(proposalId, true, v, r, s);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.2.6</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 const tx = await gov.methods.castVoteBySig(proposalId, false, v, r, s).send(&#123;&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="时间锁-Timelock"><a href="#时间锁-Timelock" class="headerlink" title="时间锁(Timelock)"></a>时间锁(Timelock)</h2><p>每个 cToken 合约和 Comptroller 合约都允许 Timelock 地址修改。Timelock 合约可以修改系统参数、逻辑和合约，以 “延迟时间、选择退出 “ 的升级模式进行修改。</p>
+<p>Timelock 有一个 2 天的最小延迟时间硬性规定，这是治理行动的最小通知时间。每项拟采取的治理行动，都会在公告后至少 2 天内公布。重大升级，如变更风险系统等，可能会有 14 天的延迟时间。</p>
+<p>时间锁由治理模块控制；待定和已完成的治理行动可以在<a target="_blank" rel="noopener" href="https://app.compound.finance/timelock">时间锁仪表板</a>上监控。</p>
+<h2 id="暂停守护者-Pause-Guardian"><a href="#暂停守护者-Pause-Guardian" class="headerlink" title="暂停守护者(Pause Guardian)"></a>暂停守护者(Pause Guardian)</h2><p>Comptroller  合约指定了一个能够禁用协议功能的暂停守护者地址。暂停守护者只有在出现不可预见的漏洞时才会使用，暂停守护者只有一种能力：禁用一组选定的功能。Mint、Borrow、Borrow、Transfer  和 Liquidate。暂停守护者不能解除一个动作，也不能阻止用户调用赎回、偿还借款以平仓和退出协议。</p>
+<p>目前，Compound 团队控制了暂停守护者的地址。</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/01/04/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/5-%E6%B2%BB%E7%90%86/" title="5-治理">https://kongpengyq.com/2023/01/04/区块链/区块链知识点总结/Compound/5-治理/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" rel="tag"># 区块链知识点总结</a>
+              <a href="/tags/Compound/" rel="tag"># Compound</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/01/02/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/4-%E5%8D%8F%E8%AE%AE%E9%A3%8E%E9%99%A9%E7%AE%A1%E7%90%86/" rel="prev" title="4-协议风险管理">
+      <i class="fa fa-chevron-left"></i> 4-协议风险管理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/01/07/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/6-AAVE%E5%8C%BA%E5%88%AB/" rel="next" title="6-AAVE区别">
+      6-AAVE区别 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#COMP"><span class="nav-text">COMP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A7%94%E6%89%98-Delegate"><span class="nav-text">委托(Delegate)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AD%BE%E5%90%8D%E5%A7%94%E6%89%98-Delegate-By-Signature"><span class="nav-text">签名委托(Delegate By Signature)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E5%BD%93%E5%89%8D%E6%8A%95%E7%A5%A8%E6%95%B0"><span class="nav-text">获取当前投票数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E5%85%88%E5%89%8D%E6%8A%95%E7%A5%A8%E6%95%B0"><span class="nav-text">获取先前投票数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Governor-Alpha"><span class="nav-text">Governor Alpha</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%95%E5%AE%9A%E6%8A%95%E7%A5%A8%E6%95%B0-Quorum-Votes"><span class="nav-text">法定投票数(Quorum Votes)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8F%90%E6%A1%88%E9%97%A8%E6%A7%9B-Proposal-Threshold"><span class="nav-text">提案门槛(Proposal Threshold)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8F%90%E6%A1%88%E6%9C%80%E5%A4%A7%E6%93%8D%E4%BD%9C%E9%87%8F-Proposal-Max-Operations"><span class="nav-text">提案最大操作量(Proposal Max Operations)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%95%E7%A5%A8%E5%BB%B6%E8%BF%9F-Voting-Delay"><span class="nav-text">投票延迟(Voting Delay)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%95%E7%A5%A8%E6%9C%9F-Voting-Period"><span class="nav-text">投票期(Voting Period)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8F%90%E6%A1%88-Propose"><span class="nav-text">提案(Propose)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%98%9F%E5%88%97-Queue"><span class="nav-text">队列(Queue)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C-Execute"><span class="nav-text">执行(Execute)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%96%E6%B6%88-Cancel"><span class="nav-text">取消(Cancel)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E6%93%8D%E4%BD%9C-Get-Actions"><span class="nav-text">获取操作(Get Actions)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E5%9B%9E%E6%89%A7-Get-Receipt"><span class="nav-text">获取回执(Get Receipt)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E6%8F%90%E6%A1%88%E7%8A%B6%E6%80%81-State"><span class="nav-text">获取提案状态(State)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%95%E7%A5%A8-Cast-Vote"><span class="nav-text">投票(Cast Vote)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E8%BF%87%E7%AD%BE%E5%90%8D%E6%8A%95%E7%A5%A8-Cast-Vote-By-Signature"><span class="nav-text">通过签名投票(Cast Vote By Signature)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E9%94%81-Timelock"><span class="nav-text">时间锁(Timelock)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9A%82%E5%81%9C%E5%AE%88%E6%8A%A4%E8%80%85-Pause-Guardian"><span class="nav-text">暂停守护者(Pause Guardian)</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

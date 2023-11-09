@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="介绍Comptroller 是 Compound 协议的风险管理层；它决定了用户需要维持多少抵押品，以及是否可以（和多少）清算用户。每次用户与 cToken 交互时，Comptroller 都会被要求批准或拒绝交易。 Comptroller 将用户余额映射到价格（通过价格预言机），再映射到风险权重（称为抵押系数 ）来进行判断。用户通过调用“进入市场”和“退出市场”，明确列出他们希望在风险评分中包括">
+<meta property="og:type" content="article">
+<meta property="og:title" content="4-协议风险管理">
+<meta property="og:url" content="https://kongpengyq.com/2023/01/02/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/4-%E5%8D%8F%E8%AE%AE%E9%A3%8E%E9%99%A9%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="介绍Comptroller 是 Compound 协议的风险管理层；它决定了用户需要维持多少抵押品，以及是否可以（和多少）清算用户。每次用户与 cToken 交互时，Comptroller 都会被要求批准或拒绝交易。 Comptroller 将用户余额映射到价格（通过价格预言机），再映射到风险权重（称为抵押系数 ）来进行判断。用户通过调用“进入市场”和“退出市场”，明确列出他们希望在风险评分中包括">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-01-01T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.775Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链知识点总结">
+<meta property="article:tag" content="Compound">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/01/02/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/4-%E5%8D%8F%E8%AE%AE%E9%A3%8E%E9%99%A9%E7%AE%A1%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>4-协议风险管理 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/01/02/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/4-%E5%8D%8F%E8%AE%AE%E9%A3%8E%E9%99%A9%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          4-协议风险管理
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-01-02 00:00:00" itemprop="dateCreated datePublished" datetime="2023-01-02T00:00:00+08:00">2023-01-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Compound/" itemprop="url" rel="index">
+                    <span itemprop="name">Compound</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Comptroller 是 Compound 协议的风险管理层；它决定了用户需要维持多少抵押品，以及是否可以（和多少）清算用户。每次用户与 cToken 交互时，Comptroller 都会被要求批准或拒绝交易。</p>
+<p>Comptroller 将用户余额映射到价格（通过价格预言机），再映射到风险权重（称为<a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/3169">抵押系数</a> ）来进行判断。用户通过调用“<a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/3169">进入市场</a>”和“<a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/3169">退出市场</a>”，明确列出他们希望在风险评分中包括哪些资产。</p>
+<h2 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h2><p>Comptroller 作为一个可升级的代理实现。Unitroller 将所有逻辑都代理给 Comptroller 实现，但存储值是在  Unitroller 上设置的。要调用 Comptroller 方法，请使用 Unitroller 地址上的 Comptroller ABI。</p>
+<h2 id="进入市场"><a href="#进入市场" class="headerlink" title="进入市场"></a>进入市场</h2><p>进入一个市场的清单 – 重复进入同一个市场，不是错误。要想在一个市场中提供抵押品或借贷，必须先进入市场。</p>
+<p><strong>Comptroller</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function enterMarkets(address[] calldata cTokens) returns (uint[] memory)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>msg.sender : 应进入特定市场的账户。</li>
+<li>cTokens : 要进入的 cToken 市场地址。</li>
+<li>返回值: 对于每个市场，返回一个错误代码，表示是否已进入市场。成功时为 0，否则返回<a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/3169">错误代码</a>。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1 Comptroller troll = Comptroller(0xABCD...);</span><br><span class="line">2 CToken[] memory cTokens = new CToken[](2);</span><br><span class="line">3 cTokens[0] = CErc20(0x3FDA...);</span><br><span class="line">4 cTokens[1] = CEther(0x3FDB...);</span><br><span class="line">5 uint[] memory errors = troll.enterMarkets(cTokens);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.0</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1 const troll = Comptroller.at(0xABCD...);</span><br><span class="line">2 const cTokens = [CErc20.at(0x3FDA...), CEther.at(0x3FDB...)];</span><br><span class="line">3 const errors = await troll.methods.enterMarkets(cTokens).send(&#123;from: ...&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="退出市场"><a href="#退出市场" class="headerlink" title="退出市场"></a>退出市场</h2><p>退出一个市场 – 退出当前没有进入的市场，这不是错误。退出市场将不计入账户流动性计算。</p>
+<p><strong>Comptroller</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function exitMarket(address cToken) returns (uint)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>msg.sender : 应退出特定市场的账户。</li>
+<li>cTokens : 要退出的市场 cToken 地址。</li>
+<li>RETURN : 成功时为 0，否则返回<a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/3169">错误代码</a>。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1Comptroller troll = Comptroller(0xABCD...);</span><br><span class="line">2uint error = troll.exitMarket(CToken(0x3FDA...));</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.0</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 const troll = Comptroller.at(0xABCD...);</span><br><span class="line">2 const errors = await troll.methods.exitMarket(CEther.at(0x3FDB...)).send(&#123;from: ...&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Get-Assets-In"><a href="#Get-Assets-In" class="headerlink" title="Get Assets In"></a>Get Assets In</h2><p>获取一个账户目前进入的市场列表。要在市场上提供抵押品或借款，必须先进入市场。已进入的市场计入账户流动性计算中。</p>
+<p><strong>Comptroller</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function getAssetsIn(address account) view returns (address[] memory)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>account : 应查询其进入市场清单的账户；</li>
+<li>RETURN : 目前进入的每个市场的地址。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 Comptroller troll = Comptroller(0xABCD...);</span><br><span class="line">2 address[] memory markets = troll.getAssetsIn(0xMyAccount);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.0</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 const troll = Comptroller.at(0xABCD...);</span><br><span class="line">2 const markets = await troll.methods.getAssetsIn(cTokens).call();</span><br></pre></td></tr></table></figure>
+
+<h2 id="抵押系数"><a href="#抵押系数" class="headerlink" title="抵押系数"></a>抵押系数</h2><p>一个 cToken 的抵押系数(Collateral factors)可以在 0-90% 之间，代表账户通过铸造 cToken 获得的流动性（借款限额）的比例增加。</p>
+<p>一般来说，大额资产或流动性较强的资产抵押系数较高，而小额资产或流动性较差的资产抵押系数较低。如果一项资产的抵押系数为 0%，则不能作为抵押品（或在清算时被扣押），但仍可借入。</p>
+<p>随着市场情况的变化，可以通过 Compound 治理，提高（或降低）抵押品系数。</p>
+<p><strong>Comptroller</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function markets(address cTokenAddress) view returns (bool, uint)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>cTokenAddress : 检查特定的 cToken 是否上市，并获得其抵押系数。</li>
+<li>RETURN : 值元祖（isListed, collateralFactorMantissa）；isListed  代表审计是否承认这个cToken；collateralFactorMantissa 代表（抵押系数），按 1e18  比例乘以一个供给余额来确定可以借入多少资产。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 Comptroller troll = Comptroller(0xABCD...);</span><br><span class="line">2 (bool isListed, uint collateralFactorMantissa) = troll.markets(0x3FDA...);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.0</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1 const troll = Comptroller.at(0xABCD...);</span><br><span class="line">2 const result = await troll.methods.markets(0x3FDA...).call();</span><br><span class="line">3 const &#123;0: isListed, 1: collateralFactorMantissa&#125; = result;</span><br></pre></td></tr></table></figure>
+
+<h2 id="获取账户流动性"><a href="#获取账户流动性" class="headerlink" title="获取账户流动性"></a>获取账户流动性</h2><p>在 Compound 协议中，账户流动性被定义为账户抵押品的预估以太值（供应余额乘以协议<a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/3169">抵押系数</a>，减去账户借款余额的总价值）。这些价值仅使用账户<a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/3169">已进入</a>的市场计算。</p>
+<p>没有正账户流动性的用户在没有提供更多的资产或者偿还未偿还的借款，使其账户流动性恢复到正值之前，没有能力提取或借入任何资产。</p>
+<p><strong>Comptroller</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function getAccountLiquidity(address account) view returns (uint, uint, uint)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>account : 应计算其流动性的账户；</p>
+</li>
+<li><p>RETURN : 数组值（error、liquidity、shortfall）。成功时错误为0，否则为<a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/3169">错误代码</a>。非零</p>
+<p>liquidity 表示该账户有可用的账户流动性。非零 shortfall 表示该账户目前低于其抵押品要求，需要清算。 liquidity 和 shortfall 最多只有一个不为零。</p>
+</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1 Comptroller troll = Comptroller(0xABCD...);</span><br><span class="line">2 (uint error, uint liquidity, uint shortfall) = troll.getAccountLiquidity(msg.caller); </span><br><span class="line">3 require(error == 0, &quot;join the Discord&quot;); </span><br><span class="line">4 require(shortfall == 0, &quot;account underwater&quot;); </span><br><span class="line">5 require(liquidity &gt; 0, &quot;account has excess collateral&quot;);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.0</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1 const troll = Comptroller.at(0xABCD...);</span><br><span class="line">2 const result = await troll.methods.getAccountLiquidity(0xBorrower).call();</span><br><span class="line">3 const &#123;0: error, 1: liquidity, 2: shortfall&#125; = result;</span><br></pre></td></tr></table></figure>
+
+<h2 id="关闭系数"><a href="#关闭系数" class="headerlink" title="关闭系数"></a>关闭系数</h2><p>可清偿借款的账户中，可在一次清算交易中偿还的借款的百分比，范围从 0% 到 100%。如果一个用户有多个借款资产，则 closeFactor 适用于任何单一的借款资产，而不是用户未清偿借款的总价值。</p>
+<p><strong>Comptroller</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function closeFactorMantissa() view returns (uint)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>返回值 : 关闭系数，按 1e18 比例计算，乘以未偿还的借款余额，确定可以结清多少借款。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 Comptroller troll = Comptroller(0xABCD...);</span><br><span class="line">2 uint closeFactor = troll.closeFactorMantissa();</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.0</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 const troll = Comptroller.at(0xABCD...);</span><br><span class="line">2 const closeFactor = await troll.methods.closeFactoreMantissa().call();</span><br></pre></td></tr></table></figure>
+
+<h2 id="清算奖励"><a href="#清算奖励" class="headerlink" title="清算奖励"></a>清算奖励</h2><p>给予清算人的额外抵押品，作为清算水下账户的奖励。例如，如果清算奖励是 1.1 ，那么清算人每关闭一个单位，就能额外获得借款人抵押品的 10%。</p>
+<p><strong>Comptroller</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 function liquidationIncentiveMantissa() view returns (uint)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>返回值 : 清算奖励，按 1e18 比例计算，再乘以清算人的平仓借款金额，以确定可以扣押多少抵押品。</li>
+</ul>
+<p><strong>Solidity</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 Comptroller troll = Comptroller(0xABCD...);</span><br><span class="line">2 uint closeFactor = troll.liquidationIncentiveMantissa();</span><br></pre></td></tr></table></figure>
+
+<p><strong>Web3 1.0</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 const troll = Comptroller.at(0xABCD...);</span><br><span class="line">2 const closeFactor = await troll.methods.liquidationIncentiveMantissa().call();</span><br></pre></td></tr></table></figure>
+
+<h2 id="主要事件"><a href="#主要事件" class="headerlink" title="主要事件"></a>主要事件</h2><table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MarketEntered(CToken cToken, address account)</td>
+<td>成功<a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/3169">进入市场</a>时发生</td>
+</tr>
+<tr>
+<td>MarketExited(CToken cToken, address account)</td>
+<td>成功<a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/3169">退出市场</a>时发生</td>
+</tr>
+</tbody></table>
+<h2 id="错误代码"><a href="#错误代码" class="headerlink" title="错误代码"></a>错误代码</h2><table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>NO_ERROR</td>
+<td>不算错误</td>
+</tr>
+<tr>
+<td>1</td>
+<td>UNAUTHORIZED</td>
+<td>The sender is not authorized to perform this action.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>COMPTROLLER_MISMATCH</td>
+<td>Liquidation cannot be performed in markets with different comptrollers.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>INSUFFICIENT_SHORTFALL</td>
+<td>The account does not have sufficient shortfall to perform this action.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>INSUFFICIENT_LIQUIDITY</td>
+<td>The account does not have sufficient liquidity to perform this action.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>INVALID_CLOSE_FACTOR</td>
+<td>The close factor is not valid.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>INVALID_COLLATERAL_FACTOR</td>
+<td>The collateral factor is not valid.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>INVALID_LIQUIDATION_INCENTIVE</td>
+<td>The liquidation incentive is invalid.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>MARKET_NOT_ENTERED</td>
+<td>The market has not been entered by the account.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>MARKET_NOT_LISTED</td>
+<td>The market is not currently listed by the comptroller.</td>
+</tr>
+<tr>
+<td>10</td>
+<td>MARKET_ALREADY_LISTED</td>
+<td>An admin tried to list the same market more than once.</td>
+</tr>
+<tr>
+<td>11</td>
+<td>MATH_ERROR</td>
+<td>A math calculation error occurred.</td>
+</tr>
+<tr>
+<td>12</td>
+<td>NONZERO_BORROW_BALANCE</td>
+<td>The action cannot be performed since the account carries a borrow balance.</td>
+</tr>
+<tr>
+<td>13</td>
+<td>PRICE_ERROR</td>
+<td>The comptroller could not obtain a required price of an asset.</td>
+</tr>
+<tr>
+<td>14</td>
+<td>REJECTION</td>
+<td>The comptroller rejects the action requested by the market.</td>
+</tr>
+<tr>
+<td>15</td>
+<td>SNAPSHOT_ERROR</td>
+<td>The comptroller could not get the account borrows and exchange rate from the market.</td>
+</tr>
+<tr>
+<td>16</td>
+<td>TOO_MANY_ASSETS</td>
+<td>Attempted to enter more markets than are currently supported.</td>
+</tr>
+<tr>
+<td>17</td>
+<td>TOO_MUCH_REPAY</td>
+<td>Attempted to repay more than is allowed by the protocol.</td>
+</tr>
+</tbody></table>
+<h2 id="错误信息"><a href="#错误信息" class="headerlink" title="错误信息"></a>错误信息</h2><table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>ACCEPT_ADMIN_PENDING_ADMIN_CHECK</td>
+</tr>
+<tr>
+<td>1</td>
+<td>ACCEPT_PENDING_IMPLEMENTATION_ADDRESS_CHECK</td>
+</tr>
+<tr>
+<td>2</td>
+<td>EXIT_MARKET_BALANCE_OWED</td>
+</tr>
+<tr>
+<td>3</td>
+<td>EXIT_MARKET_REJECTION</td>
+</tr>
+<tr>
+<td>4</td>
+<td>SET_CLOSE_FACTOR_OWNER_CHECK</td>
+</tr>
+<tr>
+<td>5</td>
+<td>SET_CLOSE_FACTOR_VALIDATION</td>
+</tr>
+<tr>
+<td>6</td>
+<td>SET_COLLATERAL_FACTOR_OWNER_CHECK</td>
+</tr>
+<tr>
+<td>7</td>
+<td>SET_COLLATERAL_FACTOR_NO_EXISTS</td>
+</tr>
+<tr>
+<td>8</td>
+<td>SET_COLLATERAL_FACTOR_VALIDATION</td>
+</tr>
+<tr>
+<td>9</td>
+<td>SET_COLLATERAL_FACTOR_WITHOUT_PRICE</td>
+</tr>
+<tr>
+<td>10</td>
+<td>SET_IMPLEMENTATION_OWNER_CHECK</td>
+</tr>
+<tr>
+<td>11</td>
+<td>SET_LIQUIDATION_INCENTIVE_OWNER_CHECK</td>
+</tr>
+<tr>
+<td>12</td>
+<td>SET_LIQUIDATION_INCENTIVE_VALIDATION</td>
+</tr>
+<tr>
+<td>13</td>
+<td>SET_MAX_ASSETS_OWNER_CHECK</td>
+</tr>
+<tr>
+<td>14</td>
+<td>SET_PENDING_ADMIN_OWNER_CHECK</td>
+</tr>
+<tr>
+<td>15</td>
+<td>SET_PENDING_IMPLEMENTATION_OWNER_CHECK</td>
+</tr>
+<tr>
+<td>16</td>
+<td>SET_PRICE_ORACLE_OWNER_CHECK</td>
+</tr>
+<tr>
+<td>17</td>
+<td>SUPPORT_MARKET_EXISTS</td>
+</tr>
+<tr>
+<td>18</td>
+<td>SUPPORT_MARKET_OWNER_CHECK</td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/01/02/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/4-%E5%8D%8F%E8%AE%AE%E9%A3%8E%E9%99%A9%E7%AE%A1%E7%90%86/" title="4-协议风险管理">https://kongpengyq.com/2023/01/02/区块链/区块链知识点总结/Compound/4-协议风险管理/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" rel="tag"># 区块链知识点总结</a>
+              <a href="/tags/Compound/" rel="tag"># Compound</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/12/31/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/3-%E4%B8%8EcToken%E5%90%88%E7%BA%A6%E4%BA%A4%E4%BA%92/" rel="prev" title="3-与cToken合约交互">
+      <i class="fa fa-chevron-left"></i> 3-与cToken合约交互
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/01/04/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/Compound/5-%E6%B2%BB%E7%90%86/" rel="next" title="5-治理">
+      5-治理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84"><span class="nav-text">架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%9B%E5%85%A5%E5%B8%82%E5%9C%BA"><span class="nav-text">进入市场</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%80%E5%87%BA%E5%B8%82%E5%9C%BA"><span class="nav-text">退出市场</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Get-Assets-In"><span class="nav-text">Get Assets In</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%B5%E6%8A%BC%E7%B3%BB%E6%95%B0"><span class="nav-text">抵押系数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E8%B4%A6%E6%88%B7%E6%B5%81%E5%8A%A8%E6%80%A7"><span class="nav-text">获取账户流动性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E9%97%AD%E7%B3%BB%E6%95%B0"><span class="nav-text">关闭系数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%85%E7%AE%97%E5%A5%96%E5%8A%B1"><span class="nav-text">清算奖励</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E4%BA%8B%E4%BB%B6"><span class="nav-text">主要事件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%99%E8%AF%AF%E4%BB%A3%E7%A0%81"><span class="nav-text">错误代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%99%E8%AF%AF%E4%BF%A1%E6%81%AF"><span class="nav-text">错误信息</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

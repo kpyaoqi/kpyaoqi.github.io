@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="web3.*.net(获取网络属性)1.1 getId获取当前的网络 ID. 返回值(Promise):  Number,网络 ID. 1.2 isListening查看当前节点是否正在连接其它对等节点。 返回值(Promise):  Boolean 1.3 getPeerCount查看当前节点是否正在连接其它对等节点。 返回值(Promise):  Number bzz(与swarm交互)shh">
+<meta property="og:type" content="article">
+<meta property="og:title" content="6-Web3.(_.net、bzz、shh、utils)">
+<meta property="og:url" content="https://kongpengyq.com/2022/09/09/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/6-Web3.(_.net%E3%80%81bzz%E3%80%81shh%E3%80%81utils)/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="web3.*.net(获取网络属性)1.1 getId获取当前的网络 ID. 返回值(Promise):  Number,网络 ID. 1.2 isListening查看当前节点是否正在连接其它对等节点。 返回值(Promise):  Boolean 1.3 getPeerCount查看当前节点是否正在连接其它对等节点。 返回值(Promise):  Number bzz(与swarm交互)shh">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-09-08T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.718Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="web3.js">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/09/09/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/6-Web3.(_.net%E3%80%81bzz%E3%80%81shh%E3%80%81utils)/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>6-Web3.(_.net、bzz、shh、utils) | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/09/09/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/6-Web3.(_.net%E3%80%81bzz%E3%80%81shh%E3%80%81utils)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          6-Web3.(_.net、bzz、shh、utils)
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-09-09 00:00:00" itemprop="dateCreated datePublished" datetime="2022-09-09T00:00:00+08:00">2022-09-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web3-js/" itemprop="url" rel="index">
+                    <span itemprop="name">web3.js</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="web3-net-获取网络属性"><a href="#web3-net-获取网络属性" class="headerlink" title="web3.*.net(获取网络属性)"></a>web3.*.net(获取网络属性)</h1><h2 id="1-1-getId"><a href="#1-1-getId" class="headerlink" title="1.1 getId"></a>1.1 getId</h2><p>获取当前的网络 ID.</p>
+<p><strong>返回值(Promise):</strong>  Number,网络 ID.</p>
+<h2 id="1-2-isListening"><a href="#1-2-isListening" class="headerlink" title="1.2 isListening"></a>1.2 isListening</h2><p>查看当前节点是否正在连接其它对等节点。</p>
+<p><strong>返回值(Promise):</strong>  Boolean</p>
+<h2 id="1-3-getPeerCount"><a href="#1-3-getPeerCount" class="headerlink" title="1.3 getPeerCount"></a>1.3 getPeerCount</h2><p>查看当前节点是否正在连接其它对等节点。</p>
+<p><strong>返回值(Promise):</strong>  Number</p>
+<h1 id="bzz-与swarm交互"><a href="#bzz-与swarm交互" class="headerlink" title="bzz(与swarm交互)"></a>bzz(与swarm交互)</h1><h1 id="shh-与-whisper-协议的交互进行消息广播"><a href="#shh-与-whisper-协议的交互进行消息广播" class="headerlink" title="shh(与 whisper 协议的交互进行消息广播)"></a>shh(与 whisper 协议的交互进行消息广播)</h1><h1 id="utils-工具性函数"><a href="#utils-工具性函数" class="headerlink" title="utils(工具性函数)"></a>utils(工具性函数)</h1><h2 id="4-1-randomHex"><a href="#4-1-randomHex" class="headerlink" title="4.1 randomHex"></a>4.1 randomHex</h2><p>来根据指定字节大小生成密码学强度的伪随机 16 进制字符串.</p>
+<p><strong>参数:</strong><code>size</code> - <code>Number</code>: 16 进制字符串的字节大小, 比如 <code>32</code> 生成32 个字节大小的 16 进制字符串，以 “0x” 为前缀的 64 个字符来表示。</p>
+<p>**返回值:(String): <strong>生成的 16 进制随机字符串.</strong></p>
+<h2 id="4-2-BN"><a href="#4-2-BN" class="headerlink" title="4.2 BN"></a>4.2 BN</h2><p>为了在不同类型之间进行安全的类型转换, 包括 BigNumber.js 可以使用 utils.toBN</p>
+<p><strong>参数:</strong><code>mixed</code> - <code>String|Number</code>: 要转换为 BN 对象的一个数字字符串或 16 进制字符串</p>
+<p><strong>返回值(Object):</strong> BN.js实例</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> <span class="variable constant_">BN</span> = web3.<span class="property">utils</span>.<span class="property">BN</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> <span class="title function_">BN</span>(<span class="number">1234</span>).<span class="title function_">toString</span>();</span><br><span class="line">&gt; <span class="string">&quot;1234&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> <span class="title function_">BN</span>(<span class="string">&#x27;1234&#x27;</span>).<span class="title function_">add</span>(<span class="keyword">new</span> <span class="title function_">BN</span>(<span class="string">&#x27;1&#x27;</span>)).<span class="title function_">toString</span>();</span><br><span class="line">&gt; <span class="string">&quot;1235&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> <span class="title function_">BN</span>(<span class="string">&#x27;0xea&#x27;</span>).<span class="title function_">toString</span>();</span><br><span class="line">&gt; <span class="string">&quot;234&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="4-3-isBN"><a href="#4-3-isBN" class="headerlink" title="4.3 isBN"></a>4.3 isBN</h2><p>检测给定值是否为 BN.js 实例</p>
+<p><strong>参数:</strong><code>bn</code> - <code>Object</code>: BN.js 实例.</p>
+<p><strong>返回值(Boolean)</strong></p>
+<h2 id="4-4-isBigNumber"><a href="#4-4-isBigNumber" class="headerlink" title="4.4 isBigNumber"></a>4.4 isBigNumber</h2><p>检测给定值是否为 BigNumber.js 实例</p>
+<p><strong>参数:</strong><code>bignumber </code> - <code>Object</code>: BigNumber.js 实例.</p>
+<p><strong>返回值(Boolean)</strong></p>
+<h2 id="4-5-sha3"><a href="#4-5-sha3" class="headerlink" title="4.5 sha3"></a>4.5 sha3</h2><p>将计算输入参数的 sha3 值</p>
+<blockquote>
+<p>web3.utils.keccak256(string) &#x2F;&#x2F; 别名</p>
+</blockquote>
+<p><strong>参数:</strong><code>string</code> - <code>String</code>: 要进行哈希运算的字符串.</p>
+<p>**返回值(String)**：计算所得哈希值.</p>
+<blockquote>
+<p>web3.utils.sha3Raw(string)</p>
+<p>将计算输入字符串的 sha3 哈希值，如果传入的是空字符串，将返回空字符串的哈希值而不是 <code>null</code></p>
+</blockquote>
+<h2 id="4-6-soliditySha3"><a href="#4-6-soliditySha3" class="headerlink" title="4.6 soliditySha3"></a>4.6 soliditySha3</h2><p>使用和 solidity 同样的方式对输入参数进行 sha3 哈希运算。这意味着对这些参数在进行哈希运算之前先进行 ABI 转换和紧凑打包编码。</p>
+<p><strong>参数:</strong><code>paramX</code> - <code>Mixed</code>: 任意类型，或者具有 <code>&#123;type: &#39;uint&#39;, value: &#39;123456&#39;&#125;</code> 或 <code>&#123;t: &#39;bytes&#39;, v: &#39;0xfff456&#39;&#125;</code> 的对象. 基本类型将按下面的规则进行自动检测:</p>
+<ul>
+<li><code>String</code> 非数字 UTF-8 字符串会被解析为 <code>string</code>.</li>
+<li><code>String|Number|BN|HEX</code> 正数会被解析为 <code>uint256</code>.</li>
+<li><code>String|Number|BN</code> 负数会被解析为 <code>int256</code>.</li>
+<li><code>Boolean</code> 作为 <code>bool</code>.</li>
+<li><code>String</code> 以 <code>0x</code> 开头的 16 进制字符串会被解析为 <code>bytes</code>.</li>
+<li><code>HEX</code> 16 进制表示的数字会被解析为 <code>uint256</code>.</li>
+</ul>
+<p><strong>返回值(String)：</strong>哈希值</p>
+<blockquote>
+<p>web3.utils.soliditySha3Raw(param1 [, param2, …])</p>
+<p> 和 <code>soliditySha3</code> 不同的是，如果传入的是空字符串，将返回空字符串的哈希值而不是 <code>null</code></p>
+</blockquote>
+<h2 id="4-7-isHex"><a href="#4-7-isHex" class="headerlink" title="4.7 isHex"></a>4.7 isHex</h2><p>判断给定的字符串是否是个 16 进制字符串</p>
+<p><strong>参数:</strong><code>hex</code> - <code>String|HEX</code>: 给定的 16 进制字符串.</p>
+<p><strong>返回值(Boolean)</strong></p>
+<blockquote>
+<p>web3.utils.isHexStrict(hex)</p>
+<p> 和 <code>web3.utils.isHex()</code> 不同的是它要求 16 进制字符串必须以 <code>0x</code> 开头.</p>
+</blockquote>
+<h2 id="4-8-isAddress"><a href="#4-8-isAddress" class="headerlink" title="4.8 isAddress"></a>4.8 isAddress</h2><p>判断给定的地址是否是一个有效的以太坊地址。大小写混合的地址还会检测校验和。</p>
+<p><strong>参数:</strong><code>address</code> - <code>String</code>: 地址字符串.</p>
+<p><strong>返回值(Boolean)</strong></p>
+<h2 id="4-9-toChecksumAddress"><a href="#4-9-toChecksumAddress" class="headerlink" title="4.9 toChecksumAddress"></a>4.9 toChecksumAddress</h2><p>将一个只有大写或小写字符的以太坊地址转换为一个校验和地址</p>
+<p><strong>参数:</strong><code>address</code> - <code>String</code>: 地址字符串.</p>
+<p><strong>返回值(String)：</strong>校验和地址</p>
+<h2 id="4-10-checkAddressChecksum"><a href="#4-10-checkAddressChecksum" class="headerlink" title="4.10 checkAddressChecksum"></a>4.10 checkAddressChecksum</h2><p>检测给定地址的校验和. 非校验和地址同样会返回 false.</p>
+<p><strong>参数:</strong><code>address</code> - <code>String</code>: 地址字符串.</p>
+<p><strong>返回值(Boolean)：</strong>地址的校验和有效时返回 <code>true</code> , 地址不是一个校验和地址或者校验和无效时返回 <code>false</code>.</p>
+<h2 id="4-11-toHex"><a href="#4-11-toHex" class="headerlink" title="4.11 toHex"></a>4.11 toHex</h2><p>自动将给定值转换为 16 进制。Number 字符串会被解析为数字。Text 字符串会被解析为 UTF8 字符串</p>
+<p><strong>参数:</strong><code>mixed</code> - <code>String|Number|BN|BigNumber</code>: 要进行 16 进制转化的输入.</p>
+<p><strong>返回值(String)：</strong>得到的 16 进制字符串.</p>
+<blockquote>
+<p>web3.utils.stripHexPrefix(string)</p>
+<p>返回<code>String</code>:没有0x前缀的输入字符串。</p>
+</blockquote>
+<h2 id="4-12-toBN"><a href="#4-12-toBN" class="headerlink" title="4.12 toBN"></a>4.12 toBN</h2><p>将任何给定值安全转换为 (BigNumber.js 实例) 一个 BN.js 实例, 以便于在 JavaScript 中处理大数.</p>
+<blockquote>
+<p>如果只是 BN.js 类，可以直接使用 web3.utils.BN</p>
+</blockquote>
+<p><strong>参数:</strong><code>number</code> - <code>String|Number|HEX</code>: 要转换为大数类型的数字.</p>
+<p><strong>返回值(Object)：</strong>BN.js实例</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">web3.<span class="property">utils</span>.<span class="title function_">toBN</span>(<span class="number">1234</span>).<span class="title function_">toString</span>();</span><br><span class="line">&gt; <span class="string">&quot;1234&quot;</span></span><br><span class="line"></span><br><span class="line">web3.<span class="property">utils</span>.<span class="title function_">toBN</span>(<span class="string">&#x27;1234&#x27;</span>).<span class="title function_">add</span>(web3.<span class="property">utils</span>.<span class="title function_">toBN</span>(<span class="string">&#x27;1&#x27;</span>)).<span class="title function_">toString</span>();</span><br><span class="line">&gt; <span class="string">&quot;1235&quot;</span></span><br><span class="line"></span><br><span class="line">web3.<span class="property">utils</span>.<span class="title function_">toBN</span>(<span class="string">&#x27;0xea&#x27;</span>).<span class="title function_">toString</span>();</span><br><span class="line">&gt; <span class="string">&quot;234&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="4-13-hexToNumberString"><a href="#4-13-hexToNumberString" class="headerlink" title="4.13 hexToNumberString"></a>4.13 hexToNumberString</h2><p>返回 16 进制字符串的数字表示</p>
+<p><strong>参数:</strong><code>hexString</code> - <code>String|HEX</code>: 16 进制字符串</p>
+<p><strong>返回值(String)：</strong>数字字符串</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">web3.<span class="property">utils</span>.<span class="title function_">hexToNumberString</span>(<span class="string">&#x27;0xea&#x27;</span>);</span><br><span class="line">&gt; <span class="string">&quot;234&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="4-14-hexToNumber"><a href="#4-14-hexToNumber" class="headerlink" title="4.14 hexToNumber"></a>4.14 hexToNumber</h2><p>返回 16 进制字符串的数字表示</p>
+<blockquote>
+<p>这个对大数不适用, 大数应该使用 web3.utils.toBN.</p>
+</blockquote>
+<p><strong>参数:</strong><code>hexString</code> - <code>String|HEX</code>: 16 进制字符串</p>
+<p><strong>返回值(Number)</strong></p>
+<h2 id="4-15-numberToHex"><a href="#4-15-numberToHex" class="headerlink" title="4.15 numberToHex"></a>4.15 numberToHex</h2><p>返回给定数字的 16 进制表示</p>
+<p><strong>参数:</strong><code>number</code> - <code>String|Number|BN|BigNumber</code>: 数字或数字字符串.</p>
+<p><strong>返回值(String)：</strong>给定数字的 16 进制表示.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">web3.<span class="property">utils</span>.<span class="title function_">numberToHex</span>(<span class="string">&#x27;234&#x27;</span>);</span><br><span class="line">&gt; <span class="string">&#x27;0xea&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="4-16-hexToUtf8"><a href="#4-16-hexToUtf8" class="headerlink" title="4.16 hexToUtf8"></a>4.16 hexToUtf8</h2><p>返回给定 16 进制数字的 UTF-8 字符串表示</p>
+<p><strong>参数:</strong><code>hex</code> - <code>String</code>: 要转换为 UTF-8 字符串的 16 进制字符串.</p>
+<p><strong>返回值(String)：</strong>UTF-8 字符串.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">web3.<span class="property">utils</span>.<span class="title function_">hexToUtf8</span>(<span class="string">&#x27;0x49206861766520313030e282ac&#x27;</span>);</span><br><span class="line">&gt; <span class="string">&quot;I have 100€&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="4-17-hexToAscii"><a href="#4-17-hexToAscii" class="headerlink" title="4.17 hexToAscii"></a>4.17 hexToAscii</h2><p>返回给定 16 进制数字的 ASCII 码字符串表示</p>
+<p><strong>参数:</strong><code>hex</code> - <code>String</code>: 要转换为 ASCII 码字符串的 16 进制字符串.</p>
+<p><strong>返回值(String)：</strong>ASCII 码字符串.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">web3.<span class="property">utils</span>.<span class="title function_">hexToAscii</span>(<span class="string">&#x27;0x49206861766520313030e282ac&#x27;</span>);</span><br><span class="line">&gt; <span class="string">&quot;I have 100€&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="4-18-utf8ToHex"><a href="#4-18-utf8ToHex" class="headerlink" title="4.18 utf8ToHex"></a>4.18 utf8ToHex</h2><p>返回给定 UTF-8 字符串的 16 进制表示。</p>
+<p><strong>参数:</strong><code>string</code> - <code>String</code>: 要转换为 16 进制字符串的 UTF-8 字符串.</p>
+<p><strong>返回值(String)：</strong>16 进制字符串</p>
+<h2 id="4-19-asciiToHex"><a href="#4-19-asciiToHex" class="headerlink" title="4.19 asciiToHex"></a>4.19 asciiToHex</h2><p>返回给定 ASCII 码字符串的 16 进制表示</p>
+<p><strong>参数:</strong><code>string</code> - <code>String</code>: 要转换为 16 进制字符串的 ASCII 码字符串.</p>
+<p><strong>返回值(String)：</strong>16 进制字符串</p>
+<h2 id="4-20-hexToBytes"><a href="#4-20-hexToBytes" class="headerlink" title="4.20 hexToBytes"></a>4.20 hexToBytes</h2><p>返回给定 16 进制字符串的字节数组表示</p>
+<p><strong>参数:</strong><code>hex</code> - <code>String|HEX</code>: 要进行转换的 16 进制串.</p>
+<p><strong>返回值(Array)：</strong>字节数组</p>
+<h2 id="4-21-bytesToHex"><a href="#4-21-bytesToHex" class="headerlink" title="4.21 bytesToHex"></a>4.21 bytesToHex</h2><p>返回一个字节数组的 16 进制字符串表示</p>
+<p><strong>参数:</strong><code>byteArray</code> - <code>Array</code>: 要进行转换的字节数组.</p>
+<p><strong>返回值(String)：</strong>16进制字符串</p>
+<h2 id="4-22-toWei"><a href="#4-22-toWei" class="headerlink" title="4.22 toWei"></a>4.22 toWei</h2><p>将任意 ether 值转换为 wei.</p>
+<p><strong>参数:</strong></p>
+<ul>
+<li><code>number</code> - <code>String|BN</code>: 要转换的数字.</li>
+<li><code>unit</code> - <code>String</code> (optional, defaults to <code>&quot;ether&quot;</code>): 要转换的以太币单位. 支持的单位包括:<ul>
+<li><code>noether</code>: ‘0’</li>
+<li><code>wei</code>: ‘1’</li>
+<li><code>kwei</code>: ‘1000’</li>
+<li><code>Kwei</code>: ‘1000’</li>
+<li><code>babbage</code>: ‘1000’</li>
+<li><code>femtoether</code>: ‘1000’</li>
+<li><code>mwei</code>: ‘1000000’</li>
+<li><code>Mwei</code>: ‘1000000’</li>
+<li><code>lovelace</code>: ‘1000000’</li>
+<li><code>picoether</code>: ‘1000000’</li>
+<li><code>gwei</code>: ‘1000000000’</li>
+<li><code>Gwei</code>: ‘1000000000’</li>
+<li><code>shannon</code>: ‘1000000000’</li>
+<li><code>nanoether</code>: ‘1000000000’</li>
+<li><code>nano</code>: ‘1000000000’</li>
+<li><code>szabo</code>: ‘1000000000000’</li>
+<li><code>microether</code>: ‘1000000000000’</li>
+<li><code>micro</code>: ‘1000000000000’</li>
+<li><code>finney</code>: ‘1000000000000000’</li>
+<li><code>milliether</code>: ‘1000000000000000’</li>
+<li><code>milli</code>: ‘1000000000000000’</li>
+<li><code>ether</code>: ‘1000000000000000000’</li>
+<li><code>kether</code>: ‘1000000000000000000000’</li>
+<li><code>grand</code>: ‘1000000000000000000000’</li>
+<li><code>mether</code>: ‘1000000000000000000000000’</li>
+<li><code>gether</code>: ‘1000000000000000000000000000’</li>
+<li><code>tether</code>: ‘1000000000000000000000000000000’</li>
+</ul>
+</li>
+</ul>
+<p><strong>返回值(String|BN)：</strong>给一个数字字符串就返回一个字符串, 否则返回一个 BN.js 实例.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">web3.<span class="property">utils</span>.<span class="title function_">toWei</span>(<span class="string">&#x27;1&#x27;</span>, <span class="string">&#x27;ether&#x27;</span>);</span><br><span class="line">&gt; <span class="string">&quot;1000000000000000000&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="4-23-fromWei"><a href="#4-23-fromWei" class="headerlink" title="4.23 fromWei"></a>4.23 fromWei</h2><p>将任意数量的 wei 转换为 ether.</p>
+<p><strong>参数:<strong>参考</strong>web3.utils.toWei()</strong></p>
+<p><strong>返回值(String)：</strong>数字字符串</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">web3.<span class="property">utils</span>.<span class="title function_">fromWei</span>(<span class="string">&#x27;1&#x27;</span>, <span class="string">&#x27;ether&#x27;</span>);</span><br><span class="line">&gt; <span class="string">&quot;0.000000000000000001&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="4-24-unitMap"><a href="#4-24-unitMap" class="headerlink" title="4.24 unitMap"></a>4.24 unitMap</h2><p>显示所有的 ether 单位 和它们对应的 wei 数量.</p>
+<p><strong>参数:<strong>参考</strong>web3.utils.toWei()</strong></p>
+<p><strong>返回值(Object)：</strong>web3.utils.toWei()参数</p>
+<h2 id="4-25-padLeft-padRight"><a href="#4-25-padLeft-padRight" class="headerlink" title="4.25 padLeft&#x2F;padRight"></a>4.25 padLeft&#x2F;padRight</h2><p>对一个字符串进行左&#x2F;右补齐, 在需要对 16 进制字符串进行填充是很有用.</p>
+<p><strong>参数:</strong></p>
+<ol>
+<li><code>string</code> - <code>String</code>: 需要左&#x2F;右补齐的字符串.</li>
+<li><code>characterAmount</code> - <code>Number</code>: 整个字符串所含有的字符数量.</li>
+<li><code>sign</code> - <code>String</code> (可选): 要使用的字符符号, 默认为 <code>&quot;0&quot;</code>.</li>
+</ol>
+<p><strong>返回值(String)：</strong>补齐后的字符串.</p>
+<h2 id="4-26-toTwosComplement"><a href="#4-26-toTwosComplement" class="headerlink" title="4.26 toTwosComplement"></a>4.26 toTwosComplement</h2><p>将一个负数转换为补码表示。</p>
+<p><strong>参数:</strong><code>number</code> - <code>Number|String|BigNumber</code>: 需要进行转换的数字.</p>
+<p><strong>返回值(String)：</strong>转换后的 16 进制字符串.</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/09/09/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/6-Web3.(_.net%E3%80%81bzz%E3%80%81shh%E3%80%81utils)/" title="6-Web3.(_.net、bzz、shh、utils)">https://kongpengyq.com/2022/09/09/区块链/web3/6-Web3.(_.net、bzz、shh、utils)/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/web3-js/" rel="tag"># web3.js</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/09/05/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/5-eth.(personal%E3%80%81ens%E3%80%81lban%E3%80%81abi)/" rel="prev" title="5-eth.(personal、ens、lban、abi)">
+      <i class="fa fa-chevron-left"></i> 5-eth.(personal、ens、lban、abi)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/09/15/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A/01-%E6%A6%82%E8%BF%B0/" rel="next" title="01-概述">
+      01-概述 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#web3-net-%E8%8E%B7%E5%8F%96%E7%BD%91%E7%BB%9C%E5%B1%9E%E6%80%A7"><span class="nav-text">web3.*.net(获取网络属性)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-getId"><span class="nav-text">1.1 getId</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-isListening"><span class="nav-text">1.2 isListening</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-getPeerCount"><span class="nav-text">1.3 getPeerCount</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#bzz-%E4%B8%8Eswarm%E4%BA%A4%E4%BA%92"><span class="nav-text">bzz(与swarm交互)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#shh-%E4%B8%8E-whisper-%E5%8D%8F%E8%AE%AE%E7%9A%84%E4%BA%A4%E4%BA%92%E8%BF%9B%E8%A1%8C%E6%B6%88%E6%81%AF%E5%B9%BF%E6%92%AD"><span class="nav-text">shh(与 whisper 协议的交互进行消息广播)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#utils-%E5%B7%A5%E5%85%B7%E6%80%A7%E5%87%BD%E6%95%B0"><span class="nav-text">utils(工具性函数)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1-randomHex"><span class="nav-text">4.1 randomHex</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-BN"><span class="nav-text">4.2 BN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-3-isBN"><span class="nav-text">4.3 isBN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-4-isBigNumber"><span class="nav-text">4.4 isBigNumber</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-5-sha3"><span class="nav-text">4.5 sha3</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-6-soliditySha3"><span class="nav-text">4.6 soliditySha3</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-7-isHex"><span class="nav-text">4.7 isHex</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-8-isAddress"><span class="nav-text">4.8 isAddress</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-9-toChecksumAddress"><span class="nav-text">4.9 toChecksumAddress</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-10-checkAddressChecksum"><span class="nav-text">4.10 checkAddressChecksum</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-11-toHex"><span class="nav-text">4.11 toHex</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-12-toBN"><span class="nav-text">4.12 toBN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-13-hexToNumberString"><span class="nav-text">4.13 hexToNumberString</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-14-hexToNumber"><span class="nav-text">4.14 hexToNumber</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-15-numberToHex"><span class="nav-text">4.15 numberToHex</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-16-hexToUtf8"><span class="nav-text">4.16 hexToUtf8</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-17-hexToAscii"><span class="nav-text">4.17 hexToAscii</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-18-utf8ToHex"><span class="nav-text">4.18 utf8ToHex</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-19-asciiToHex"><span class="nav-text">4.19 asciiToHex</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-20-hexToBytes"><span class="nav-text">4.20 hexToBytes</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-21-bytesToHex"><span class="nav-text">4.21 bytesToHex</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-22-toWei"><span class="nav-text">4.22 toWei</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-23-fromWei"><span class="nav-text">4.23 fromWei</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-24-unitMap"><span class="nav-text">4.24 unitMap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-25-padLeft-padRight"><span class="nav-text">4.25 padLeft&#x2F;padRight</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-26-toTwosComplement"><span class="nav-text">4.26 toTwosComplement</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

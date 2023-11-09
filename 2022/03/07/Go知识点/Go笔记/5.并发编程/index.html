@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="协程 goroutinegoroutine 只是由官方实现的超级”线程池”。每个实力4~5KB的栈内存占用和由于实现机制而大幅减少的创建和销毁开销是go高并发的根本原因。 并发不是并行：并发主要由切换时间片来实现”同时”运行，并行则是直接利用多核实现多线程的运行，go可以设置使用核数，以发挥多核计算机的能力。 goroutine 奉行通过通信来共享内存，而不是共享内存来通信。runtime包run">
+<meta property="og:type" content="article">
+<meta property="og:title" content="5.并发编程">
+<meta property="og:url" content="https://kongpengyq.com/2022/03/07/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E7%AC%94%E8%AE%B0/5.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="协程 goroutinegoroutine 只是由官方实现的超级”线程池”。每个实力4~5KB的栈内存占用和由于实现机制而大幅减少的创建和销毁开销是go高并发的根本原因。 并发不是并行：并发主要由切换时间片来实现”同时”运行，并行则是直接利用多核实现多线程的运行，go可以设置使用核数，以发挥多核计算机的能力。 goroutine 奉行通过通信来共享内存，而不是共享内存来通信。runtime包run">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.topgoer.com/static/7.1/gmp/12.jpg">
+<meta property="og:image" content="https://www.topgoer.com/static/7.1/gmp/13.jpg">
+<meta property="article:published_time" content="2022-03-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.629Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="Go知识点">
+<meta property="article:tag" content="Go笔记">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.topgoer.com/static/7.1/gmp/12.jpg">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/03/07/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E7%AC%94%E8%AE%B0/5.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>5.并发编程 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/03/07/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E7%AC%94%E8%AE%B0/5.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          5.并发编程
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-03-07 00:00:00" itemprop="dateCreated datePublished" datetime="2022-03-07T00:00:00+08:00">2022-03-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">Go笔记</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="协程-goroutine"><a href="#协程-goroutine" class="headerlink" title="协程 goroutine"></a>协程 goroutine</h2><h4 id="goroutine-只是由官方实现的超级”线程池”。"><a href="#goroutine-只是由官方实现的超级”线程池”。" class="headerlink" title="goroutine 只是由官方实现的超级”线程池”。"></a>goroutine 只是由官方实现的超级”线程池”。</h4><p>每个实力<code>4~5KB</code>的栈内存占用和由于实现机制而大幅减少的创建和销毁开销是go高并发的根本原因。</p>
+<p>并发不是并行：并发主要由切换时间片来实现”同时”运行，并行则是直接利用多核实现多线程的运行，go可以设置使用核数，以发挥多核计算机的能力。</p>
+<h4 id="goroutine-奉行通过通信来共享内存，而不是共享内存来通信。"><a href="#goroutine-奉行通过通信来共享内存，而不是共享内存来通信。" class="headerlink" title="goroutine 奉行通过通信来共享内存，而不是共享内存来通信。"></a>goroutine 奉行通过通信来共享内存，而不是共享内存来通信。</h4><h2 id="runtime包"><a href="#runtime包" class="headerlink" title="runtime包"></a>runtime包</h2><h3 id="runtime-Gosched"><a href="#runtime-Gosched" class="headerlink" title="runtime.Gosched()"></a>runtime.Gosched()</h3><p>使当前go程放弃处理器，以让其它go程运行。它不会挂起当前go程，因此当前go程未来会恢复执行</p>
+<h3 id="runtime-Goexit"><a href="#runtime-Goexit" class="headerlink" title="runtime.Goexit()"></a>runtime.Goexit()</h3><p>退出当前协程</p>
+<h3 id="runtime-GOMAXPROCS"><a href="#runtime-GOMAXPROCS" class="headerlink" title="runtime.GOMAXPROCS"></a>runtime.GOMAXPROCS</h3><p>Go运行时的调度器使用GOMAXPROCS参数来确定需要使用多少个OS线程来同时执行Go代码。默认值是机器上的CPU核心数</p>
+<h2 id="Channel"><a href="#Channel" class="headerlink" title="Channel"></a>Channel</h2><p>channel是一种类型，一种引用类型：var 变量 chan 元素类型</p>
+<p>创建channel的格式如下：make(chan 元素类型, [缓冲大小])</p>
+<p>channel的缓冲大小是可选的。</p>
+<p>举几个例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ch4 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="type">int</span>)</span><br><span class="line">ch5 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="type">bool</span>)</span><br><span class="line">ch6 := <span class="built_in">make</span>(<span class="keyword">chan</span> []<span class="type">int</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="channel操作"><a href="#channel操作" class="headerlink" title="channel操作"></a>channel操作</h3><p>通道有发送（send）、接收(receive）和关闭（close）三种操作。</p>
+<p>发送和接收都使用&lt;-符号。</p>
+<p>现在我们先使用以下语句定义一个通道：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="type">int</span>)</span><br></pre></td></tr></table></figure>
+
+<p>发送：将一个值发送到通道中。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ch &lt;- <span class="number">10</span> <span class="comment">// 把10发送到ch中</span></span><br></pre></td></tr></table></figure>
+
+<p>接收：从一个通道中接收值。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x := &lt;- ch <span class="comment">// 从ch中接收值并赋值给变量x</span></span><br><span class="line">&lt;-ch       <span class="comment">// 从ch中接收值，忽略结果</span></span><br></pre></td></tr></table></figure>
+
+<p>关闭：我们通过调用内置的close函数来关闭通道。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">close</span>(ch)</span><br></pre></td></tr></table></figure>
+
+<p>关于关闭通道需要注意的事情是，只有在通知接收方goroutine所有的数据都发送完毕的时候才需要关闭通道。通道是可以被垃圾回收机制回收的，它和关闭文件是不一样的，在结束操作之后关闭文件是必须要做的，但关闭通道不是必须的。</p>
+<p>关闭后的通道有以下特点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.对一个关闭的通道再发送值就会导致panic。</span><br><span class="line">2.对一个关闭的通道进行接收会一直获取值直到通道为空。</span><br><span class="line">3.对一个关闭的并且没有值的通道执行接收操作会得到对应类型的零值。</span><br><span class="line">4.关闭一个已经关闭的通道会导致panic。</span><br></pre></td></tr></table></figure>
+
+<h2 id="select"><a href="#select" class="headerlink" title="select"></a>select</h2><p>select的使用类似于switch语句，它有一系列case分支和一个默认的分支。每个case会对应一个通道的通信（接收或发送）过程。select会一直等待，直到某个case的通信操作完成时，就会执行case分支对应的语句。如果多个channel同时ready，则随机选择一个执行</p>
+<h2 id="GMP"><a href="#GMP" class="headerlink" title="GMP"></a>GMP</h2><h4 id="GMP-模型"><a href="#GMP-模型" class="headerlink" title="GMP 模型"></a>GMP 模型</h4><p>在 Go 中，线程是运行 goroutine 的实体，调度器的功能是把可运行的 goroutine 分配到工作线程上。</p>
+<p><img src="https://www.topgoer.com/static/7.1/gmp/12.jpg" alt="img"></p>
+<ul>
+<li>全局队列（Global Queue）：存放等待运行的 G。</li>
+<li>P 的本地队列：同全局队列类似，存放的也是等待运行的 G，存的数量有限，不超过 256 个。新建 G’时，G’优先加入到 P 的本地队列，如果队列满了，则会把本地队列中一半的 G 移动到全局队列。</li>
+<li>P 列表：所有的 P 都在程序启动时创建，并保存在数组中，最多有 GOMAXPROCS(可配置) 个。</li>
+<li>M：线程想运行任务就得获取 P，从 P 的本地队列获取 G，P 队列为空时，M 也会尝试从全局队列拿一批 G 放到 P 的本地队列，或从其他 P 的本地队列偷一半放到自己 P 的本地队列。M 运行 G，G 执行之后，M 会从 P 获取下一个 G，不断重复下去。</li>
+</ul>
+<p>Goroutine 调度器和 OS 调度器是通过 M 结合起来的，每个 M 都代表了 1 个内核线程，OS 调度器负责把内核线程分配到 CPU 的核上执行。</p>
+<blockquote>
+<p>有关 P 和 M 的个数问题</p>
+</blockquote>
+<p>1、P 的数量：</p>
+<ul>
+<li>由启动时环境变量 $GOMAXPROCS 或者是由 runtime 的方法 GOMAXPROCS() 决定。这意味着在程序执行的任意时刻都只有 $GOMAXPROCS 个 goroutine 在同时运行。</li>
+</ul>
+<p>2、M 的数量:</p>
+<ul>
+<li>go 语言本身的限制：go 程序启动时，会设置 M 的最大数量，默认 10000. 但是内核很难支持这么多的线程数，所以这个限制可以忽略。</li>
+<li>runtime&#x2F;debug 中的 SetMaxThreads 函数，设置 M 的最大数量</li>
+<li>一个 M 阻塞了，会创建新的 M。</li>
+</ul>
+<p>M 与 P 的数量没有绝对关系，一个 M 阻塞，P 就会去创建或者切换另一个 M，所以，即使 P 的默认数量是 1，也有可能会创建很多个 M 出来。</p>
+<blockquote>
+<p>P 和 M 何时会被创建</p>
+</blockquote>
+<p>1、P 何时创建：在确定了 P 的最大数量 n 后，运行时系统会根据这个数量创建 n 个 P。</p>
+<p>2、M 何时创建：没有足够的 M 来关联 P 并运行其中的可运行的 G。比如所有的 M 此时都阻塞住了，而 P 中还有很多就绪任务，就会去寻找空闲的 M，而没有空闲的，就会去创建新的 M。</p>
+<h2 id="go-func-调度流程"><a href="#go-func-调度流程" class="headerlink" title="go func () 调度流程"></a>go func () 调度流程</h2><p><img src="https://www.topgoer.com/static/7.1/gmp/13.jpg" alt="img"></p>
+<p>从上图我们可以分析出几个结论：</p>
+<p> 1、我们通过 go func () 来创建一个 goroutine；</p>
+<p> 2、有两个存储 G 的队列，一个是局部调度器 P 的本地队列、一个是全局 G 队列。新创建的 G 会先保存在 P 的本地队列中，如果 P 的本地队列已经满了就会保存在全局的队列中；</p>
+<p> 3、G 只能运行在 M 中，一个 M 必须持有一个 P，M 与 P 是 1：1 的关系。M 会从 P 的本地队列弹出一个可执行状态的 G 来执行，如果 P 的本地队列为空，就会想其他的 MP 组合偷取一个可执行的 G 来执行；</p>
+<p> 4、一个 M 调度 G 执行的过程是一个循环机制；</p>
+<p> 5、当 M 执行某一个 G 时候如果发生了 syscall 或则其余阻塞操作，M 会阻塞，如果当前有一些 G 在执行，runtime 会把这个线程 M 从 P 中摘除 (detach)，然后再创建一个新的操作系统的线程 (如果有空闲的线程可用就复用空闲线程) 来服务于这个 P；</p>
+<p> 6、当 M 系统调用结束时候，这个 G 会尝试获取一个空闲的 P 执行，并放入到这个 P 的本地队列。如果获取不到 P，那么这个线程 M 变成休眠状态， 加入到空闲线程中，然后这个 G 会被放入全局队列中。</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/03/07/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E7%AC%94%E8%AE%B0/5.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" title="5.并发编程">https://kongpengyq.com/2022/03/07/Go知识点/Go笔记/5.并发编程/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go%E7%9F%A5%E8%AF%86%E7%82%B9/" rel="tag"># Go知识点</a>
+              <a href="/tags/Go%E7%AC%94%E8%AE%B0/" rel="tag"># Go笔记</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/07/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E7%AC%94%E8%AE%B0/6.%E5%B8%B8%E7%94%A8%E6%A0%87%E5%87%86%E5%BA%93/" rel="prev" title="6.常用标准库">
+      <i class="fa fa-chevron-left"></i> 6.常用标准库
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/03/07/Java%E7%AC%94%E8%AE%B0/Java%E5%85%B6%E4%BB%96%E7%9F%A5%E8%AF%86%E7%82%B9/Idea%E5%AF%BC%E5%85%A5git%E5%88%86%E6%94%AF%E9%A1%B9%E7%9B%AE/" rel="next" title="Idea导入git分支项目">
+      Idea导入git分支项目 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%8F%E7%A8%8B-goroutine"><span class="nav-text">协程 goroutine</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#goroutine-%E5%8F%AA%E6%98%AF%E7%94%B1%E5%AE%98%E6%96%B9%E5%AE%9E%E7%8E%B0%E7%9A%84%E8%B6%85%E7%BA%A7%E2%80%9D%E7%BA%BF%E7%A8%8B%E6%B1%A0%E2%80%9D%E3%80%82"><span class="nav-text">goroutine 只是由官方实现的超级”线程池”。</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#goroutine-%E5%A5%89%E8%A1%8C%E9%80%9A%E8%BF%87%E9%80%9A%E4%BF%A1%E6%9D%A5%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E6%9D%A5%E9%80%9A%E4%BF%A1%E3%80%82"><span class="nav-text">goroutine 奉行通过通信来共享内存，而不是共享内存来通信。</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#runtime%E5%8C%85"><span class="nav-text">runtime包</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#runtime-Gosched"><span class="nav-text">runtime.Gosched()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#runtime-Goexit"><span class="nav-text">runtime.Goexit()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#runtime-GOMAXPROCS"><span class="nav-text">runtime.GOMAXPROCS</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Channel"><span class="nav-text">Channel</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#channel%E6%93%8D%E4%BD%9C"><span class="nav-text">channel操作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#select"><span class="nav-text">select</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GMP"><span class="nav-text">GMP</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#GMP-%E6%A8%A1%E5%9E%8B"><span class="nav-text">GMP 模型</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#go-func-%E8%B0%83%E5%BA%A6%E6%B5%81%E7%A8%8B"><span class="nav-text">go func () 调度流程</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

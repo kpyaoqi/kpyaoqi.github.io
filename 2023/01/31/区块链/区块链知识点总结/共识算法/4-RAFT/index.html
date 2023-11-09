@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Raft名词解释RaftRaft（Replication and Fault Tolerant）是一个允许网络分区（Partition Tolerant）的一致性协议，它保证了在一个由N个恶意节点构成的系统中有2N+1节点正常工作的情况下的系统的一致性，比如在一个5个节点的系统中允许2个节点出现非拜占庭错误，如节点宕机、网络分区、消息延时。Raft相比于Paxos更容易理解，且被证明可以提供与Pa">
+<meta property="og:type" content="article">
+<meta property="og:title" content="4-RAFT">
+<meta property="og:url" content="https://kongpengyq.com/2023/01/31/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/4-RAFT/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="Raft名词解释RaftRaft（Replication and Fault Tolerant）是一个允许网络分区（Partition Tolerant）的一致性协议，它保证了在一个由N个恶意节点构成的系统中有2N+1节点正常工作的情况下的系统的一致性，比如在一个5个节点的系统中允许2个节点出现非拜占庭错误，如节点宕机、网络分区、消息延时。Raft相比于Paxos更容易理解，且被证明可以提供与Pa">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/img/raft_terms.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/img/raft_architecture.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/img/raft_nodes_transfer.jpg">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/img/image-20230614100627108.png">
+<meta property="article:published_time" content="2023-01-30T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:01:34.867Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链知识点总结">
+<meta property="article:tag" content="共识算法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/img/raft_terms.png">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/01/31/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/4-RAFT/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>4-RAFT | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/01/31/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/4-RAFT/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          4-RAFT
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-01-31 00:00:00" itemprop="dateCreated datePublished" datetime="2023-01-31T00:00:00+08:00">2023-01-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:01:34" itemprop="dateModified" datetime="2023-11-09T10:01:34+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">共识算法</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Raft"><a href="#Raft" class="headerlink" title="Raft"></a>Raft</h1><h2 id="名词解释"><a href="#名词解释" class="headerlink" title="名词解释"></a>名词解释</h2><h3 id="Raft-1"><a href="#Raft-1" class="headerlink" title="Raft"></a>Raft</h3><p>Raft（Replication and Fault Tolerant）是一个允许网络分区（Partition Tolerant）的一致性协议，它保证了在一个<strong>由N个恶意节点构成的系统中有2N+1</strong>节点正常工作的情况下的系统的一致性，比如在一个5个节点的系统中允许2个节点出现非拜占庭错误，如节点宕机、网络分区、消息延时。Raft相比于Paxos更容易理解，且被证明可以提供与Paxos相同的容错性以及性能。</p>
+<h3 id="节点类型"><a href="#节点类型" class="headerlink" title="节点类型"></a>节点类型</h3><p>在Raft算法中，每个网络节点只能如下三种身份之一：<strong>Leader</strong>、<strong>Follower</strong>以及<strong>Candidate</strong>，其中:</p>
+<ul>
+<li><strong>Leader</strong>：<strong>主要负责与外界交互，由Follower节点选举而来</strong>，在每一次共识过程中<strong>有且仅有一个Leader节点</strong>，由<strong>Leader全权负责从交易池中取出交易、打包交易组成区块并将区块上链；</strong></li>
+<li><strong>Follower</strong>：<strong>以Leader节点为准进行同步，并在Leader节点失效时举行选举以选出新的Leader节点；</strong></li>
+<li><strong>Candidate</strong>：<strong>Follower节点在竞选Leader时拥有的临时身份</strong>。</li>
+</ul>
+<h3 id="点ID-节点索引"><a href="#点ID-节点索引" class="headerlink" title="点ID &amp; 节点索引"></a>点ID &amp; 节点索引</h3><p>在Raft算法中，<strong>每个网络节点都会有一个固定且全局的唯一的用于表明节点身份的ID</strong>（一般是一个64字节表示数字），这称为节点ID；<strong>同时每个共识节点还会维护一份公共的共识节点列表，这个列表记录了每个共识节点的ID，而自己在这个列表中的位置被称为节点索引。</strong></p>
+<h3 id="任期"><a href="#任期" class="headerlink" title="任期"></a>任期</h3><p><strong>Raft算法将时间划分为不定长度的任期Terms，Terms为连续的数字</strong>。每个Term以选举开始，如果选举成功，则由当前leader负责出块，<strong>如果选举失败，并没有选举出新的单一Leader，则会开启新的Term，重新开始选举。</strong></p>
+<p> <img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/img/raft_terms.png" alt="../../../_images/raft_terms.png">.</p>
+<h3 id="消息"><a href="#消息" class="headerlink" title="消息"></a>消息</h3><p><strong>在Raft算法中，每个网络节点间通过发送消息进行通讯</strong>，当前Raft模块包括四种消息：<strong>VoteReq</strong>、<strong>VoteResp</strong>、<strong>Heartbeat</strong>、<strong>HeartbeatResp</strong>，其中：</p>
+<ul>
+<li><strong>VoteReq</strong>：投票请求，由Candidate节点主动发出，用于<strong>向网络中其他节点请求投票以竞选Leader；</strong></li>
+<li><strong>VoteResp</strong>：投票响应，在节点收到投票请求后，用于<strong>对投票请求进行响应，响应内容为同意或拒绝该投票请求；</strong></li>
+<li><strong>Heartbeat</strong>：心跳，<strong>由Leader节点主动周期发出</strong>，其作用有两个：(1) <strong>用于维护Leader节点身份，只要Leader能够一直正常发送心跳且被其他节点响应，Leader身份就不会发生变化</strong>；(2) 区块数据复制，<strong>当Leader节点成功打包一个区块后，会将区块数据编码至心跳中以将区块进行广播，其他节点在收到该心跳后会解码出区块数据并将区块放入自己的缓冲区中；</strong></li>
+<li><strong>HeartbeatResp</strong>：心跳响应，<strong>在节点收到心跳后，用于对心跳进行响应，特别的，当收到一个包含区块数据的心跳时，该心跳的响应中会带上该区块的哈希；</strong></li>
+</ul>
+<p>所有消息共有的字段如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th>字段名</th>
+<th>字段含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>idx</td>
+<td>自身节点索引</td>
+</tr>
+<tr>
+<td>term</td>
+<td>前节点所处在的任期</td>
+</tr>
+<tr>
+<td>height</td>
+<td>当前节点所持有的最高块的块高</td>
+</tr>
+<tr>
+<td>blockHash</td>
+<td>前节点所持有的最高块的哈希</td>
+</tr>
+</tbody></table>
+<p>每种消息类型特有的字段如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th>消息类型</th>
+<th>字段名</th>
+<th>字段含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>VoteReq</td>
+<td>candidate</td>
+<td>Candidate自身的节点索引</td>
+</tr>
+<tr>
+<td>lastLeaderTerm</td>
+<td>Candidate见到过的最后一个Leader的Term，其详细作用见3.1.2节</td>
+<td></td>
+</tr>
+<tr>
+<td>lastBlockNumber</td>
+<td>Candidate见到过的最新块的块高，其详细作用见3.1.2节</td>
+<td></td>
+</tr>
+<tr>
+<td>VoteResp</td>
+<td>voteFlag</td>
+<td>对投票请求的响应标志位，用以标记对是否同意投票请求，若是拒绝还会具体标记拒绝原因，其详细作用见3.1.2节</td>
+</tr>
+<tr>
+<td>lastLeaderTerm</td>
+<td>收到VoteReq的节点见到过的最新块的块高，其详细作用见3.1.2节</td>
+<td></td>
+</tr>
+<tr>
+<td>Heartbeat</td>
+<td>leader</td>
+<td>发出心跳的Leader节点的节点索引</td>
+</tr>
+<tr>
+<td>uncommitedBlock</td>
+<td>当Leader节点预备提交一个新块时，会先将区块数据编码进此字段以并通过心跳进行广播，其详细作用见3.2节</td>
+<td></td>
+</tr>
+<tr>
+<td>uncommitedBlockNumber</td>
+<td>uncommitedBlock对应的块高，其详细作用见3.2节</td>
+<td></td>
+</tr>
+<tr>
+<td>HeartbeatResp</td>
+<td>uncommitedBlockHash</td>
+<td>当收到Leader发送过来的uncommitedBlock数据时，节点在心跳响应中写入uncommitedBlock对应的哈希（指纹），并发送回Leader，表明节点已经收到Leader预备提交的区块数据且已写入本地缓存，其详细作用见3.2节</td>
+</tr>
+</tbody></table>
+<h2 id="系统框架"><a href="#系统框架" class="headerlink" title="系统框架"></a>系统框架</h2><p>系统框架如下图所示：</p>
+<img src="/noteimg/区块链/区块链知识点总结/共识算法/img/raft_architecture.png" alt="../../../_images/raft_architecture.png" style="zoom: 80%;" /> 
+
+<ul>
+<li>Raft Sealer：负责从交易池取出交易并打包成区块，并发送至Raft Engine进行共识。区块上链后，Raft Sealer负责从交易池中删除已上链交易；</li>
+<li>Raft Engine：负责在共识节点进行共识，将达成共识的区块上链。</li>
+</ul>
+<h2 id="核心流程"><a href="#核心流程" class="headerlink" title="核心流程"></a>核心流程</h2><h3 id="节点状态转换"><a href="#节点状态转换" class="headerlink" title="节点状态转换"></a>节点状态转换</h3><p>节点类型之间转换关系如下图所示，每种状态转换形式将在接下来的各个小节进行阐述：</p>
+<p><img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/img/raft_nodes_transfer.jpg" alt="../../../_images/raft_nodes_transfer.jpg"></p>
+<h4 id="选举"><a href="#选举" class="headerlink" title="选举"></a>选举</h4><p>Raft共识模块中<strong>使用心跳机制来触发Leader选举</strong>。当节点启动时，节点自动成为Follower且将Term置0。只要Follower从Leader或者Candidate收到有效的Heartbeat或RequestVote消息，其就会保持在Follower状态，**如果Follower在一段时间内（这段时间称为 <em>Election Timeout</em>）没收到上述消息，则它会假设系统当前的Leader已经失活，然后增加自己的Term并转换为Candidiate，开启新一轮的Leader选举流程，**流程如下:</p>
+<ol>
+<li>Follower增加当前的Term，转换为Candidate；</li>
+<li>Candidate将票投给自己，并<strong>广播RequestVote到其他节点请求投票</strong>；</li>
+<li>Candidate节点保持在Candidate状态，直到下面三种情况中的一种发生：**(1)该节点赢得选举；(2) 在等待选举期间，Candidate收到了其他节点的Heartbeat；(3) 经过<em>Election Timeout</em>后，没有Leader被选出<strong>。</strong>Raft算法采用随机定时器的方法来避免节点选票出现平均瓜分的情况**以保证大多数时候只会有一个节点超时进入Candidate状态并获得大部分节点的投票成为Leader。</li>
+</ol>
+<h4 id="投票"><a href="#投票" class="headerlink" title="投票"></a>投票</h4><p>节点在收到VoteReq消息后，会根据消息的内容选择不同的响应策略：</p>
+<ol>
+<li><p><em><strong>VoteReq的Term小于或等于自己的Term</strong></em></p>
+<ul>
+<li><strong>如果节点是Leader，则拒绝该投票请求</strong>，Candidate收到此响应后会放弃选举转变为Follower，并增加投票超时；</li>
+<li>如果节点不是Leader：<ul>
+<li><strong>如果VoteReq的Term小于自己的Term，则拒绝该投票请求</strong>，如果Candidate收到超过半数的该种响应则表明其已经过时，此时Candidate会放弃选举转变为Follower，并增加投票超时；</li>
+<li><strong>如果VoteReq的Term等于自己的Term，则拒绝该投票请求</strong>，对于该投票请求不作任何处理。对于每个节点而言，只能按照先到先得的原则投票给一个Candidate，从而保证每轮选举中至多只有一个Candidate被选为Leader。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><em><strong>VoteReq的lastLeaderTerm小于自己的lastLeaderTerm</strong></em></p>
+<p>每个节点中会有一个lastLeaderTerm字段表示该节点见过的最后一个Leader的Term，lastLeaderTerm仅能由Heartbeat进行更新。<strong>如果VoteReq中的lastLeaderTerm小于自己的lastLeaderTerm，表明Leader访问这个Candidate存在问题，如果此时Candidate处于网络孤岛的环境中，会不断向外提起投票请求，因此需要打断它的投票请求，所以此时节点会拒绝该投票请求。</strong></p>
+</li>
+<li><p><em><strong>VoteReq的lastBlockNumber小于自己的lastBlockNumber</strong></em></p>
+<p>每个节点中会有一个lastBlockNumber字段表示节点见到过的最新块的块高。在出块过程中，节点间会进行区块复制（详见3.2节），在区块复制的过程中，可能有部分节点收到了较新的区块数据而部分没有，从而导致不同节点的lastBlockNumber不一致。<strong>为了使系统能够达成一致，需要要求节点必须把票投给拥有较新数据的节点，因此在这种情况下节点会拒绝该投票请求。</strong></p>
+</li>
+<li><p><em><strong>节点是第一次投票</strong></em></p>
+<p>为了避免出现Follower因为网络抖动导致重新发起选举，<strong>规定如果节点是第一次投票，直接拒绝该投票请求，</strong>同时会将自己的firstVote字段置为该Candidate的节点索引。</p>
+</li>
+<li><p><em><strong>1~4步骤中都没有拒绝投票请求</strong></em></p>
+<p><strong>同意该投票请求。</strong></p>
+</li>
+</ol>
+<h4 id="心跳超时"><a href="#心跳超时" class="headerlink" title="心跳超时"></a>心跳超时</h4><p>在Leader成为网络孤岛时，<strong>Leader可以发出心跳、Follower可以收到心跳但是Leader收不到心跳回应，</strong>这种情况下Leader此时已经出现网络异常，但是由于一直可以向外发送心跳包会导致Follower无法切换状态进行选取，系统陷入停滞。为了避免第二种情况发生，模<strong>块中设置了心跳超时机制，Leader每次收到心跳回应时会进行相应记录，一旦一段时间后记录没有更新则Leader放弃Leader身份并转换为Follower节点。</strong></p>
+<h3 id="区块复制"><a href="#区块复制" class="headerlink" title="区块复制"></a>区块复制</h3><p>Raft协议强依赖Leader节点的可用性来确保集群数据的一致性，因为数据只能从Leader节点向Follower节点转移。<strong>当Raft Sealer向集群Leader提交区块数据后，Leader将该数据置为未提交（uncommitted）状态</strong>，接着<strong>Leader 节点会通过在Heartbeat中附加数据的形式并发向所有Follower节点复制数据并等待接收响应，在确保网络中超过半数节点已接收到数据后，再将区块数据写入底层存储中，此时区块数据状态已经进入已提交（committed）状态</strong>。此后Leader节点再通过Sync模块<strong>向其他Follower节点广播该区块数据</strong>，区块复制及提交的流程图如下图所示：</p>
+<img src="/noteimg/区块链/区块链知识点总结/共识算法/img/image-20230614100627108.png" alt="image-20230614100627108" style="zoom:67%;" /> 
+
+<p>其中RaftSealer验证是否当前是否能打包交易的验证条件包括：**(1) 是否为Leader；(2) 是否存在尚未完成同步的peer； (3) uncommitBlock字段是否为空，只有三个条件均符合才允许打包。**</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/01/31/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/4-RAFT/" title="4-RAFT">https://kongpengyq.com/2023/01/31/区块链/区块链知识点总结/共识算法/4-RAFT/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" rel="tag"># 区块链知识点总结</a>
+              <a href="/tags/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/" rel="tag"># 共识算法</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/01/27/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/3-PBFT/" rel="prev" title="3-PBFT">
+      <i class="fa fa-chevron-left"></i> 3-PBFT
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/02/04/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/5-%20PAXOS-HotStuff/" rel="next" title="5- PAXOS-HotStuff">
+      5- PAXOS-HotStuff <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Raft"><span class="nav-text">Raft</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A"><span class="nav-text">名词解释</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Raft-1"><span class="nav-text">Raft</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8A%82%E7%82%B9%E7%B1%BB%E5%9E%8B"><span class="nav-text">节点类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%82%B9ID-%E8%8A%82%E7%82%B9%E7%B4%A2%E5%BC%95"><span class="nav-text">点ID &amp; 节点索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E6%9C%9F"><span class="nav-text">任期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF"><span class="nav-text">消息</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E6%A1%86%E6%9E%B6"><span class="nav-text">系统框架</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E6%B5%81%E7%A8%8B"><span class="nav-text">核心流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8A%82%E7%82%B9%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2"><span class="nav-text">节点状态转换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%89%E4%B8%BE"><span class="nav-text">选举</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8A%95%E7%A5%A8"><span class="nav-text">投票</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BF%83%E8%B7%B3%E8%B6%85%E6%97%B6"><span class="nav-text">心跳超时</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8C%BA%E5%9D%97%E5%A4%8D%E5%88%B6"><span class="nav-text">区块复制</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

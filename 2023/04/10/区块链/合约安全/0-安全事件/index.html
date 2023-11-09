@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="访问控制这似乎是一个简单的错误，但忘记对谁可以调用一个敏感函数（如提取以太币或改变所有权）进行限制，这种情况经常发生，令人惊讶 输入验证如果访问控制是关于控制谁调用一个函数，那么输入验证就是控制他们用什么来调用合约。 这通常归结为忘记在适当的地方设置require语句。 过多的函数限制过多的验证可能意味着资金不会被盗，但它可能意味着资金被锁定在合约中。拥有多重的保障措施也不是一件好事。 最引人注目">
+<meta property="og:type" content="article">
+<meta property="og:title" content="0-安全事件">
+<meta property="og:url" content="https://kongpengyq.com/2023/04/10/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/0-%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="访问控制这似乎是一个简单的错误，但忘记对谁可以调用一个敏感函数（如提取以太币或改变所有权）进行限制，这种情况经常发生，令人惊讶 输入验证如果访问控制是关于控制谁调用一个函数，那么输入验证就是控制他们用什么来调用合约。 这通常归结为忘记在适当的地方设置require语句。 过多的函数限制过多的验证可能意味着资金不会被盗，但它可能意味着资金被锁定在合约中。拥有多重的保障措施也不是一件好事。 最引人注目">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-04-09T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.820Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="合约安全">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/04/10/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/0-%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>0-安全事件 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/04/10/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/0-%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          0-安全事件
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-04-10 00:00:00" itemprop="dateCreated datePublished" datetime="2023-04-10T00:00:00+08:00">2023-04-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/" itemprop="url" rel="index">
+                    <span itemprop="name">合约安全</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="访问控制"><a href="#访问控制" class="headerlink" title="访问控制"></a>访问控制</h1><p>这似乎是一个简单的错误，但忘记对谁可以调用一个敏感函数（如提取以太币或改变所有权）进行限制，这种情况经常发生，令人惊讶</p>
+<h1 id="输入验证"><a href="#输入验证" class="headerlink" title="输入验证"></a>输入验证</h1><p>如果访问控制是关于控制谁调用一个函数，那么输入验证就是控制他们用什么来调用合约。</p>
+<p>这通常归结为忘记在适当的地方设置require语句。</p>
+<h1 id="过多的函数限制"><a href="#过多的函数限制" class="headerlink" title="过多的函数限制"></a>过多的函数限制</h1><p>过多的验证可能意味着资金不会被盗，但它可能意味着资金被锁定在合约中。拥有多重的保障措施也不是一件好事。</p>
+<p>最引人注目的事件之一是Akutars NFT，它最终导致价值3400万美元的Eth卡在智能合约内，无法提取。</p>
+<h1 id="双重投票或msg-sender欺骗"><a href="#双重投票或msg-sender欺骗" class="headerlink" title="双重投票或msg.sender欺骗"></a>双重投票或msg.sender欺骗</h1><p>使用vanilla ERC20代币或NFT作为门票来计算投票权重是不安全的，因为攻击者可以用一个地址投票，将代币转账到另一个地址，并从该地址再次投票。为了防止这种攻击，应该使用<a target="_blank" rel="noopener" href="https://www.rareskills.io/post/erc20-snapshot">ERC20 Snapshot</a>或<a target="_blank" rel="noopener" href="https://www.rareskills.io/post/erc20-votes-erc5805-and-erc6372">ERC20 Votes</a>。通过对过去的一个时间点进行快照，当前的代币余额不能被操纵以获得非法投票权。</p>
+<h1 id="闪电贷治理攻击"><a href="#闪电贷治理攻击" class="headerlink" title="闪电贷治理攻击"></a>闪电贷治理攻击</h1><p>然而，使用具有快照或投票函数的ERC20代币并不能完全解决这个问题，如果有人可以通过闪电贷来暂时增加他们的余额，然后在同一交易中对他们的余额进行快照。如果该快照被用于投票，他们将有一个不合理的大量投票权可供支配。</p>
+<h1 id="闪电贷价格攻击"><a href="#闪电贷价格攻击" class="headerlink" title="闪电贷价格攻击"></a>闪电贷价格攻击</h1><p>区块链上的资产价格通常被计算为资产之间的当前汇率。例如，如果一个合约目前是1美元兑100个k9币，那么你可以说k9币的价格是0.01美元。然而，价格通常会随着买卖压力的变化而变化，而闪电贷会产生巨大的买卖压力。</p>
+<p>当查询另一个智能合约的资产价格时，开发者需要非常小心，因为他们假设他们所调用的智能合约对闪电贷的操纵是免疫的。</p>
+<h1 id="权力过大的管理员"><a href="#权力过大的管理员" class="headerlink" title="权力过大的管理员"></a>权力过大的管理员</h1><p>仅仅因为一个合约有一个所有者或管理员，这并不意味着他们需要无限权力。</p>
+<blockquote>
+<p>使用Ownable2Step而不是Ownable，这在技术上不是一个漏洞，但<a target="_blank" rel="noopener" href="https://www.rareskills.io/post/openzeppelin-ownable2step">OpenZeppelin ownable</a>如果所有权被转移到一个不存在的地址，会导致合约所有权的丧失。Ownable2step要求接收者确认所有权。这可以防止意外地将所有权发送到一个错误的地址。</p>
+</blockquote>
+<h1 id="抢跑（Frontrunning）"><a href="#抢跑（Frontrunning）" class="headerlink" title="抢跑（Frontrunning）"></a>抢跑（Frontrunning）</h1><p>在 Etheruem（和类似的链）的背景下，Frontrunning 意味着观察一个待定的交易，并通过支付更高的 交易成本在它之前执行另一个交易。也就是说，攻击者已经 “跑到了 “交易的前面。如果该交易是一个有利可图的交易，那么除了支付更高的 交易成本，完全复制该交易是有意义的。</p>
+<p>这种现象有时被称为MEV，意思是矿工可提取的价值，但有时在其他情况下是最大可提取的价值。区块生产者有无限的权力来重新排序交易和插入自己的交易，从历史上看，在以太坊进入股权证明之前，区块生产者就是矿工，因此而得名。</p>
+<h1 id="payable-函数导致合约余额更新"><a href="#payable-函数导致合约余额更新" class="headerlink" title="payable 函数导致合约余额更新"></a>payable 函数导致合约余额更新</h1><p>因为当执行函数之前，合约首先是读取交易对象，因此合约的余额会先改变成 原来的余额+msg.value，某些合约可能会未注意合约余额已发生改变，导致漏洞。函数 <code>msg.value &gt;= address(this).balance</code> 永远不可能为真。</p>
+<h1 id="挖矿属性依赖"><a href="#挖矿属性依赖" class="headerlink" title="挖矿属性依赖"></a>挖矿属性依赖</h1><p>合约中有部分内置变量，这些变量会受到矿工的影响，因此不应该把它们当作特定的判断条件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.0;</span><br><span class="line">contract Roulette &#123;</span><br><span class="line">    uint public pastBlockTime;</span><br><span class="line">    fallback() external payable &#123;</span><br><span class="line">        require(msg.value == 10 ether);</span><br><span class="line">        require(block.timestamp != pastBlockTime);</span><br><span class="line">        pastBlockTime = block.timestamp;</span><br><span class="line">        if(block.timestamp % 15 == 0)&#123;//依赖了区块时间戳</span><br><span class="line">        payable(msg.sender).transfer(address(this).balance);</span><br><span class="line">        &#125;   </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/04/10/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/0-%E5%AE%89%E5%85%A8%E4%BA%8B%E4%BB%B6/" title="0-安全事件">https://kongpengyq.com/2023/04/10/区块链/合约安全/0-安全事件/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/" rel="tag"># 合约安全</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/04/09/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E9%A1%B9%E7%9B%AE/%E9%93%BE%E6%8B%8D/" rel="prev" title="链拍">
+      <i class="fa fa-chevron-left"></i> 链拍
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/04/16/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%90%88%E7%BA%A6%E5%AE%89%E5%85%A8/1-%E9%87%8D%E5%85%A5%E6%94%BB%E5%87%BB/" rel="next" title="1-重入攻击">
+      1-重入攻击 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="nav-text">访问控制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BE%93%E5%85%A5%E9%AA%8C%E8%AF%81"><span class="nav-text">输入验证</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%87%E5%A4%9A%E7%9A%84%E5%87%BD%E6%95%B0%E9%99%90%E5%88%B6"><span class="nav-text">过多的函数限制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%8C%E9%87%8D%E6%8A%95%E7%A5%A8%E6%88%96msg-sender%E6%AC%BA%E9%AA%97"><span class="nav-text">双重投票或msg.sender欺骗</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AA%E7%94%B5%E8%B4%B7%E6%B2%BB%E7%90%86%E6%94%BB%E5%87%BB"><span class="nav-text">闪电贷治理攻击</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AA%E7%94%B5%E8%B4%B7%E4%BB%B7%E6%A0%BC%E6%94%BB%E5%87%BB"><span class="nav-text">闪电贷价格攻击</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9D%83%E5%8A%9B%E8%BF%87%E5%A4%A7%E7%9A%84%E7%AE%A1%E7%90%86%E5%91%98"><span class="nav-text">权力过大的管理员</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8A%A2%E8%B7%91%EF%BC%88Frontrunning%EF%BC%89"><span class="nav-text">抢跑（Frontrunning）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#payable-%E5%87%BD%E6%95%B0%E5%AF%BC%E8%87%B4%E5%90%88%E7%BA%A6%E4%BD%99%E9%A2%9D%E6%9B%B4%E6%96%B0"><span class="nav-text">payable 函数导致合约余额更新</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8C%96%E7%9F%BF%E5%B1%9E%E6%80%A7%E4%BE%9D%E8%B5%96"><span class="nav-text">挖矿属性依赖</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

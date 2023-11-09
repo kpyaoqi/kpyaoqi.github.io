@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="最大可提取价值 (MEV)最大可提取价值 (MEV) 是指通过在区块中添加和排除交易并更改区块中的交易顺序，可以从区块生产中提取的超过标准区块奖励和燃料费用的最大值。 MEV 提取从理论上讲，最大可提取价值完全属于验证者，因为他们是唯一可以保证执行有利可图的最大可提取价值机会的一方。 但实际上，大部分 MEV 是由称为“搜索人”的独立网络参与者提取的。 搜索人在区块链数据上运行复杂的算法来检测盈利">
+<meta property="og:type" content="article">
+<meta property="og:title" content="最大可提取价值MEV">
+<meta property="og:url" content="https://kongpengyq.com/2022/12/08/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/%E6%9C%80%E5%A4%A7%E5%8F%AF%E6%8F%90%E5%8F%96%E4%BB%B7%E5%80%BCMEV/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="最大可提取价值 (MEV)最大可提取价值 (MEV) 是指通过在区块中添加和排除交易并更改区块中的交易顺序，可以从区块生产中提取的超过标准区块奖励和燃料费用的最大值。 MEV 提取从理论上讲，最大可提取价值完全属于验证者，因为他们是唯一可以保证执行有利可图的最大可提取价值机会的一方。 但实际上，大部分 MEV 是由称为“搜索人”的独立网络参与者提取的。 搜索人在区块链数据上运行复杂的算法来检测盈利">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-12-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.759Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链其他">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/12/08/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/%E6%9C%80%E5%A4%A7%E5%8F%AF%E6%8F%90%E5%8F%96%E4%BB%B7%E5%80%BCMEV/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>最大可提取价值MEV | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/12/08/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/%E6%9C%80%E5%A4%A7%E5%8F%AF%E6%8F%90%E5%8F%96%E4%BB%B7%E5%80%BCMEV/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          最大可提取价值MEV
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-12-08 00:00:00" itemprop="dateCreated datePublished" datetime="2022-12-08T00:00:00+08:00">2022-12-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/" itemprop="url" rel="index">
+                    <span itemprop="name">区块链其他</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="最大可提取价值-MEV"><a href="#最大可提取价值-MEV" class="headerlink" title="最大可提取价值 (MEV)"></a>最大可提取价值 (MEV)</h1><p>最大可提取价值 (MEV) 是指通过在区块中添加和排除交易并更改区块中的交易顺序，可以从区块生产中提取的超过标准区块奖励和燃料费用的最大值。</p>
+<h2 id="MEV-提取"><a href="#MEV-提取" class="headerlink" title="MEV 提取"></a>MEV 提取</h2><p><strong>从理论上讲，最大可提取价值完全属于验证者，因为他们是唯一可以保证执行有利可图的最大可提取价值机会的一方。</strong> 但实际上，大部分 MEV 是由称为“搜索人”的独立网络参与者提取的。 搜索人在区块链数据上运行复杂的算法来检测盈利的 MEV 机会，并且有机器人自动将这些盈利交易提交到网络。</p>
+<p>无论如何，验证者确实会获得全部最大可提取价值金额的一部分，<strong>因为搜索者愿意支付高昂的燃料费用（这些费用将归验证者所有）</strong>，以换取将其有利可图的交易纳入一个区块的更高可能性。 假定搜索人在经济上是合理的。搜索人愿意支付的燃料费将是 MEV 的 100% 的金额（因为如果燃料费更高，搜索人将亏钱）。</p>
+<blockquote>
+<p> Flashbots 是一个独立项目，它通过一项服务扩展执行客户端，该服务允许搜索者将<strong>最大可提取价值交易提交给验证者</strong>，而无需将它们透露给公共内存池。 这就防止了交易被通用领跑者领跑。</p>
+</blockquote>
+<h2 id="MEV-相关案例"><a href="#MEV-相关案例" class="headerlink" title="MEV 相关案例"></a>MEV 相关案例</h2><p>最大可提取价值以几种方式出现在区块链上。</p>
+<h3 id="去中心化交易所-DEX-套利"><a href="#去中心化交易所-DEX-套利" class="headerlink" title="去中心化交易所 (DEX) 套利"></a>去中心化交易所 (DEX) 套利</h3><p>去中心化交易所 (DEX) 套利是最简单和最著名的最大可提取价值机会。 因此，它也是竞争最激烈的。</p>
+<p>它的作用原理就像这样：如果有两个去中心化交易所以两种不同的价格提供一种代币，有人可以通过一笔原子交易，<strong>在价格较低的去中心化交易所购买此代币，并在价格较高的去中心化交易所将其出售</strong>。 得益于区块链的机制，这是真实的无风险套利。</p>
+<h3 id="清算"><a href="#清算" class="headerlink" title="清算"></a>清算</h3><p>借贷协议清算提供了另一个众所周知的最大可提取价值机会。</p>
+<p>Maker 和 Aave 等借贷协议要求用户存入一些抵押品（例如以太币）。 然后将这些存入的抵押品借出给其他用户。</p>
+<p>然后，用户可以根据他们的需要从其他人那里借入资产和代币（例如，如果你想在 MakerDAO 治理提案中投票，你可以借用 MKR），最高可达他们所存抵押品的一定比例。 例如，如果借款金额不超过 30%，则将 100 DAI 存入协议的用户最多可以借入价值 30 DAI 的另一种资产。 该协议确定了确切的借款能力百分比。</p>
+<p>随着借款人抵押品价值的波动，他们的借款能力也会波动。 如果由于市场波动，借入资产的价值超过其抵押品价值的 30%（同样，准确的百分比由协议确定，协议通常允许任何人清算抵押品，立即偿还贷款人（这类似于传统金融中的 追加保证金通知(opens in a new tab)）。 <strong>如果清算，借款人通常必须支付大笔清算费，其中有些是流向变现人的——这是多 MEV 机会出现的地方。</strong></p>
+<p>搜索人竞相以最快的速度解析区块链数据，以确定哪些借款人可以被清算，并成为第一个提交清算交易并自行收取清算费的人。</p>
+<h3 id="夹心-三明治-交易"><a href="#夹心-三明治-交易" class="headerlink" title="夹心(三明治)交易"></a>夹心(三明治)交易</h3><p>夹心交易是另外一种 MEV 提取的常用方法。</p>
+<p>为了实现夹心交易，搜索人会监视内存池内 DEX 的大额交易。 例如，有人想要在 Uniswap 上使用 DAI 购买 10,000 UNI。 这类大额交易会对 UNI&#x2F;DAI 对产生重大的影响，可能会显着提高 UNI 相对于 DAI 的价格。</p>
+<p>搜索人可以计算该大额交易对 UNI&#x2F;DAI 对的大致价格影响，并<strong>在大额交易<em>之前</em>立即执行最优买单，低价买入 UNI，然后在大额交易<em>之后</em>立即执行卖单，以大额订单造成的更高价格卖出</strong>。</p>
+<p>然而，<strong>夹心交易风险很高，因为它不是原子交易</strong>（不像上文所述的 DEX 套利），而且容易受到 <a target="_blank" rel="noopener" href="https://github.com/Defi-Cartel/salmonella">salmonella 攻击(opens in a new tab)</a>。</p>
+<h3 id="NFT-MEV"><a href="#NFT-MEV" class="headerlink" title="NFT MEV"></a>NFT MEV</h3><p>NFT 领域的 MEV 是一种新兴现象，而且不一定能赚钱。</p>
+<p>然而，由于 NFT 交易发生在所有其他以太坊交易共享的同一个区块链上，搜寻者也可以在 NFT 市场上使用与传统 MEV 机会类似的技术。</p>
+<p>例如，如果有一个流行的 NFT 下降，并且搜索者想要某个 NFT 或一组 NFT，他们可以写一个交易，使他们成为第一个排队购买 NFT 的人，或者他们可以在一个交易中购买整个 NFT 组合。 或者，如果一个 NFT 被<a target="_blank" rel="noopener" href="https://www.theblockcrypto.com/post/113546/mistake-sees-69000-cryptopunk-sold-for-less-than-a-cent">错误地以低价挂出(opens in a new tab)</a>，搜寻者就可以抢在其他购买者前面，低价抢购。</p>
+<p>NFT MEV 的一个显著例子发生在一个搜寻者花费 700 万美元来<a target="_blank" rel="noopener" href="https://etherscan.io/address/0x650dCdEB6ecF05aE3CAF30A70966E2F395d5E9E5">购买(opens in a new tab)↗</a>价格底线的每一个 Cryptopunk。 一位区块链研究员<a target="_blank" rel="noopener" href="https://twitter.com/IvanBogatyy/status/1422232184493121538">在 Twitter(opens in a new tab)↗</a>上解释了买家是如何与 MEV 供应商合作以保持其购买的秘密。</p>
+<h2 id="MEV-的影响"><a href="#MEV-的影响" class="headerlink" title="MEV 的影响"></a>MEV 的影响</h2><p>MEV 并不都是坏事 - 以太坊的 MEV 既有积极的作用，也有消极的影响。</p>
+<h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><p>许多 <strong>DeFi 项目</strong>依靠经济上的理性行为者，来<strong>确保其协议的有用性和稳定性</strong>。 例如，DEX 套利确保用户为他们的代币获得最好、最正确的价格，而借贷协议在借款人低于抵押率时依靠快速清算来确保贷款人得到回报。如果没有理性的搜索者寻求和修复经济上的低效率，并利用协议的经济激励，DeFi 协议和一般的 dapps 可能不会像今天这样强大。</p>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><p>在应用层，某些形式的 MEV，如夹心交易，会<strong>导致用户的体验明显变差。 被夹在中间的用户面临更高的滑点和更差的交易执行。</strong></p>
+<p>在网络层，一般的抢跑者和他们经常参与的矿工费拍卖（当两个或更多的先行者通过逐步提高自己交易的矿工费，从而使他们的交易被打包到下一个区块），<strong>导致网络拥堵和试图运行正常交易的其他人的高矿工费。</strong></p>
+<p>除了区块<em>内</em>发生的，MEV 也可能会在区块间产生有害的影响。 <strong>如果</strong>区块中可用的<strong>最大可提取价值大幅超过标准区块奖励</strong>，验证者可能会被激励重组区块并为自己捕获最大可提取价值，从而<strong>导致区块链重组和共识不稳定</strong>。</p>
+<h2 id="以太坊权益证明-POS-机制下的最大可提取价值"><a href="#以太坊权益证明-POS-机制下的最大可提取价值" class="headerlink" title="以太坊权益证明 (POS) 机制下的最大可提取价值"></a>以太坊权益证明 (POS) 机制下的最大可提取价值</h2><p>如上所述，最大可提取价值对用户综合体验和共识层安全性产生了不利影响。 但以太坊向权益证明共识的过渡（称为“合并”）还可能带来与最大可提取价值有关的新风险：</p>
+<h3 id="验证者中心化"><a href="#验证者中心化" class="headerlink" title="验证者中心化"></a>验证者中心化</h3><p>更大的质押池可能会有更多的资源投资进行必要的优化，以抓住最大可提取价值机会。 这些质押池提取的最大可提取价值越多，它们用来提升最大可提取价值提取能力（并增加总收入）的资源就越多，这在本质上形成了规模经济(opens in a new tab)。由于可支配的资源较少，单独质押人可能无法从最大可提取价值机会中获利。 这种情况可能会<strong>增加独立验证者加入强大的质押池以提高收益的压力</strong>，从而<strong>削弱以太坊的去中心化</strong>。</p>
+<h3 id="许可内存池"><a href="#许可内存池" class="headerlink" title="许可内存池"></a>许可内存池</h3><p>为了应对三明治攻击和抢先交易攻击，<strong>交易者可能会开始与验证者进行链下交易以确保交易隐私</strong>。 <strong>交易者将潜在的最大可提取价值交易直接发送给验证者而非公共内存池，验证者将交易添加到区块中并与交易者分配利润。</strong></p>
+<p>“暗池”扩展了这种模式，是一种只供访问的许可内存池，对愿意支付一定费用的用户开放。 这一趋势将<strong>弱化以太坊的无许可和免信任特性</strong>，并有可能将区块链转变成一种有利于最高出价者的“付费参与”机制。</p>
+<p>许可内存池还会增加上一节中描述的中心化风险。 运行多个验证者的大型池可能会受益于为交易者和用户提供交易隐私，增加其最大可提取价值收入。</p>
+<p>在合并后的以太坊中解决这些与最大可提取价值相关的问题是一个核心研究领域。 迄今为止，为了减少最大可提取价值对合并后以太坊去中心化和安全性的负面影响，提出了两种解决方案：<strong>提议者-构建者分离 (PBS)</strong> 和<strong>构建者应用程序接口</strong>。</p>
+<h3 id="提议者-构建者分离"><a href="#提议者-构建者分离" class="headerlink" title="提议者-构建者分离"></a>提议者-构建者分离</h3><p>PBS旨在减轻最大可提取价值的影响，尤其是对共识层的影响。 提议者-构建者分离的主要特点是区块生产者和区块提议者规则的分离。 验证者仍然负责提出区块并投票，但有一类新的特别实体（称为<strong>区块构建者</strong>），其任务是对交易排序和构建区块。</p>
+<p>在提议者-构建者分离解决方案下，区块构建者创建一个交易包并出价将其包含在信标链区块中（作为“执行有效负载”）。 选中提出下一个区块的验证者随后查看不同的出价，并选择费用最高的交易包。 提议者-构建者分离实际上创建了一个拍卖市场，让构建者和出售区块空间的验证者谈判。</p>
+<p>当前，提议者-构建者分离设计采用一种<a target="_blank" rel="noopener" href="https://gitcoin.co/blog/commit-reveal-scheme-on-ethereum/">提交-披露方案(opens in a new tab)↗</a>，即构建者仅发布对区块内容（区块头）的加密承诺及他们的出价。 在接受成交出价后，提议者创建一个包括区块头的签名区块提案。 区块构建者在看到签名区块提案后可能会发布整个区块体，并且它必须还要从验证者那里获得足够多的<a target="_blank" rel="noopener" href="https://ethereum.org/zh/glossary/#attestation">认证</a>后才能最终确定区块。</p>
+<h4 id="提议者-构建者分离如何减弱最大可提取价值的影响？"><a href="#提议者-构建者分离如何减弱最大可提取价值的影响？" class="headerlink" title="提议者-构建者分离如何减弱最大可提取价值的影响？"></a>提议者-构建者分离如何减弱最大可提取价值的影响？</h4><p>协议内的提议者-构建者分离将最大可提取价值提取从验证者权限范围内移除，降低了最大可提取价值对共识的影响。 相反，运行专用硬件的区块构建者将抓住出现的最大可提取价值机会。</p>
+<p>不过，这并没有完全杜绝验证者与最大可提取价值有关的收入，因为构建者必须出高价才能让验证者接受他们的区块。 然而，由于验证者不再直接关注如何尽可能提高最大可提取价值收入，时间盗贼攻击的威胁降低了。</p>
+<p>提议者-构建者分离也降低了最大可提取价值中心化的风险。 例如，使用提交-披露方案，构建者就无需信任验证者不会窃取最大可提取价值机会或将其暴露给其他构建者。 这就降低了单独质押人从最大可提取价值获益的门槛，否则，构建者将倾向于支持有着链下声誉的大型池并与它们进行链下交易。</p>
+<p>同样，验证者不必信任构建者不会隐藏区块体或者发布无效区块，因为付款是无条件的。 即使提出的区块不可用或被其他验证者宣称无效，验证者的费用依然会支付。 在后一种情况下，区块被直接丢弃，迫使区块构建者失去所有交易费和最大可提取价值收入。</p>
+<h3 id="构建者应用程序接口"><a href="#构建者应用程序接口" class="headerlink" title="构建者应用程序接口"></a>构建者应用程序接口</h3><p>虽然提议者-构建者分离有望减弱最大可提取价值提取的影响，但实现它需要对共识协议进行更改。 具体而言，需要更新信标链的<a target="_blank" rel="noopener" href="https://ethereum.org/zh/developers/docs/consensus-mechanisms/pos/#fork-choice">分叉选择</a>规则。 <a target="_blank" rel="noopener" href="https://github.com/ethereum/builder-specs">构建者应用程序接口(opens in a new tab)↗</a>是一种临时解决方案，旨在有效实现提议者-构建者分离，然而信任假设更高。</p>
+<p>构建者应用程序接口是一种改良版的<a target="_blank" rel="noopener" href="https://github.com/ethereum/execution-apis/blob/main/src/engine/common.md">引擎应用程序接口(opens in a new tab)↗</a>，共识层客户端使用它向执行层客户端请求执行有效负载。 正如<a target="_blank" rel="noopener" href="https://github.com/ethereum/consensus-specs/blob/dev/specs/bellatrix/validator.md">诚实验证者规范(opens in a new tab)↗</a>中所述，选中承担区块提出职责的验证者向连接的执行客户端请求交易包，并将交易包添加到提出的信标链区块中。</p>
+<p>构建者应用程序接口还充当验证者和执行层客户端之间的中间件；不同之处是，它允许信标链上的验证者从外部实体获取区块（而不是使用执行客户端在本地构建区块）。</p>
+<p>下面简述构建者应用程序接口如何运作：</p>
+<ol>
+<li>构建者应用程序接口将验证者连接到由运行执行层客户端的区块构建者组成的网络。 与提议者-构建者分离一样，构建者专注于投资资源密集型区块构建活动，并利用不同的策略最大程度提高从最大可提取价值 + 优先费中赚取的收入。</li>
+<li>验证者（运行共识层客户端）向构建者网络请求执行有效负载及出价。 构建者的出价将包含执行有效负载标头（对有效负载内容的加密承诺）和向验证者支付的费用。</li>
+<li>验证者查看收到的出价并选择费用最高的执行有效负载。 使用构建者应用程序接口，验证者创建一个仅包括其签名和执行有效负载标头的“盲”信标区块提案并发送给构建者。</li>
+<li>在看到盲区块提案时，运行构建者应用程序接口的构建者可能会用完整的执行有效负载响应。 这样，验证者可以创建一个“已签名”信标区块并在整个网络中传播。</li>
+<li>如果区块构建者未能及时响应，使用构建者应用程序接口的验证者仍有可能在本地构建区块，这样他们就不会错过区块提出奖励。 然而，验证者不能使用当前披露的交易或另一个集合创建另一个区块，因为这相当于<em>模棱两可</em>（对同一时隙内的两个区块签名），这是一种可受到惩罚的恶行。</li>
+</ol>
+<p>构建者应用程序接口的一个示例实现是 <a target="_blank" rel="noopener" href="https://github.com/flashbots/mev-boost">MEV Boost(opens in a new tab)↗</a>，它是对 <a target="_blank" rel="noopener" href="https://docs.flashbots.net/Flashbots-auction/overview/">Flashbots 拍卖机制(opens in a new tab)↗</a>的改进，旨在抑制最大可提取价值在以太坊上的负面外部性。 Flashbots 拍卖允许工作量证明下的矿工将构建可获利区块的工作外包给专门的参与方，即<strong>搜索者</strong>。</p>
+<p>搜索者寻找利润丰厚的最大可提取价值机会，并向矿工发送交易包以及<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/First-price_sealed-bid_auction">价格密封出价(opens in a new tab)↗</a>，以将交易包添加到区块中。 运行 mev-geth（go-ethereum (Geth) 客户端的分叉版本）的矿工只需要选择利润最高的交易包，并将其作为新区块的一部分开采。 为了避免矿工收到垃圾交易和无效交易，交易包先通过<strong>中继者</strong>验证然后在到达矿工处。</p>
+<p>MEV Boost 运行机制与原来的 Flashbots 拍卖相同，但增加了一些针对以太坊向权益证明过渡的新功能。 搜索者仍然寻找有利润的交易以便添加到区块中，但一类新的名为<strong>构建者</strong>的专门参与方负责将交易聚合并打包到区块中。 构建者接受搜索者提供的价格密封出价，并进行优化以找到利润最大的排序。</p>
+<p>中继者仍然负责验证交易包并将它们传送给提议者。 然而，MEV Boost 通过存储构建者发送的区块体和验证者发送的区块头，引入了负责提供<a target="_blank" rel="noopener" href="https://ethereum.org/zh/developers/docs/data-availability/">数据可用性</a>的<strong>托管</strong>。 对于托管，连接到中继的验证者请求可用的执行有效负载，并使用 MEV Boost 的排序算法选择出价 + 最大可提取价值小费最高的有效负载标头。</p>
+<h4 id="构建者应用程序接口如何减弱最大可提取价值的影响？"><a href="#构建者应用程序接口如何减弱最大可提取价值的影响？" class="headerlink" title="构建者应用程序接口如何减弱最大可提取价值的影响？"></a>构建者应用程序接口如何减弱最大可提取价值的影响？</h4><p>构建者应用程序接口的核心优势在于，它有可能让参与者平等获得最大可提取价值机会。 使用提交-披露方案消除了信任假设，降低了寻求从最大可提取价值中获益的验证者的进入门槛。 这应该可以减轻单独质押人加入大型质押池以提高最大可提取价值利润的压力。</p>
+<p>构建者应用程序接口的广泛实现将鼓励区块构建者之间进行更激烈的竞争，这会增强抗审查能力。 验证者审查多个构建者的出价时，有意审查一笔或多笔用户交易的构建者必须出价高于所有其他不审查的构建者才能成功。 这大大增加了审查用户的成本并对审查有所限制。</p>
+<p>一些项目（如 MEV Boost）将构建者应用程序接口作为整体结构的一部分，旨在为某些参与方（例如试图避免抢先交易攻击或三明治攻击的交易者）提供交易隐私。 这是通过在用户和区块构建者之间提供一条私密通信通道来实现的。 与前面描述的许可内存池不同，这种方法是有益处的，原因如下：</p>
+<ol>
+<li>市场上有多种构建者存在，使得审查变得不切实际，这是有利于用户的。 相比之下，基于信任的中心化暗池的存在将权力集中在少数区块构建者手中，增加了审查的可能性。</li>
+<li>构建者应用程序接口软件是开源的，允许任何人提供区块构建者服务。 这意味着用户不会被迫使用任何特定的区块构建者，并提高了以太坊的中立和无许可特性。 此外，寻求最大可提取价值的交易者不会由于使用私密交易渠道而无意中促进中心化。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/12/08/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/%E6%9C%80%E5%A4%A7%E5%8F%AF%E6%8F%90%E5%8F%96%E4%BB%B7%E5%80%BCMEV/" title="最大可提取价值MEV">https://kongpengyq.com/2022/12/08/区块链/区块链其他/最大可提取价值MEV/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/" rel="tag"># 区块链其他</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/12/06/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/%E6%95%B0%E6%8D%AE%E5%8F%AF%E7%94%A8%E6%80%A7/" rel="prev" title="数据可用性">
+      <i class="fa fa-chevron-left"></i> 数据可用性
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/12/11/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/%E9%92%B1%E5%8C%85/" rel="next" title="钱包">
+      钱包 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9C%80%E5%A4%A7%E5%8F%AF%E6%8F%90%E5%8F%96%E4%BB%B7%E5%80%BC-MEV"><span class="nav-text">最大可提取价值 (MEV)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#MEV-%E6%8F%90%E5%8F%96"><span class="nav-text">MEV 提取</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MEV-%E7%9B%B8%E5%85%B3%E6%A1%88%E4%BE%8B"><span class="nav-text">MEV 相关案例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%BB%E4%B8%AD%E5%BF%83%E5%8C%96%E4%BA%A4%E6%98%93%E6%89%80-DEX-%E5%A5%97%E5%88%A9"><span class="nav-text">去中心化交易所 (DEX) 套利</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B8%85%E7%AE%97"><span class="nav-text">清算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%B9%E5%BF%83-%E4%B8%89%E6%98%8E%E6%B2%BB-%E4%BA%A4%E6%98%93"><span class="nav-text">夹心(三明治)交易</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NFT-MEV"><span class="nav-text">NFT MEV</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MEV-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-text">MEV 的影响</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E7%82%B9"><span class="nav-text">优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-text">缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%9D%83%E7%9B%8A%E8%AF%81%E6%98%8E-POS-%E6%9C%BA%E5%88%B6%E4%B8%8B%E7%9A%84%E6%9C%80%E5%A4%A7%E5%8F%AF%E6%8F%90%E5%8F%96%E4%BB%B7%E5%80%BC"><span class="nav-text">以太坊权益证明 (POS) 机制下的最大可提取价值</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E8%80%85%E4%B8%AD%E5%BF%83%E5%8C%96"><span class="nav-text">验证者中心化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B8%E5%8F%AF%E5%86%85%E5%AD%98%E6%B1%A0"><span class="nav-text">许可内存池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%90%E8%AE%AE%E8%80%85-%E6%9E%84%E5%BB%BA%E8%80%85%E5%88%86%E7%A6%BB"><span class="nav-text">提议者-构建者分离</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8F%90%E8%AE%AE%E8%80%85-%E6%9E%84%E5%BB%BA%E8%80%85%E5%88%86%E7%A6%BB%E5%A6%82%E4%BD%95%E5%87%8F%E5%BC%B1%E6%9C%80%E5%A4%A7%E5%8F%AF%E6%8F%90%E5%8F%96%E4%BB%B7%E5%80%BC%E7%9A%84%E5%BD%B1%E5%93%8D%EF%BC%9F"><span class="nav-text">提议者-构建者分离如何减弱最大可提取价值的影响？</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E8%80%85%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E6%8E%A5%E5%8F%A3"><span class="nav-text">构建者应用程序接口</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E8%80%85%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E6%8E%A5%E5%8F%A3%E5%A6%82%E4%BD%95%E5%87%8F%E5%BC%B1%E6%9C%80%E5%A4%A7%E5%8F%AF%E6%8F%90%E5%8F%96%E4%BB%B7%E5%80%BC%E7%9A%84%E5%BD%B1%E5%93%8D%EF%BC%9F"><span class="nav-text">构建者应用程序接口如何减弱最大可提取价值的影响？</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

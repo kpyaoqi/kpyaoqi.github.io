@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="PLASMA链什么是 PLASMA？Plasma 是一个用于改善以太坊这类公共区块链的可扩展性的框架。 正如原 Plasma 白皮书(opens in a new tab)↗中所述，Plasma 链是在另一个区块链之上构建的，该区块链被称为“根链”。 每个“子链”都从根链延伸而来，通常由部署在母链上的智能合约进行管理。 Plasma 合约除了其他功能之外，还有一项功能是作为链梁，让用户可以在以太坊">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PLASMA链">
+<meta property="og:url" content="https://kongpengyq.com/2023/03/07/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/PLASMA%E9%93%BE/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="PLASMA链什么是 PLASMA？Plasma 是一个用于改善以太坊这类公共区块链的可扩展性的框架。 正如原 Plasma 白皮书(opens in a new tab)↗中所述，Plasma 链是在另一个区块链之上构建的，该区块链被称为“根链”。 每个“子链”都从根链延伸而来，通常由部署在母链上的智能合约进行管理。 Plasma 合约除了其他功能之外，还有一项功能是作为链梁，让用户可以在以太坊">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-03-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.808Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链知识点总结">
+<meta property="article:tag" content="扩容">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/03/07/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/PLASMA%E9%93%BE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>PLASMA链 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/03/07/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/PLASMA%E9%93%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PLASMA链
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-03-07 00:00:00" itemprop="dateCreated datePublished" datetime="2023-03-07T00:00:00+08:00">2023-03-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%89%A9%E5%AE%B9/" itemprop="url" rel="index">
+                    <span itemprop="name">扩容</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="PLASMA链"><a href="#PLASMA链" class="headerlink" title="PLASMA链"></a>PLASMA链</h1><h2 id="什么是-PLASMA？"><a href="#什么是-PLASMA？" class="headerlink" title="什么是 PLASMA？"></a>什么是 PLASMA？</h2><p>Plasma 是一个用于改善以太坊这类公共区块链的可扩展性的框架。 正如原 <a target="_blank" rel="noopener" href="http://plasma.io/plasma.pdf">Plasma 白皮书(opens in a new tab)↗</a>中所述，Plasma 链是在另一个区块链之上构建的，该区块链被称为“根链”。 每个“子链”都从根链延伸而来，通常由部署在母链上的智能合约进行管理。</p>
+<p>Plasma 合约除了其他功能之外，还有一项功能是作为<a target="_blank" rel="noopener" href="https://ethereum.org/zh/developers/docs/bridges/">链梁</a>，让用户可以在以太坊主网和 plasma 链之间转移资产。 虽然这使它们<strong>类似于<a target="_blank" rel="noopener" href="https://ethereum.org/zh/developers/docs/scaling/sidechains/">侧链</a>，但 plasma 链至少在某种程度上受益于以太坊主网的安全性。 这一点不同于单独负责其安全性的侧链。</strong></p>
+<h2 id="PLASMA-如何工作？"><a href="#PLASMA-如何工作？" class="headerlink" title="PLASMA 如何工作？"></a>PLASMA 如何工作？</h2><p>Plasma 框架的基本组成部分包括：</p>
+<h3 id="链下计算"><a href="#链下计算" class="headerlink" title="链下计算"></a>链下计算</h3><p>Plasma 假设以太坊主网不需要验证所有交易。 相反，我们可以在主网外处理交易，使节点不必验证每笔交易。</p>
+<p>链下计算是必要的，因为 Plasma 链可以优化速度和成本。 例如，一个 Plasma 链可能，而且大多数情况下都使用单个“运营商”来管理交易的排序和执行。 由于只有一个实体验证交易，plasma 链上的处理速度比以太坊主网更快。</p>
+<h3 id="状态承诺"><a href="#状态承诺" class="headerlink" title="状态承诺"></a>状态承诺</h3><p><strong>虽然 Plasma 在链下执行交易，但它们是在以太坊主执行层上结算的，否则，Plasma 链无法从以太坊的安全保证中受益。</strong> <strong>但是在不知道 Plasma 链状态的情况下完成链下交易会破坏安全模型并让无效交易扩散。 这就是为什么运营商，即负责在 Plasma 链上生产区块的实体，需要定期在以太坊上发布“状态承诺”</strong>。</p>
+<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Commitment_scheme">承诺方案(opens in a new tab)</a>是一种加密技术，用于承诺价值或声明而不向另一方透露。 承诺是“有约束力的”，因为一旦你承诺了，就不能改变价值或声明。 <strong>Plasma 中的状态承诺采用“Merkle 根”的形式</strong>，运营商每隔一段时间将其发送到以太坊链上的 Plasma 合约。</p>
+<p>Merkle 根是能够压缩大量信息的密码原语。 Merkle 根（在此情况下也称为“区块根”）可以代表区块中的所有交易。 Merkle 根还可以更容易地验证一小部分数据是否是较大数据集的一部分。 </p>
+<p>Merkle 根对于向以太坊提供有关链下状态的信息非常重要。 你可以将 Merkle 根视为“保存点”：运营商表示，“这是 Plasma 链在 x 时间点的状态，这是 Merkle 根作为证明。” 运营商使用 Merkle 根对 Plasma 链的<em>当前状态</em>进行承诺，这就是为什么它被称为“状态承诺”。</p>
+<h3 id="入口和出口"><a href="#入口和出口" class="headerlink" title="入口和出口"></a>入口和出口</h3><p>为了让以太坊用户利用 Plasma，需要有一种机制在主网和 Plasma 链之间转移资金。 但是，我们不能随意将以太币发送到 Plasma 链上的地址 — 这些链是不兼容的，因此交易要么失败，要么导致资金损失。</p>
+<p>Plasma 使用在以太坊上运行的主合约来处理用户的入口和出口。 该主合约还负责跟踪状态承诺（前面已解释）并通过欺诈证明惩罚不诚实行为（稍后将详细介绍）。</p>
+<h4 id="进入-plasma-链"><a href="#进入-plasma-链" class="headerlink" title="进入 plasma 链"></a>进入 plasma 链</h4><p>要进入 Plasma 链，Alice（用户）必须在 Plasma 合约中存入以太币或任何 ERC-20 代币。 监视合约存款的 Plasma 运营商重新创建与 Alice 的初始存款相等的金额，并将其释放到她在 Plasma 链上的地址。 Alice 需要证明在子链上收到资金，然后才能使用这些资金进行交易。</p>
+<h4 id="退出-plasma-链"><a href="#退出-plasma-链" class="headerlink" title="退出 plasma 链"></a>退出 plasma 链</h4><p>由于几个原因，退出 plasma 链比进入它更复杂。 最大的问题是，虽然以太坊有关于 Plasma 链状态的信息，但它无法验证信息是否真实。 恶意用户可能会做出不正确的断言（“我有 1000 个以太币”）并提供虚假证据来支持该声明而侥幸逃脱。</p>
+<p>为防止恶意取款，引入了“挑战期”的概念。 在挑战期内（通常为一周），任何人都可以使用欺诈证明来挑战取款请求。 如果挑战成功，则取款请求被拒绝。</p>
+<p>但是，通常情况下，用户是诚实的，并对他们拥有的资金做出正确的声明。 在这种情况下，Alice 将通过向 Plasma 合约提交交易，在根链（以太坊）上发起取款请求。</p>
+<p>她还必须提供 Merkle 证明，验证在 Plasma 链上创建她的资金的交易是否包含在区块中。 这对于 Plasma 的迭代是必要的，例如<a target="_blank" rel="noopener" href="https://www.learnplasma.org/en/learn/mvp.html">最小可行 Plasma(opens in a new tab)</a> 使用<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Unspent_transaction_output">未花费的交易输出 (UTXO)(opens in a new tab)</a> 模型。</p>
+<p>其他的，如 <a target="_blank" rel="noopener" href="https://www.learnplasma.org/en/learn/cash.html">Plasma Cash(opens in a new tab)↗</a>，将资金表示为<a target="_blank" rel="noopener" href="https://ethereum.org/zh/developers/docs/standards/tokens/erc-721/">非同质化代币</a>，而不是未花费的交易输出。 在这种情况下，取款需要证明 Plasma 链上代币的所有权。 这是通过提交涉及代币的两个最新交易并提供 Merkle 证明来验证这些交易是否包含在区块中来完成的。</p>
+<p>用户还必须在取款请求中添加保证金，作为诚实行为的保证。 如果挑战者证明 Alice 的取款请求无效，她的保证金将被罚没，其中一部分作为奖励交给挑战者。</p>
+<p>如果在没有任何人提供欺诈证明的情况下经过挑战期，Alice 的取款请求被认为是有效的，允许她从以太坊上的 Plasma 合约中取回存款。</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/03/07/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/PLASMA%E9%93%BE/" title="PLASMA链">https://kongpengyq.com/2023/03/07/区块链/区块链知识点总结/扩容/PLASMA链/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" rel="tag"># 区块链知识点总结</a>
+              <a href="/tags/%E6%89%A9%E5%AE%B9/" rel="tag"># 扩容</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/03/07/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/Validium/" rel="prev" title="Validium">
+      <i class="fa fa-chevron-left"></i> Validium
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/11/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/%E4%BA%8C%E5%B1%82%E7%BD%91%E7%BB%9C/" rel="next" title="二层网络">
+      二层网络 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#PLASMA%E9%93%BE"><span class="nav-text">PLASMA链</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-PLASMA%EF%BC%9F"><span class="nav-text">什么是 PLASMA？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PLASMA-%E5%A6%82%E4%BD%95%E5%B7%A5%E4%BD%9C%EF%BC%9F"><span class="nav-text">PLASMA 如何工作？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%93%BE%E4%B8%8B%E8%AE%A1%E7%AE%97"><span class="nav-text">链下计算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E6%89%BF%E8%AF%BA"><span class="nav-text">状态承诺</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%A5%E5%8F%A3%E5%92%8C%E5%87%BA%E5%8F%A3"><span class="nav-text">入口和出口</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%9B%E5%85%A5-plasma-%E9%93%BE"><span class="nav-text">进入 plasma 链</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%80%E5%87%BA-plasma-%E9%93%BE"><span class="nav-text">退出 plasma 链</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

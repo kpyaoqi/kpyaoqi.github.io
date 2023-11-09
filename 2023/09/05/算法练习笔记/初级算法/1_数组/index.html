@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="1.删除排序数组中的重复项给你一个 升序排列 的数组 nums ，请你 原地 删除重复出现的元素，使每个元素 只出现一次 ，返回删除后数组的新长度。元素的 相对顺序 应该保持 一致 。 示例：输入：nums &#x3D; [0,0,1,1,1,2,2,3,3,4]输出：5, nums &#x3D; [0,1,2,3,4]解释：函数应该返回新的长度 5 ， 并且原数组 nums 的前五个元素被修改为">
+<meta property="og:type" content="article">
+<meta property="og:title" content="1_数组">
+<meta property="og:url" content="https://kongpengyq.com/2023/09/05/%E7%AE%97%E6%B3%95%E7%BB%83%E4%B9%A0%E7%AC%94%E8%AE%B0/%E5%88%9D%E7%BA%A7%E7%AE%97%E6%B3%95/1_%E6%95%B0%E7%BB%84/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="1.删除排序数组中的重复项给你一个 升序排列 的数组 nums ，请你 原地 删除重复出现的元素，使每个元素 只出现一次 ，返回删除后数组的新长度。元素的 相对顺序 应该保持 一致 。 示例：输入：nums &#x3D; [0,0,1,1,1,2,2,3,3,4]输出：5, nums &#x3D; [0,1,2,3,4]解释：函数应该返回新的长度 5 ， 并且原数组 nums 的前五个元素被修改为">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E7%AE%97%E6%B3%95%E7%BB%83%E4%B9%A0%E7%AC%94%E8%AE%B0/%E5%88%9D%E7%BA%A7%E7%AE%97%E6%B3%95/img/image-20230517103825323.png">
+<meta property="article:published_time" content="2023-09-04T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:01:34.852Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="算法练习笔记">
+<meta property="article:tag" content="初级算法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/noteimg/%E7%AE%97%E6%B3%95%E7%BB%83%E4%B9%A0%E7%AC%94%E8%AE%B0/%E5%88%9D%E7%BA%A7%E7%AE%97%E6%B3%95/img/image-20230517103825323.png">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/09/05/%E7%AE%97%E6%B3%95%E7%BB%83%E4%B9%A0%E7%AC%94%E8%AE%B0/%E5%88%9D%E7%BA%A7%E7%AE%97%E6%B3%95/1_%E6%95%B0%E7%BB%84/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>1_数组 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/09/05/%E7%AE%97%E6%B3%95%E7%BB%83%E4%B9%A0%E7%AC%94%E8%AE%B0/%E5%88%9D%E7%BA%A7%E7%AE%97%E6%B3%95/1_%E6%95%B0%E7%BB%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          1_数组
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-09-05 00:00:00" itemprop="dateCreated datePublished" datetime="2023-09-05T00:00:00+08:00">2023-09-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:01:34" itemprop="dateModified" datetime="2023-11-09T10:01:34+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%9D%E7%BA%A7%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">初级算法</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="1-删除排序数组中的重复项"><a href="#1-删除排序数组中的重复项" class="headerlink" title="1.删除排序数组中的重复项"></a>1.删除排序数组中的重复项</h1><p>给你一个 升序排列 的数组 nums ，请你 原地 删除重复出现的元素，使每个元素 只出现一次 ，返回删除后数组的新长度。元素的 相对顺序 应该保持 一致 。</p>
+<h4 id="示例："><a href="#示例：" class="headerlink" title="示例："></a>示例：</h4><p>输入：nums &#x3D; [0,0,1,1,1,2,2,3,3,4]<br>输出：5, nums &#x3D; [0,1,2,3,4]<br>解释：函数应该返回新的长度 5 ， 并且原数组 nums 的前五个元素被修改为 0, 1, 2, 3, 4 。不需要考虑数组中超出新长度后面的元素。</p>
+<h4 id="思路："><a href="#思路：" class="headerlink" title="思路："></a>思路：</h4><p>定义一个index变量，循环数组判断是否与临近的元素相同，若相同则赋值给下标为index的位置，并index+1，切片分割nums[:index]</p>
+<h1 id="2-买卖股票的最佳时机"><a href="#2-买卖股票的最佳时机" class="headerlink" title="2.买卖股票的最佳时机"></a>2.买卖股票的最佳时机</h1><p>给你一个整数数组 prices ，其中 prices[i] 表示某支股票第 i 天的价格。在每一天，你可以决定是否购买和&#x2F;或出售股票。你在任何时候 最多 只能持有 一股 股票。你也可以先购买，然后在 同一天 出售。返回 你能获得的 最大 利润 。</p>
+<h4 id="示例：-1"><a href="#示例：-1" class="headerlink" title="示例："></a>示例：</h4><p>输入：prices &#x3D; [7,1,5,3,6,4]<br>输出：7<br>解释：在第 2 天（股票价格 &#x3D; 1）的时候买入，在第 3 天（股票价格 &#x3D; 5）的时候卖出, 这笔交易所能获得利润 &#x3D; 5 - 1 &#x3D; 4 。<br>     随后，在第 4 天（股票价格 &#x3D; 3）的时候买入，在第 5 天（股票价格 &#x3D; 6）的时候卖出, 这笔交易所能获得利润 &#x3D; 6 - 3 &#x3D; 3 。<br>     总利润为 4 + 3 &#x3D; 7 。</p>
+<h4 id="思路：-1"><a href="#思路：-1" class="headerlink" title="思路："></a>思路：</h4><p>定义一个profit变量存储利润，循环数组判断是否比临近的元素大，若大则profit累加这个差值</p>
+<h1 id="3-旋转数组"><a href="#3-旋转数组" class="headerlink" title="3.旋转数组"></a>3.旋转数组</h1><p>给定一个整数数组 nums，将数组中的元素向右轮转 k 个位置，其中 k 是非负数。</p>
+<h4 id="示例-："><a href="#示例-：" class="headerlink" title="示例 ："></a>示例 ：</h4><p>输入: nums &#x3D; [1,2,3,4,5,6,7], k &#x3D; 3<br>输出: [5,6,7,1,2,3,4]<br>解释:<br>向右轮转 1 步: [7,1,2,3,4,5,6]<br>向右轮转 2 步: [6,7,1,2,3,4,5]<br>向右轮转 3 步: [5,6,7,1,2,3,4]</p>
+<h4 id="思路：-2"><a href="#思路：-2" class="headerlink" title="思路："></a>思路：</h4><p>1.新建一个arr数组，循环原数组，将值赋值给new[(i+k)&amp;len(nums)],arr为结果</p>
+<p>2.先反转全部数组，再反转前k个，最后在反转剩余的</p>
+<h1 id="4-存在重复元素"><a href="#4-存在重复元素" class="headerlink" title="4.存在重复元素"></a>4.存在重复元素</h1><p>给你一个整数数组 <code>nums</code> 。如果任一值在数组中出现 <strong>至少两次</strong> ，返回 <code>true</code> ；如果数组中每个元素互不相同，返回 <code>false</code> 。</p>
+<h4 id="思路：-3"><a href="#思路：-3" class="headerlink" title="思路："></a>思路：</h4><p>先排序，然后循环判断临近是否相等</p>
+<h1 id="5-只出现一次的数字"><a href="#5-只出现一次的数字" class="headerlink" title="5.只出现一次的数字"></a>5.只出现一次的数字</h1><p>给你一个 非空 整数数组 nums ，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。</p>
+<p>你必须设计并实现线性时间复杂度的算法来解决此问题，且该算法只使用常量额外空间。</p>
+<h4 id="思路：-4"><a href="#思路：-4" class="headerlink" title="思路："></a>思路：</h4><p>我们只需要把所有的数字都异或一遍，最终的结果就是我们要求的那个数字  <strong>a⊕b⊕a&#x3D;b⊕a⊕a&#x3D;b⊕(a⊕a)&#x3D;b⊕0&#x3D;b。</strong></p>
+<h1 id="6-两个数组的交集-II"><a href="#6-两个数组的交集-II" class="headerlink" title="6.两个数组的交集 II"></a>6.两个数组的交集 II</h1><p>给你两个整数数组 nums1 和 nums2 ，请你以数组形式返回两数组的交集。返回结果中每个元素出现的次数，应与元素在两个数组中都出现的次数一致（如果出现次数不一致，则考虑取较小值）。可以不考虑输出结果的顺序。</p>
+<h4 id="思路：-5"><a href="#思路：-5" class="headerlink" title="思路："></a>思路：</h4><p>先对两个数组排序，定义两个指针一个index变量&#x3D;0，for i &lt; len(nums1) &amp;&amp; j &lt; len(nums2)，判断哪个数小，则那个指针++，若相等则nums[index]&#x3D;nums[i],然后三个变量++，最后返回nums[:index]</p>
+<h1 id="7-加一"><a href="#7-加一" class="headerlink" title="7.加一"></a>7.加一</h1><p>给定一个由 整数 组成的 非空 数组所表示的非负整数，在该数的基础上加一。</p>
+<p>最高位数字存放在数组的首位， 数组中每个元素只存储单个数字。</p>
+<p>你可以假设除了整数 0 之外，这个整数不会以零开头。</p>
+<h4 id="示例：-2"><a href="#示例：-2" class="headerlink" title="示例："></a>示例：</h4><p>digits &#x3D; [1,2,3]<br>输出：[1,2,4]</p>
+<h4 id="思路：-6"><a href="#思路：-6" class="headerlink" title="思路："></a>思路：</h4><p>从数组最后一个元素循环，如果!&#x3D;9，dig[i]+&#x3D;1并返回dig，否则dig[i]&#x3D;0，如果退出循环说明全是9，则append([]int{1}, digits…)</p>
+<h1 id="8-移动零"><a href="#8-移动零" class="headerlink" title="8.移动零"></a>8.移动零</h1><p>给定一个数组 <code>nums</code>，编写一个函数将所有 <code>0</code> 移动到数组的末尾，同时保持非零元素的相对顺序。</p>
+<h4 id="示例：-3"><a href="#示例：-3" class="headerlink" title="示例："></a>示例：</h4><p>nums &#x3D; [0,1,0,3,12]<br>输出: [1,3,12,0,0]</p>
+<h4 id="思路：-7"><a href="#思路：-7" class="headerlink" title="思路："></a>思路：</h4><p>1.把非零往前移，然后index++，然后循环index到数组长度设为零</p>
+<p>2.定义i表示前面为零的个数，循环数组，如果为零，i++,否则nums[j-i] &#x3D; nums[j]，nums[j] &#x3D; 0</p>
+<h1 id="9-两数之和"><a href="#9-两数之和" class="headerlink" title="9.两数之和"></a>9.两数之和</h1><p>给定一个整数数组 <code>nums</code> 和一个整数目标值 <code>target</code>，请你在该数组中找出 <strong>和为目标值</strong> <em><code>target</code></em> 的那 <strong>两个</strong> 整数，并返回它们的数组下标。</p>
+<h3 id="示例：-4"><a href="#示例：-4" class="headerlink" title="示例："></a>示例：</h3><p>输入：nums &#x3D; [3,2,4], target &#x3D; 6<br>输出：[1,2]</p>
+<h3 id="思路"><a href="#思路" class="headerlink" title="思路:"></a>思路:</h3><p>新建一个map[int]int,遍历nums数组，判断map中是否存在target-v，若存在，返回k和target-v在map中的位置，若不存在则将这个值为键存入map中值为在nums数组的位置</p>
+<h1 id="10-有效数独"><a href="#10-有效数独" class="headerlink" title="10.有效数独"></a>10.有效数独</h1><p>请你判断一个 9 x 9 的数独是否有效。只需要 根据以下规则 ，验证已经填入的数字是否有效即可。</p>
+<p>数字 1-9 在每一行只能出现一次。<br>数字 1-9 在每一列只能出现一次。<br>数字 1-9 在每一个以粗实线分隔的 3x3 宫内只能出现一次。</p>
+<h3 id="示例：-5"><a href="#示例：-5" class="headerlink" title="示例："></a>示例：</h3><p>board &#x3D;<br>[[“8”,”3”,”.”,”.”,”7”,”.”,”.”,”.”,”.”]<br>,[“6”,”.”,”.”,”1”,”9”,”5”,”.”,”.”,”.”]<br>,[“.”,”9”,”8”,”.”,”.”,”.”,”.”,”6”,”.”]<br>,[“8”,”.”,”.”,”.”,”6”,”.”,”.”,”.”,”3”]<br>,[“4”,”.”,”.”,”8”,”.”,”3”,”.”,”.”,”1”]<br>,[“7”,”.”,”.”,”.”,”2”,”.”,”.”,”.”,”6”]<br>,[“.”,”6”,”.”,”.”,”.”,”.”,”2”,”8”,”.”]<br>,[“.”,”.”,”.”,”4”,”1”,”9”,”.”,”.”,”5”]<br>,[“.”,”.”,”.”,”.”,”8”,”.”,”.”,”7”,”9”]]<br>输出：false</p>
+<h3 id="思路：-8"><a href="#思路：-8" class="headerlink" title="思路："></a>思路：</h3><p>创建三个row,col,bax:&#x3D;make([] []bool,9)，循环到9，三个的第i为make([]bool,9),双层循环r，c到9，判断board[r] [c]!&#x3D;’.’，</p>
+<p>赋值num:&#x3D;board[r] [c]-‘0’-byte(1)，判断 rowbuf[r] [num] || colbuf[r] [num] || boxbuf[r&#x2F;3*3+c&#x2F;3] [num]，返回false，</p>
+<p>继续，赋值rowbuf[r] [num] &#x3D; true，colbuf[c] [num] &#x3D; true，boxbuf[r&#x2F;3*3+c&#x2F;3] [num] &#x3D; true，最后返回true</p>
+<h2 id="11-旋转图像"><a href="#11-旋转图像" class="headerlink" title="11.旋转图像"></a>11.旋转图像</h2><p>给定一个 n × n 的二维矩阵 matrix 表示一个图像。请你将图像顺时针旋转 90 度。</p>
+<p>你必须在 原地 旋转图像，这意味着你需要直接修改输入的二维矩阵。请不要 使用另一个矩阵来旋转图像。</p>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例:"></a>示例:</h3><p><img src="/noteimg/%E7%AE%97%E6%B3%95%E7%BB%83%E4%B9%A0%E7%AC%94%E8%AE%B0/%E5%88%9D%E7%BA%A7%E7%AE%97%E6%B3%95/img/image-20230517103825323.png" alt="image-20230517103825323"> </p>
+<h3 id="思路：-9"><a href="#思路：-9" class="headerlink" title="思路："></a>思路：</h3><p>先对角线旋转，在根据竖直轴对称翻转</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/09/05/%E7%AE%97%E6%B3%95%E7%BB%83%E4%B9%A0%E7%AC%94%E8%AE%B0/%E5%88%9D%E7%BA%A7%E7%AE%97%E6%B3%95/1_%E6%95%B0%E7%BB%84/" title="1_数组">https://kongpengyq.com/2023/09/05/算法练习笔记/初级算法/1_数组/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%AE%97%E6%B3%95%E7%BB%83%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="tag"># 算法练习笔记</a>
+              <a href="/tags/%E5%88%9D%E7%BA%A7%E7%AE%97%E6%B3%95/" rel="tag"># 初级算法</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/08/30/%E6%AF%8F%E5%91%A8%E4%BB%A5%E5%A4%AA%E5%9D%8A%E8%BF%9B%E5%B1%95/2023-9-30/" rel="prev" title="2023-9-30">
+      <i class="fa fa-chevron-left"></i> 2023-9-30
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/09/05/%E6%AF%8F%E5%91%A8%E4%BB%A5%E5%A4%AA%E5%9D%8A%E8%BF%9B%E5%B1%95/2023-9-9/" rel="next" title="2023-9-9">
+      2023-9-9 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E5%88%A0%E9%99%A4%E6%8E%92%E5%BA%8F%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E9%87%8D%E5%A4%8D%E9%A1%B9"><span class="nav-text">1.删除排序数组中的重复项</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%EF%BC%9A"><span class="nav-text">示例：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="nav-text">思路：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E4%B9%B0%E5%8D%96%E8%82%A1%E7%A5%A8%E7%9A%84%E6%9C%80%E4%BD%B3%E6%97%B6%E6%9C%BA"><span class="nav-text">2.买卖股票的最佳时机</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%EF%BC%9A-1"><span class="nav-text">示例：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A-1"><span class="nav-text">思路：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E6%97%8B%E8%BD%AC%E6%95%B0%E7%BB%84"><span class="nav-text">3.旋转数组</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B-%EF%BC%9A"><span class="nav-text">示例 ：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A-2"><span class="nav-text">思路：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E5%AD%98%E5%9C%A8%E9%87%8D%E5%A4%8D%E5%85%83%E7%B4%A0"><span class="nav-text">4.存在重复元素</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A-3"><span class="nav-text">思路：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-%E5%8F%AA%E5%87%BA%E7%8E%B0%E4%B8%80%E6%AC%A1%E7%9A%84%E6%95%B0%E5%AD%97"><span class="nav-text">5.只出现一次的数字</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A-4"><span class="nav-text">思路：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-%E4%B8%A4%E4%B8%AA%E6%95%B0%E7%BB%84%E7%9A%84%E4%BA%A4%E9%9B%86-II"><span class="nav-text">6.两个数组的交集 II</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A-5"><span class="nav-text">思路：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#7-%E5%8A%A0%E4%B8%80"><span class="nav-text">7.加一</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%EF%BC%9A-2"><span class="nav-text">示例：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A-6"><span class="nav-text">思路：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#8-%E7%A7%BB%E5%8A%A8%E9%9B%B6"><span class="nav-text">8.移动零</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%EF%BC%9A-3"><span class="nav-text">示例：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A-7"><span class="nav-text">思路：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#9-%E4%B8%A4%E6%95%B0%E4%B9%8B%E5%92%8C"><span class="nav-text">9.两数之和</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%EF%BC%9A-4"><span class="nav-text">示例：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF"><span class="nav-text">思路:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#10-%E6%9C%89%E6%95%88%E6%95%B0%E7%8B%AC"><span class="nav-text">10.有效数独</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%EF%BC%9A-5"><span class="nav-text">示例：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A-8"><span class="nav-text">思路：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-%E6%97%8B%E8%BD%AC%E5%9B%BE%E5%83%8F"><span class="nav-text">11.旋转图像</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B"><span class="nav-text">示例:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A-9"><span class="nav-text">思路：</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

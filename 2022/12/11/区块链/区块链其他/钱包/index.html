@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="钱包用来存钱的，在区块链中，我们的数字资产都会对应到一个账户地址上， 只有拥有账户的钥匙（私钥）才可以对资产进行消费（用私钥对消费交易签名）。私钥和地址的关系如下： 私钥通过椭圆曲线生成公钥， 公钥通过对私钥进行哈希函数生成地址，这两个过程都是单向的。 如何创建账号创建账号关键是生成一个私钥， 私钥是一个32个字节的数， 生成一个私钥在本质上在1到2^256之间选一个数字。因此生成密钥的第一步也是">
+<meta property="og:type" content="article">
+<meta property="og:title" content="钱包">
+<meta property="og:url" content="https://kongpengyq.com/2022/12/11/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/%E9%92%B1%E5%8C%85/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="钱包用来存钱的，在区块链中，我们的数字资产都会对应到一个账户地址上， 只有拥有账户的钥匙（私钥）才可以对资产进行消费（用私钥对消费交易签名）。私钥和地址的关系如下： 私钥通过椭圆曲线生成公钥， 公钥通过对私钥进行哈希函数生成地址，这两个过程都是单向的。 如何创建账号创建账号关键是生成一个私钥， 私钥是一个32个字节的数， 生成一个私钥在本质上在1到2^256之间选一个数字。因此生成密钥的第一步也是">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/img/9efa20eff737374479d9c6bb86db82b3.png!wl">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/img/50.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/img/40.jpeg">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/img/40-16965572565772.jpeg">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/img/70.png">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/img/80.png">
+<meta property="article:published_time" content="2022-12-10T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:01:34.859Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链其他">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/img/9efa20eff737374479d9c6bb86db82b3.png!wl">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/12/11/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/%E9%92%B1%E5%8C%85/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>钱包 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/12/11/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/%E9%92%B1%E5%8C%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          钱包
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-12-11 00:00:00" itemprop="dateCreated datePublished" datetime="2022-12-11T00:00:00+08:00">2022-12-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:01:34" itemprop="dateModified" datetime="2023-11-09T10:01:34+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/" itemprop="url" rel="index">
+                    <span itemprop="name">区块链其他</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>钱包用来存钱的，在区块链中，我们的数字资产都会对应到一个账户地址上， 只有拥有账户的钥匙（私钥）才可以对资产进行消费（用私钥对消费交易签名）。<br>私钥和地址的关系如下：<img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/img/9efa20eff737374479d9c6bb86db82b3.png!wl" alt="关系"></p>
+<p><strong>私钥通过椭圆曲线生成公钥， 公钥通过对私钥进行哈希函数生成地址，这两个过程都是单向的。</strong></p>
+<h2 id="如何创建账号"><a href="#如何创建账号" class="headerlink" title="如何创建账号"></a>如何创建账号</h2><p>创建账号关键是生成一个私钥， 私钥是一个32个字节的数， <strong>生成一个私钥在本质上在1到2^256之间选一个数字</strong>。<br>因此生成密钥的第一步也是最重要的一步，是要找到足够安全的熵源，即随机性来源，只要选取的结果是不可预测或不可重复的，那么选取数字的具体方法并不重要。从编程的角度来看，一般是通过在一个密码学安全的随机源(不建议大家自己去写一个随机数)中取出一长串随机字节，对其使用SHA256哈希算法进行运算，这样就可以方便地产生一个256位的数字。</p>
+<blockquote>
+<p>实际过程需要比较下是否小于n-1（n &#x3D; 1.158 * 10^77, 略小于2^256），我们就有了一个合适的私钥。否则，我们就用另一个随机数再重复一次。这样得到的私钥就可以根据上面的方法进一步生成公钥及地址。</p>
+</blockquote>
+<h2 id="BIP32"><a href="#BIP32" class="headerlink" title="BIP32"></a>BIP32</h2><p>钱包也是一个私钥的容器，按照上面的方法，我们可以生成一堆私钥（一个人也有很多账号的需求，可以更好保护隐私），而每个私钥都需要备份就特别麻烦的。</p>
+<blockquote>
+<p>最早期的比特币钱包就是就是这样，还有一个昵称：“Just a Bunch Of Keys(一堆私钥)“</p>
+</blockquote>
+<p>为了解决这种麻烦，就有了<a target="_blank" rel="noopener" href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP32 提议</a>： 根据一个随机数种子通过分层确定性推导的方式得到n个私钥，这样保存的时候，只需要保存一个种子就可以，私钥可以推导出来，如图：</p>
+<img src="/noteimg/区块链/区块链其他/img/50.png" alt="推导" style="zoom: 67%;" />
+（图来自精通比特币）上图中的孙秘钥就可以用来签发交易。
+
+<blockquote>
+<p>补充说明下 BIP: Bitcoin Improvement Proposals 比特币改进建议, bip32是第32个改进建议。<br>BIP32提案的名字是：Hierarchical Deterministic Wallets， 就是我们所说的HD钱包。</p>
+</blockquote>
+<p>来分析下这个分层推导的过程，第一步推导主秘钥的过程：<br><img src="/noteimg/区块链/区块链其他/img/40.jpeg" alt="推导主秘钥的过程" style="zoom:67%;" /></p>
+<p>根种子输入到HMAC-SHA512算法中就可以得到一个可用来创造主私钥(m) 和 一个主链编码（ a master chain code)这一步生成的秘钥（由私钥或公钥）及主链编码再加上一个索引号，将作为HMAC-SHA512算法的输入继续衍生出下一层的私钥及链编码，如下图：<img src="/noteimg/区块链/区块链其他/img/40-16965572565772.jpeg" alt="衍生" style="zoom:67%;" /></p>
+<blockquote>
+<p>衍生推导的方案其实有两个：一个用父私钥推导（称为强化衍生方程），一个用父公钥推导。同时为了区分这两种不同的衍生，在索引号也进行了区分，索引号小于2^31用于常规衍生，而2^31到2^32-1之间用于强化衍生，为了方便表示索引号i’，表示2^31+i。</p>
+</blockquote>
+<p>因此增加索引（水平扩展）及 通过子秘钥向下一层（深度扩展）可以无限生成私钥。</p>
+<p>注意， 这个推导过程是确定（相同的输入，总是有相同的输出）也是单向的，子密钥不能推导出同层级的兄弟密钥，也不能推出父密钥。如果没有子链码也不能推导出孙密钥。现在我们已经对分层推导有了认识。</p>
+<p>一句话概括下BIP32就是：<strong>为了避免管理一堆私钥的麻烦提出的分层推导方案。</strong></p>
+<h3 id="秘钥路径及BIP44"><a href="#秘钥路径及BIP44" class="headerlink" title="秘钥路径及BIP44"></a>秘钥路径及BIP44</h3><p>通过这种分层（树状结构）推导出来的秘钥，通常用路径来表示，每个级别之间用斜杠 &#x2F; 来表示，由主私钥衍生出的私钥起始以“m”打头。因此，第一个母密钥生成的子私钥是m&#x2F;0。第一个公共钥匙是M&#x2F;0。第一个子密钥的子密钥就是m&#x2F;0&#x2F;1，以此类推。</p>
+<p>BIP44则是为这个路径约定了一个规范的含义(也扩展了对多币种的支持)，BIP0044指定了包含5个预定义树状层级的结构：<br><code>m / purpose&#39; / coin&#39; / account&#39; / change / address_index</code><br>m是固定的, Purpose也是固定的，值为44（或者 0x8000002C）<br><strong>Coin type</strong><br>这个代表的是币种，0代表比特币，1代表比特币测试链，60代表<a target="_blank" rel="noopener" href="https://learnblockchain.cn/2017/11/20/whatiseth/">以太坊</a><br>完整的币种列表地址：<a target="_blank" rel="noopener" href="https://github.com/satoshilabs/slips/blob/master/slip-0044.md">https://github.com/satoshilabs/slips/blob/master/slip-0044.md</a><br><strong>Account</strong><br>代表这个币的账户索引，从0开始<br><strong>Change</strong><br>常量0用于外部(收款地址)，常量1用于内部（也称为找零地址）。外部用于在钱包外可见的地址（例如，用于接收付款）。内部链用于在钱包外部不可见的地址，用于返回交易变更。 (所以一般使用0)<br><strong>address_index</strong><br>这就是地址索引，从0开始，代表生成第几个地址，官方建议，每个account下的address_index不要超过20</p>
+<p>根据 <a target="_blank" rel="noopener" href="https://github.com/ethereum/EIPs/issues/85">EIP85提议的讨论</a>以太坊钱包也遵循BIP44标准，确定路径是<code>m/44&#39;/60&#39;/a&#39;/0/n</code><br>a 表示帐号，n 是第 n 生成的地址，60 是在 <a target="_blank" rel="noopener" href="https://github.com/satoshilabs/slips/blob/master/slip-0044.md">SLIP44 提案</a>中确定的以太坊的编码。所以我们要开发以太坊钱包同样需要对比特币的钱包提案BIP32、BIP39有所了解。</p>
+<p>一句话概括下BIP44就是：<strong>给BIP32的分层路径定义规范</strong></p>
+<h2 id="BIP39"><a href="#BIP39" class="headerlink" title="BIP39"></a>BIP39</h2><p>BIP32 提案可以让我们保存一个随机数种子（通常16进制数表示），而不是一堆秘钥，确实方便一些，不过用户使用起来(比如冷备份)也比较繁琐，这就出现了<a target="_blank" rel="noopener" href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">BIP39</a>，它是使用助记词的方式，生成种子的，这样用户只需要记住12（或24）个单词，单词序列通过 PBKDF2 与 HMAC-SHA512 函数创建出随机种子作为 BIP32 的种子。</p>
+<p>可以简单的做一个对比，下面那一种备份起来更友好：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 随机数种子</span></span><br><span class="line"><span class="number">090</span>ABCB3A6e1400e9345bC60c78a8BE7</span><br><span class="line"><span class="comment">// 助记词种子</span></span><br><span class="line">candy maple cake sugar pudding cream honey rich smooth crumble sweet treat</span><br></pre></td></tr></table></figure>
+
+<p>使用助记词作为种子其实包含2个部分：助记词生成及助记词推导出随机种子，下面分析下这个过程。</p>
+<h3 id="生成助记词"><a href="#生成助记词" class="headerlink" title="生成助记词"></a>生成助记词</h3><p>助记词生成的过程是这样的：先生成一个128位随机数，再加上对随机数做的校验4位，得到132位的一个数，然后按每11位做切分，这样就有了12个二进制数，然后用每个数去查<a target="_blank" rel="noopener" href="https://github.com/bitcoin/bips/blob/master/bip-0039/bip-0039-wordlists.md">BIP39定义的单词表</a>，这样就得到12个助记词，这个过程图示如下：</p>
+<p><img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/img/70.png" alt="过程图"><br>（图来源于网络）</p>
+<p>下面是使用bip39生成生成助记词的一段代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> bip39 = <span class="built_in">require</span>(<span class="string">&#x27;bip39&#x27;</span>)</span><br><span class="line"><span class="comment">// 生成助记词</span></span><br><span class="line"><span class="keyword">var</span> mnemonic = bip39.<span class="title function_">generateMnemonic</span>()</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(mnemonic)</span><br></pre></td></tr></table></figure>
+
+<h3 id="助记词推导出种子"><a href="#助记词推导出种子" class="headerlink" title="助记词推导出种子"></a>助记词推导出种子</h3><p>这个过程使用密钥拉伸（Key stretching）函数，被用来增强弱密钥的安全性，PBKDF2是常用的密钥拉伸算法中的一种。<br>PBKDF2基本原理是通过一个为随机函数(例如 HMAC 函数)，把助记词明文和盐值作为输入参数，然后重复进行运算最终产生生成一个更长的（512 位）密钥种子。这个种子再构建一个确定性钱包并派生出它的密钥。</p>
+<p>密钥拉伸函数需要两个参数：助记词和盐。盐可以提高暴力破解的难度。 盐由常量字符串 “mnemonic” 及一个可选的密码组成，注意使用不同密码，则拉伸函数在使用同一个助记词的情况下会产生一个不同的种子，这个过程图示图下:</p>
+<p><img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/img/80.png" alt="过程图"><br>（图来源于网络）</p>
+<p>同样代码来表示一下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> hdkey = <span class="built_in">require</span>(<span class="string">&#x27;ethereumjs-wallet/hdkey&#x27;</span>)</span><br><span class="line"><span class="keyword">var</span> util = <span class="built_in">require</span>(<span class="string">&#x27;ethereumjs-util&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> seed = bip39.<span class="title function_">mnemonicToSeed</span>(mnemonic, <span class="string">&quot;pwd&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> hdWallet = hdkey.<span class="title function_">fromMasterSeed</span>(seed);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> key1 = hdWallet.<span class="title function_">derivePath</span>(<span class="string">&quot;m/44&#x27;/60&#x27;/0&#x27;/0/0&quot;</span>);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;私钥：&quot;</span>+util.<span class="title function_">bufferToHex</span>(key1.<span class="property">_hdkey</span>.<span class="property">_privateKey</span>));</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> address1 = util.<span class="title function_">pubToAddress</span>(key1.<span class="property">_hdkey</span>.<span class="property">_publicKey</span>, <span class="literal">true</span>);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;地址：&quot;</span>+util.<span class="title function_">bufferToHex</span>(address1));</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;校验和地址：&quot;</span>+ util.<span class="title function_">toChecksumAddress</span>(address1.<span class="title function_">toString</span>(<span class="string">&#x27;hex&#x27;</span>)));</span><br></pre></td></tr></table></figure>
+
+<p>校验和地址是<a target="_blank" rel="noopener" href="https://github.com/ethereum/EIPs/blob/master/EIPS/eip-55.md">EIP-55</a>中定义的对大小写有要求的一种地址形式。</p>
+<p>密码可以作为一个额外的安全因子来保护种子，即使助记词的备份被窃取，也可以保证钱包的安全（也要求密码拥有足够的复杂度和长度），不过另外一方面，如果我们忘记密码，那么将无法恢复我们的数字资产。</p>
+<p>一句话概括下BIP39就是：<strong>通过定义助记词让种子的备份更友好</strong></p>
+<blockquote>
+<p>（助记词 &lt;-&gt; seed -&gt; 私钥 -&gt; 公钥 -&gt; PubKeyHash &lt;-&gt; address, 其中&lt;-&gt;表可双向转换，-&gt;表单向转换，最后的PubKeyHash转换为address的时候用的是base58编码，base58编码的原理即辗转相除法）</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/12/11/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/%E9%92%B1%E5%8C%85/" title="钱包">https://kongpengyq.com/2022/12/11/区块链/区块链其他/钱包/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/" rel="tag"># 区块链其他</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/12/08/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/%E6%9C%80%E5%A4%A7%E5%8F%AF%E6%8F%90%E5%8F%96%E4%BB%B7%E5%80%BCMEV/" rel="prev" title="最大可提取价值MEV">
+      <i class="fa fa-chevron-left"></i> 最大可提取价值MEV
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/12/12/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/%E9%A2%84%E8%A8%80%E6%9C%BA/" rel="next" title="预言机">
+      预言机 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%88%9B%E5%BB%BA%E8%B4%A6%E5%8F%B7"><span class="nav-text">如何创建账号</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BIP32"><span class="nav-text">BIP32</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%98%E9%92%A5%E8%B7%AF%E5%BE%84%E5%8F%8ABIP44"><span class="nav-text">秘钥路径及BIP44</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BIP39"><span class="nav-text">BIP39</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E5%8A%A9%E8%AE%B0%E8%AF%8D"><span class="nav-text">生成助记词</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A9%E8%AE%B0%E8%AF%8D%E6%8E%A8%E5%AF%BC%E5%87%BA%E7%A7%8D%E5%AD%90"><span class="nav-text">助记词推导出种子</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

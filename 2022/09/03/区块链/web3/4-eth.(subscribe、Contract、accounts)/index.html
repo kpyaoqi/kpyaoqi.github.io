@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="subscribe(订阅区块链中的指定事件)1.1 clearSubscriptions重置订阅 参数：Boolean: 值为 true 则表示保持 同步 订阅 返回值（Boolean）:是否同步订阅 1.2 subscribe订阅区块链中的指定事件 参数：  String - 订阅类型 Mixed - (可选) 依赖于订阅类型的可选额外参数 Function - (可选) 可选的回调函数，其第一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="4-eth.(subscribe、Contract、accounts)">
+<meta property="og:url" content="https://kongpengyq.com/2022/09/03/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/4-eth.(subscribe%E3%80%81Contract%E3%80%81accounts)/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="subscribe(订阅区块链中的指定事件)1.1 clearSubscriptions重置订阅 参数：Boolean: 值为 true 则表示保持 同步 订阅 返回值（Boolean）:是否同步订阅 1.2 subscribe订阅区块链中的指定事件 参数：  String - 订阅类型 Mixed - (可选) 依赖于订阅类型的可选额外参数 Function - (可选) 可选的回调函数，其第一">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-09-02T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.715Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="web3.js">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/09/03/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/4-eth.(subscribe%E3%80%81Contract%E3%80%81accounts)/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>4-eth.(subscribe、Contract、accounts) | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/09/03/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/4-eth.(subscribe%E3%80%81Contract%E3%80%81accounts)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          4-eth.(subscribe、Contract、accounts)
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-09-03 00:00:00" itemprop="dateCreated datePublished" datetime="2022-09-03T00:00:00+08:00">2022-09-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web3-js/" itemprop="url" rel="index">
+                    <span itemprop="name">web3.js</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>20k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>18 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="subscribe-订阅区块链中的指定事件"><a href="#subscribe-订阅区块链中的指定事件" class="headerlink" title="subscribe(订阅区块链中的指定事件)"></a>subscribe(订阅区块链中的指定事件)</h1><h2 id="1-1-clearSubscriptions"><a href="#1-1-clearSubscriptions" class="headerlink" title="1.1 clearSubscriptions"></a>1.1 clearSubscriptions</h2><p>重置订阅</p>
+<p><strong>参数：</strong><code>Boolean</code>: 值为 <code>true</code> 则表示保持 <code>同步</code> 订阅</p>
+<p><strong>返回值（Boolean）</strong>:是否同步订阅</p>
+<h2 id="1-2-subscribe"><a href="#1-2-subscribe" class="headerlink" title="1.2 subscribe"></a>1.2 subscribe</h2><p>订阅区块链中的指定事件</p>
+<p><strong>参数：</strong></p>
+<ul>
+<li><code>String</code> - 订阅类型</li>
+<li><code>Mixed</code> - (可选) 依赖于订阅类型的可选额外参数</li>
+<li><code>Function</code> - (可选) 可选的回调函数，其第一个参数为错误对象，第二个参数为结果。该函数在每次订阅事件发生时都会被调用，订阅实例会作为第三个参数传递进来</li>
+</ul>
+<p><strong>返回值(EventEmitter)：</strong>一个订阅实例</p>
+<ul>
+<li><code>subscription.id</code>: 订阅 id 编号，用于标识一个订阅以及进行后续的取消订阅操作</li>
+<li><code>subscription.subscribe([callback])</code>: 可用于使用相同的参数进行再次订阅</li>
+<li><code>subscription.unsubscribe([callback])</code>: 取消订阅，如果成功取消的话，在回调函数中返回 TRUE</li>
+<li><code>subscription.arguments</code>: 订阅参数，在重新订阅时使用</li>
+<li><code>on(&quot;data&quot;)</code> 返回 <code>Object</code>: 每次有新的日志时都触发该事件，参数为日志对象</li>
+<li><code>on(&quot;changed&quot;)</code> 返回 <code>Object</code>: 每次有日志从区块链上移除时触发该事件，被移除的日志对象将添加额外的属性： <code>&quot;removed: true&quot;</code></li>
+<li><code>on(&quot;error&quot;)</code> 返回 <code>Object</code>: 当订阅发生错误时，触发此事件</li>
+<li><code>on(&quot;connected&quot;)</code> 返回 <code>String</code>: 一旦订阅成功就会触发该事件，返回订阅 id</li>
+</ul>
+<p><strong>通知返回值：</strong><code>Mixed</code> - 取决于订阅具体是什么，可以参考后面提到的不同订阅获取更多相关信息</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//例子</span></span><br><span class="line"><span class="keyword">var</span> subscription = web3.<span class="property">eth</span>.<span class="title function_">subscribe</span>(<span class="string">&#x27;logs&#x27;</span>, &#123;</span><br><span class="line">    <span class="attr">address</span>: <span class="string">&#x27;0x123456..&#x27;</span>,</span><br><span class="line">    <span class="attr">topics</span>: [<span class="string">&#x27;0x12345...&#x27;</span>]</span><br><span class="line">&#125;, <span class="keyword">function</span>(<span class="params">error, result</span>)&#123;</span><br><span class="line">    <span class="keyword">if</span> (!error)</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(result);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 取消订阅</span></span><br><span class="line">subscription.<span class="title function_">unsubscribe</span>(<span class="keyword">function</span>(<span class="params">error, success</span>)&#123;</span><br><span class="line">    <span class="keyword">if</span>(success)</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Successfully unsubscribed!&#x27;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-1-subscribe-“pendingTransactions”"><a href="#1-2-1-subscribe-“pendingTransactions”" class="headerlink" title="1.2.1 subscribe(“pendingTransactions”)"></a>1.2.1 subscribe(“pendingTransactions”)</h3><p>订阅 pending 状态的交易。</p>
+<p><strong>参数：</strong></p>
+<ol>
+<li><code>String</code> - <code>&quot;pendingTransactions&quot;</code>, 订阅类型</li>
+<li><code>Function</code> - (可选) 可选的回调函数，其第一个参数为错误对象，第二个参数为结果。</li>
+</ol>
+<p><strong>返回值(EventEmitter)：</strong>一个订阅实例</p>
+<ul>
+<li><code>&quot;data&quot;</code> 返回 <code>String</code>: 当接收到 pending 状态的交易时触发并返回交易哈希</li>
+<li><code>&quot;error&quot;</code> 返回 <code>Object</code>: 当订阅中发生错误时触发</li>
+</ul>
+<p><strong>通知返回值：</strong></p>
+<ol>
+<li><code>Object|Null</code> - 如果订阅失败第一个参数为错误对象</li>
+<li><code>String</code> - 第二个参数为交易哈希</li>
+</ol>
+<h3 id="1-2-2-subscribe-“newBlockHeaders”"><a href="#1-2-2-subscribe-“newBlockHeaders”" class="headerlink" title="1.2.2 subscribe(“newBlockHeaders”)"></a>1.2.2 subscribe(“newBlockHeaders”)</h3><p>订阅新的区块头生成事件， 可用作检查链上变化的计时器。</p>
+<p><strong>参数：</strong></p>
+<ol>
+<li><code>String</code> - <code>&quot;newBlockHeaders&quot;</code>, 订阅类型</li>
+<li><code>Function</code> - (可选) 可选的回调函数，其第一个参数为错误对象，第二个参数为结果。</li>
+</ol>
+<p><strong>返回值(EventEmitter)：</strong>一个订阅实例</p>
+<ul>
+<li><code>&quot;data&quot;</code> 返回 <code>Object</code>: 当收到新的区块头时触发<ul>
+<li><code>number</code> - <code>Number</code>: 区块编号，对于 pending 状态的块该值为<code>null</code>。</li>
+<li><code>hash</code> 32 Bytes - <code>String</code>: 块的哈希值，对于 pending 状态的块该值为<code>null</code>。</li>
+<li><code>parentHash</code> 32 Bytes - <code>String</code>: 父区块哈希值。</li>
+<li><code>nonce</code> 8 Bytes - <code>String</code>: 用来生成工作量证明的 nonce 值. 对于 pending 状态的块该值为<code>null</code>。</li>
+<li><code>sha3Uncles</code> 32 Bytes - <code>String</code>: 区块中叔块数据的 sha3哈希值。</li>
+<li><code>logsBloom</code> 256 Bytes - <code>String</code>: 区块日志数据的布隆过滤器。对于 pending 状态的块该值为<code>null</code>。</li>
+<li><code>transactionsRoot</code> 32 Bytes - <code>String</code>: 区块中交易 trie 树的根节点。</li>
+<li><code>stateRoot</code> 32 Bytes - <code>String</code>: 区块中状态 trie 树的根节点。</li>
+<li><code>receiptsRoot</code> 32 Bytes - <code>String</code>: 收据根节点。</li>
+<li><code>miner</code> - <code>String</code>: 接收挖矿奖励的矿工地址。</li>
+<li><code>extraData</code> - <code>String</code>: 区块的额外数据字段。</li>
+<li><code>gasLimit</code> - <code>Number</code>: 该块允许的最大 gas 用量。</li>
+<li><code>gasUsed</code> - <code>Number</code>: 该块中所有交易使用的 gas 总量。</li>
+<li><code>timestamp</code> - <code>Number</code>: 区块时间戳。</li>
+</ul>
+</li>
+<li><code>&quot;error&quot;</code> 返回 <code>Object</code>: 当订阅中出现错误时触发</li>
+<li><code>&quot;connected&quot;</code> 返回 <code>Number</code>: 订阅成功后触发，返回订阅 id</li>
+</ul>
+<p><strong>通知返回值：</strong></p>
+<ol>
+<li><code>Object|Null</code> - 如果订阅失败第一个参数为错误对象</li>
+<li><code>Object</code> - 像上面那样的区块头对象</li>
+</ol>
+<h3 id="1-2-3-subscribe-“syncing”"><a href="#1-2-3-subscribe-“syncing”" class="headerlink" title="1.2.3 subscribe(“syncing”)"></a>1.2.3 subscribe(“syncing”)</h3><p>订阅同步事件。当节点正在同步数据时将返回一个同步对象，同步结束后返回 <code>FALSE</code>。</p>
+<p><strong>参数：</strong></p>
+<ol>
+<li><code>String</code> - <code>&quot;syncing&quot;</code>, 订阅类型</li>
+<li><code>Function</code> - (可选) 可选的回调函数，其第一个参数为错误对象，第二个参数为结果。</li>
+</ol>
+<p><strong>返回值(EventEmitter)：</strong>一个订阅实例</p>
+<ul>
+<li><code>&quot;data&quot;</code> 返回 <code>Object</code>: 收到同步对象时触发(参考14.web3.eth.isSyncing()返回值)</li>
+<li><code>&quot;changed&quot;</code> 返回 <code>Object</code>: 当同步状态由 <code>true</code> 变为 <code>false</code> 时触发</li>
+<li><code>&quot;error&quot;</code> 返回 <code>Object</code>: 当订阅中出现错误时触发</li>
+</ul>
+<p><strong>通知返回值：</strong></p>
+<ol>
+<li><code>Object|Null</code> - 如果订阅失败第一个参数为错误对象</li>
+<li><code>Object|Boolean</code> - 同步对象, 同步开始后返回 <code>true</code>，同步结束后返回 false</li>
+</ol>
+<h3 id="1-2-4-subscribe-“logs”"><a href="#1-2-4-subscribe-“logs”" class="headerlink" title="1.2.4 subscribe(“logs”)"></a>1.2.4 subscribe(“logs”)</h3><p>订阅日志，并按指定条件进行过滤。 如果一个有效的 <code>fromBlock</code> 属性被指定，Web3 会提取从这个点开始的日志，必要时回填返回值。<strong>参数：</strong></p>
+<ul>
+<li><code>&quot;logs&quot;</code> - <code>String</code>, 订阅类型</li>
+<li><code>Object</code> - 订阅选项<ul>
+<li><code>fromBlock</code> - <code>Number</code>: 最早区块编号， 默认为 <code>null</code>。</li>
+<li><code>address</code> - <code>String|Array</code>: 地址或地址列表，仅订阅来自这些指定账户地址的日志。</li>
+<li><code>topics</code> - <code>Array</code>: 一个主题数组，数组中每个元素都应出现在日志项中。 数组中主题的顺序是很重要的, 如果你不想监听某个主题可以用 <code>null</code> 值, 比如 <code>[null, &#39;0x00...&#39;]</code>. 你也可以为每个主题传入另外一个数组来表示主题选项， 比如 <code>[null, [&#39;option1&#39;, &#39;option2&#39;]]</code></li>
+</ul>
+</li>
+<li><code>callback</code> - <code>Function</code>: (可选) 可选的回调函数，其第一个参数为错误对象，第二个参数为结果。每当有订阅事件发生时都会被调用。</li>
+</ul>
+<p><strong>返回值(EventEmitter)：</strong>一个订阅实例</p>
+<ul>
+<li><code>&quot;data&quot;</code> 返回 <code>Object</code>: 接收到新日志时触发，参数为日志对象(参考40. web3.eth.getPastEvents()返回值)</li>
+<li><code>&quot;changed&quot;</code> 返回 <code>Object</code>: 日志从链上移除时触发，该日志同时带有附加属性 <code>&quot;removed: true&quot;</code></li>
+<li><code>&quot;error&quot;</code> 返回 <code>Object</code>: 当订阅中出现错误时触发</li>
+<li><code>&quot;connected&quot;</code> 返回 <code>Number</code>: 订阅成功后触发，返回订阅 id</li>
+</ul>
+<p><strong>通知返回值：</strong></p>
+<ol>
+<li><code>Object|Null</code> - 如果订阅失败第一个参数为错误对象</li>
+<li><code>Object</code> - 日志对象，参考 40.web3.eth.getPastEvents()</li>
+</ol>
+<h1 id="Contract-与区块链上的智能合约交互"><a href="#Contract-与区块链上的智能合约交互" class="headerlink" title="Contract(与区块链上的智能合约交互)"></a>Contract(与区块链上的智能合约交互)</h1><h2 id="2-1-new-contract"><a href="#2-1-new-contract" class="headerlink" title="2.1 new contract"></a>2.1 new contract</h2><p>创建新的合约实例，并在其 json interface 对象中定义所有的方法和事件。</p>
+<p><strong>参数：</strong></p>
+<ul>
+<li><code>jsonInterface</code> - <code>Object</code>: 所要实例化合约的 json 接口</li>
+<li><code>address</code> - <code>String</code> （可选）: 要调用的智能合约地址</li>
+<li><code>options</code> - <code>Object</code> （可选）: 合约配置选项。 其中某些选项被用作合约调用和交易的回调:<ul>
+<li><code>from</code> - <code>String</code>: 交易发送方地址</li>
+<li><code>gasPrice</code> - <code>String</code>: 为交易指定的 gas 价格，以 wei 为单位</li>
+<li><code>gas</code> - <code>Number</code>: 交易可用的最大 gas 量（gas limit）。</li>
+<li><code>data</code> - <code>String</code>: 合约字节码。当合约被 :ref:部署 <contract-deploy>时需要使用。</li>
+</ul>
+</li>
+</ul>
+<p><strong>返回值(Object)：</strong>带有所有方法和事件的合约实例</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//例子</span></span><br><span class="line"><span class="keyword">var</span> myContract = <span class="keyword">new</span> web3.<span class="property">eth</span>.<span class="title class_">Contract</span>([...], <span class="string">&#x27;0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe&#x27;</span>, &#123;</span><br><span class="line">    <span class="attr">from</span>: <span class="string">&#x27;0x1234567890123456789012345678901234567891&#x27;</span>, <span class="comment">// 默认交易发送地址</span></span><br><span class="line">    <span class="attr">gasPrice</span>: <span class="string">&#x27;20000000000&#x27;</span> <span class="comment">// 以 wei 为单位的默认 gas 价格，当前价格为 20 gwei</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2-options-选项属性"><a href="#2-2-options-选项属性" class="headerlink" title="2.2 options(选项属性)"></a>2.2 options(选项属性)</h2><ul>
+<li><code>address</code> - <code>String</code>: 合约的部署地址。 见 options.address.</li>
+<li><code>jsonInterface</code> - <code>Array</code>: 合同的 json 接口。见 options.jsonInterface.</li>
+<li><code>data</code> - <code>String</code>: 合约字节码。 部署 合约时使用。</li>
+<li><code>from</code> - <code>String</code>: 交易发起方地址。</li>
+<li><code>gasPrice</code> - <code>String</code>: 用于交易的 gas 价格。以 wei 为单位。</li>
+<li><code>gas</code> - <code>Number</code>: 可用于该交易的 gas 用量上限 (gas limit)。</li>
+<li><code>handleRevert</code> - <code>Boolean</code>: 如果这里不设置，将使用 Eth 模块提供的默认值。 见 11.handleRevert.</li>
+<li><code>transactionBlockTimeout</code> - <code>Number</code>: 如果这里不设置，将使用 Eth 模块提供的默认值。 见6. transactionBlockTimeout.</li>
+<li><code>transactionConfirmationBlocks</code> - <code>Number</code>: 如果这里不设置，将使用 Eth 模块提供的默认值。 见 7.transactionConfirmationBlocks.</li>
+<li><code>transactionPollingTimeout</code> - <code>Number</code>: 如果这里不设置，将使用 Eth 模块提供的默认值。 见 9.transactionPollingTimeout.</li>
+<li><code>chain</code> - <code>Number</code>: 如果这里不设置，将使用 Eth 模块提供的默认值。 见 4.defaultChain.</li>
+<li><code>hardfork</code> - <code>Number</code>: 如果这里不设置，将使用 Eth 模块提供的默认值。 见3. defaultHardfork.</li>
+<li><code>common</code> - <code>Number</code>: 如果这里不设置，将使用 Eth 模块提供的默认值。 见 5.defaultCommon.</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//例子</span></span><br><span class="line">myContract.<span class="property">options</span>;</span><br><span class="line">&gt; &#123;</span><br><span class="line">    <span class="attr">address</span>: <span class="string">&#x27;0x1234567890123456789012345678901234567891&#x27;</span>,</span><br><span class="line">    <span class="attr">jsonInterface</span>: [...],</span><br><span class="line">    <span class="attr">from</span>: <span class="string">&#x27;0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe&#x27;</span>,</span><br><span class="line">    <span class="attr">gasPrice</span>: <span class="string">&#x27;10000000000000&#x27;</span>,</span><br><span class="line">    <span class="attr">gas</span>: <span class="number">1000000</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">myContract.<span class="property">options</span>.<span class="property">from</span> = <span class="string">&#x27;0x1234567890123456789012345678901234567891&#x27;</span>; <span class="comment">// 默认交易发送方地址</span></span><br><span class="line">myContract.<span class="property">options</span>.<span class="property">gasPrice</span> = <span class="string">&#x27;20000000000000&#x27;</span>; <span class="comment">// 默认 gas 价格，以 wei 为单位</span></span><br><span class="line">myContract.<span class="property">options</span>.<span class="property">gas</span> = <span class="number">5000000</span>; <span class="comment">// 5M gas 作为备用值</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-1-options-address"><a href="#2-2-1-options-address" class="headerlink" title="2.2.1 options.address"></a>2.2.1 options.address</h3><p>用于本合约实例的地址。 所有通过 web3.js 从这个合约生成的交易都将包含这个地址作为 “to” 地址（也就是交易接收方地址）</p>
+<p><strong>属性：</strong><code>address</code> - <code>String|null</code>: 本合约的地址, 如果未设置其值为 <code>null</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//例子 </span></span><br><span class="line">myContract.<span class="property">options</span>.<span class="property">address</span>;</span><br><span class="line">&gt; <span class="string">&#x27;0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置新地址</span></span><br><span class="line">myContract.<span class="property">options</span>.<span class="property">address</span> = <span class="string">&#x27;0x1234FFDD...&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-2-options-jsonInterface"><a href="#2-2-2-options-jsonInterface" class="headerlink" title="2.2.2 options.jsonInterface"></a>2.2.2 options.jsonInterface</h3><p>从合约的 ABI 派生出来的 json 接口 对象。</p>
+<p><strong>属性：</strong><code>jsonInterface</code> - <code>Array</code>: 当前合约的 json 接口 。重设该接口会导致合约实例方法和事件的重新生成。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//例子 </span></span><br><span class="line">myContract.<span class="property">options</span>.<span class="property">jsonInterface</span>;</span><br><span class="line">&gt; [&#123;</span><br><span class="line">    <span class="string">&quot;type&quot;</span>:<span class="string">&quot;function&quot;</span>,</span><br><span class="line">    <span class="string">&quot;name&quot;</span>:<span class="string">&quot;foo&quot;</span>,</span><br><span class="line">    <span class="string">&quot;inputs&quot;</span>: [&#123;<span class="string">&quot;name&quot;</span>:<span class="string">&quot;a&quot;</span>,<span class="string">&quot;type&quot;</span>:<span class="string">&quot;uint256&quot;</span>&#125;],</span><br><span class="line">    <span class="string">&quot;outputs&quot;</span>: [&#123;<span class="string">&quot;name&quot;</span>:<span class="string">&quot;b&quot;</span>,<span class="string">&quot;type&quot;</span>:<span class="string">&quot;address&quot;</span>&#125;]</span><br><span class="line">&#125;,&#123;</span><br><span class="line">    <span class="string">&quot;type&quot;</span>:<span class="string">&quot;event&quot;</span>,</span><br><span class="line">    <span class="string">&quot;name&quot;</span>:<span class="string">&quot;Event&quot;</span>,</span><br><span class="line">    <span class="string">&quot;inputs&quot;</span>: [&#123;<span class="string">&quot;name&quot;</span>:<span class="string">&quot;a&quot;</span>,<span class="string">&quot;type&quot;</span>:<span class="string">&quot;uint256&quot;</span>,<span class="string">&quot;indexed&quot;</span>:<span class="literal">true</span>&#125;,&#123;<span class="string">&quot;name&quot;</span>:<span class="string">&quot;b&quot;</span>,<span class="string">&quot;type&quot;</span>:<span class="string">&quot;bytes32&quot;</span>,<span class="string">&quot;indexed&quot;</span>:<span class="literal">false</span>&#125;],</span><br><span class="line">&#125;]</span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置新的接口</span></span><br><span class="line">myContract.<span class="property">options</span>.<span class="property">jsonInterface</span> = [...];</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-3-Methods-方法"><a href="#2-3-Methods-方法" class="headerlink" title="2.3 Methods(方法)"></a>2.3 Methods(方法)</h2><h3 id="2-3-1-clone"><a href="#2-3-1-clone" class="headerlink" title="2.3.1 clone"></a>2.3.1 clone</h3><p>克隆当前合约实例</p>
+<p><strong>返回值(Object)：</strong>新合约实例</p>
+<h3 id="2-3-2-deploy"><a href="#2-3-2-deploy" class="headerlink" title="2.3.2 deploy"></a>2.3.2 deploy</h3><p>调用此函数将合约部署到区块链上。 成功部署后 promise 对象会被解析为新的合约实例。</p>
+<p><strong>参数：</strong><code>options</code> <strong>-</strong> <code>Object</code>: 用于合约部署的选项</p>
+<ul>
+<li><code>data</code> - <code>String</code>: 合约字节码</li>
+<li><code>arguments</code> - <code>Array</code> （可选）: 在部署合约时传递给构造函数的参数。</li>
+</ul>
+<p><strong>返回值：</strong><code>Object</code>交易对象:</p>
+<ul>
+<li><code>Array</code> - 参数: 之前传递给方法的参数。它们是可以被改变的。</li>
+<li><code>Function</code> - send: 用来部署合约。promise 会被解析为合约实例而不是交易收据。</li>
+<li><code>Function</code> - estimateGas: 估算部署合约所需要的 gas 用量。</li>
+<li><code>Function</code> - encodeABI: 编码由合约数据和构造函数参数构成的合约部署 ABI。</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//例子</span></span><br><span class="line">myContract.<span class="title function_">deploy</span>(&#123;</span><br><span class="line">    <span class="attr">data</span>: <span class="string">&#x27;0x12345...&#x27;</span>,</span><br><span class="line">    <span class="attr">arguments</span>: [<span class="number">123</span>, <span class="string">&#x27;My String&#x27;</span>]</span><br><span class="line">&#125;)</span><br><span class="line">.<span class="title function_">send</span>(&#123;</span><br><span class="line">    <span class="attr">from</span>: <span class="string">&#x27;0x1234567890123456789012345678901234567891&#x27;</span>,</span><br><span class="line">    <span class="attr">gas</span>: <span class="number">1500000</span>,</span><br><span class="line">    <span class="attr">gasPrice</span>: <span class="string">&#x27;30000000000000&#x27;</span></span><br><span class="line">&#125;, <span class="keyword">function</span>(<span class="params">error, transactionHash</span>)&#123; ... &#125;)</span><br><span class="line">.<span class="title function_">on</span>(<span class="string">&#x27;error&#x27;</span>, <span class="keyword">function</span>(<span class="params">error</span>)&#123; ... &#125;)</span><br><span class="line">.<span class="title function_">on</span>(<span class="string">&#x27;transactionHash&#x27;</span>, <span class="keyword">function</span>(<span class="params">transactionHash</span>)&#123; ... &#125;)</span><br><span class="line">.<span class="title function_">on</span>(<span class="string">&#x27;receipt&#x27;</span>, <span class="keyword">function</span>(<span class="params">receipt</span>)&#123;</span><br><span class="line">   <span class="variable language_">console</span>.<span class="title function_">log</span>(receipt.<span class="property">contractAddress</span>) <span class="comment">// 包含新合约地址</span></span><br><span class="line">&#125;)</span><br><span class="line">.<span class="title function_">on</span>(<span class="string">&#x27;confirmation&#x27;</span>, <span class="keyword">function</span>(<span class="params">confirmationNumber, receipt</span>)&#123; ... &#125;)</span><br><span class="line">.<span class="title function_">then</span>(<span class="keyword">function</span>(<span class="params">newContractInstance</span>)&#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(newContractInstance.<span class="property">options</span>.<span class="property">address</span>) <span class="comment">// 带有新合约地址的合约实例</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//数据已经设置为合约本身的选项</span></span><br><span class="line">myContract.<span class="property">options</span>.<span class="property">data</span> = <span class="string">&#x27;0x12345...&#x27;</span>;</span><br><span class="line"></span><br><span class="line">myContract.<span class="title function_">deploy</span>(&#123;</span><br><span class="line">    <span class="attr">arguments</span>: [<span class="number">123</span>, <span class="string">&#x27;My String&#x27;</span>]</span><br><span class="line">&#125;)</span><br><span class="line">.<span class="title function_">send</span>(&#123;</span><br><span class="line">    <span class="attr">from</span>: <span class="string">&#x27;0x1234567890123456789012345678901234567891&#x27;</span>,</span><br><span class="line">    <span class="attr">gas</span>: <span class="number">1500000</span>,</span><br><span class="line">    <span class="attr">gasPrice</span>: <span class="string">&#x27;30000000000000&#x27;</span></span><br><span class="line">&#125;)</span><br><span class="line">.<span class="title function_">then</span>(<span class="keyword">function</span>(<span class="params">newContractInstance</span>)&#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(newContractInstance.<span class="property">options</span>.<span class="property">address</span>) <span class="comment">// 具有新合同地址的合约实例</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 只是编码</span></span><br><span class="line">myContract.<span class="title function_">deploy</span>(&#123;</span><br><span class="line">    <span class="attr">data</span>: <span class="string">&#x27;0x12345...&#x27;</span>,</span><br><span class="line">    <span class="attr">arguments</span>: [<span class="number">123</span>, <span class="string">&#x27;My String&#x27;</span>]</span><br><span class="line">&#125;)</span><br><span class="line">.<span class="title function_">encodeABI</span>();</span><br><span class="line">&gt; <span class="string">&#x27;0x12345...0000012345678765432&#x27;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// gas 估算</span></span><br><span class="line">myContract.<span class="title function_">deploy</span>(&#123;</span><br><span class="line">    <span class="attr">data</span>: <span class="string">&#x27;0x12345...&#x27;</span>,</span><br><span class="line">    <span class="attr">arguments</span>: [<span class="number">123</span>, <span class="string">&#x27;My String&#x27;</span>]</span><br><span class="line">&#125;)</span><br><span class="line">.<span class="title function_">estimateGas</span>(<span class="keyword">function</span>(<span class="params">err, gas</span>)&#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(gas);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-3-methods"><a href="#2-3-3-methods" class="headerlink" title="2.3.3 methods"></a>2.3.3 methods</h3><h4 id="2-3-3-1-methods-myMethod-call"><a href="#2-3-3-1-methods-myMethod-call" class="headerlink" title="2.3.3.1 methods.myMethod.call"></a>2.3.3.1 methods.myMethod.call</h4><p>将在不发送交易的情况下调用该“常量”方法并在 EVM 中执行其智能合约方法。注意此种调用方式无法改变智能合约状态。</p>
+<p><strong>参数 ：</strong></p>
+<ol>
+<li><code>options</code> - <code>Object</code> （可选）: 用于发起调用的选项。<ul>
+<li><code>from</code> - <code>String</code> （可选）: 调用“交易”的发起方地址。</li>
+<li><code>gasPrice</code> - <code>String</code> （可选）: 用于该调用“交易”的 gas 价格。以 wei 为计量单位。</li>
+<li><code>gas</code> - <code>Number</code> （可选）: 用于该调用“交易”的 gas 用量上限 (gas limit)。</li>
+</ul>
+</li>
+<li><code>callback</code> - <code>Function</code> （可选）: 回调函数，回调时将以智能合约方法执行结果作为第二个参数，以错误对象作为第一个参数。</li>
+</ol>
+<p><strong>返回值(Promise)：</strong>Mixed,智能合约方法返回值。 如果只返回一个值，则按原样返回。如果有多个返回值，则作为一个带有属性和索引的对象返回。</p>
+<h4 id="2-3-3-2-methods-myMethod-send"><a href="#2-3-3-2-methods-myMethod-send" class="headerlink" title="2.3.3.2  methods.myMethod.send"></a>2.3.3.2  methods.myMethod.send</h4><p>向合约发送交易来执行其方法。注意这会改变合约状态。</p>
+<p><strong>参数 ：</strong></p>
+<ol>
+<li><code>options</code> - <code>Object</code> （可选）: 用于发起调用的选项。<ul>
+<li><code>from</code> - <code>String</code> （可选）: 调用“交易”的发起方地址。</li>
+<li><code>gasPrice</code> - <code>String</code> （可选）: 用于该调用“交易”的 gas 价格。以 wei 为计量单位。</li>
+<li><code>gas</code> - <code>Number</code> （可选）: 用于该调用“交易”的 gas 用量上限 (gas limit)。</li>
+<li><code>value</code> - <code>Number|String|BN|BigNumber</code>（可选）: 交易转账金额，以 wei 为单位。</li>
+</ul>
+</li>
+<li><code>callback</code> - <code>Function</code> （可选）: 回调函数，回调时将以智能合约方法执行结果作为第二个参数，以错误对象作为第一个参数。</li>
+</ol>
+<p><strong>返回值(PromiEvent)：</strong>一个 整合了事件发生器 <promiEvent> promise. 当收到交易<em>收据</em>时会被解析, 当该<code>send()</code>调用是从<code>someContract.deploy()</code>发出时，promise 会解析为<em>新合约地址</em>。重设该接口会导致合约实例方法和事件的重新生成。 此外也存在下面这些事件:</p>
+<ul>
+<li><code>&quot;transactionHash&quot;</code> 返回 <code>String</code>: 发送交易且得到交易哈希值后立即触发。</li>
+<li><code>&quot;receipt&quot;</code> 返回 <code>Object</code>: 当收到交易<em>收据</em>时触发。合约收据带有的不是<code>logs</code>，而是以事件名称为健，以事件本身为属性值的<code>events</code>。 关于返回事件对象的详情，参见 getPastEvents 返回值 。</li>
+<li><code>&quot;confirmation&quot;</code> 返回 <code>Number</code>, <code>Object</code>: 从区块被挖到的第一个区块确认开始，每次确认都会触发，直到第 24 次确认。触发时第一个参数为收到的确认数，第二个参数为收到交易收据。</li>
+<li><code>&quot;error&quot;</code> 返回 <code>Error</code> 和 <code>Object|undefined</code>: 交易发送过程中出错时触发。如果交易被网络拒绝且带有交易收据，第二个参数就是该交易收据。</li>
+</ul>
+<h4 id="2-3-3-3-methods-myMethod-estimateGas"><a href="#2-3-3-3-methods-myMethod-estimateGas" class="headerlink" title="2.3.3.3 methods.myMethod.estimateGas"></a>2.3.3.3 methods.myMethod.estimateGas</h4><p>通过在 EVM 中执行方法来估算链上执行是需要的 gas 用量。 由于彼时合约状态的不同，当前估算的 gas 用量和随后通过真实交易所得到的实际 gas 用量可能会有所出入。</p>
+<p><strong>参数 ：</strong></p>
+<ol>
+<li><code>options</code> - <code>Object</code> （可选）: 用于发起调用的选项。<ul>
+<li><code>from</code> - <code>String</code> （可选）: 调用“交易”的发起方地址。</li>
+<li><code>gas</code> - <code>Number</code> （可选）: 用于该调用“交易”的 gas 用量上限 (gas limit)。</li>
+<li><code>value</code> - <code>Number|String|BN|BigNumber</code> （可选）: 交易转账金额，以 wei 为单位。</li>
+</ul>
+</li>
+<li><code>callback</code> - <code>Function</code> （可选）: 回调函数，回调时将以智能合约方法执行结果作为第二个参数，以错误对象作为第一个参数。</li>
+</ol>
+<p><strong>返回值(Promise)：</strong>Number,估算的 gas 用量</p>
+<h4 id="2-3-3-4-methods-myMethod-encodeABI"><a href="#2-3-3-4-methods-myMethod-encodeABI" class="headerlink" title="2.3.3.4 methods.myMethod.encodeABI"></a>2.3.3.4 methods.myMethod.encodeABI</h4><p>为指定的合约方法进行 ABI 编码，可用于发送交易、调用方法或向另一个合约方法传递参数。</p>
+<p><strong>返回值(String)：</strong>编码后的 ABI 字节码，可用于交易发送或方法调用</p>
+<h4 id="2-3-3-5-methods-myMethod-createaccesslist"><a href="#2-3-3-5-methods-myMethod-createaccesslist" class="headerlink" title="2.3.3.5 methods.myMethod.createaccesslist"></a>2.3.3.5 methods.myMethod.createaccesslist</h4><p>创建访问列表并将用call调用，方法执行将在EVM中执行时访问该列表。注:目前eth_createAccessList好像只有Geth支持</p>
+<p><strong>参数 ：</strong></p>
+<ol>
+<li><code>options</code> - <code>Object</code> （可选）: 用于发起调用的选项。<ul>
+<li><code>from</code> - <code>String</code> （可选）: 调用“交易”的发起方地址。</li>
+<li><code>gas</code> - <code>Number</code> （可选）: 用于该调用“交易”的 gas 用量上限 (gas limit)。</li>
+</ul>
+</li>
+<li><code>block</code> - <code>String|Number|BN|BigNumber</code>(可选):块号或哈希。或者<code>&quot;earliest&quot;</code>, <code>&quot;latest&quot;</code> , <code>&quot;pending&quot;</code> , <code>&quot;safe&quot;</code>或者<code>&quot;finalized&quot;</code>作为 默认块参数.</li>
+<li><code>callback</code> - <code>Function</code> （可选）: 回调函数，回调时将以智能合约方法执行结果作为第二个参数，以错误对象作为第一个参数。</li>
+</ol>
+<p><strong>返回值(Promise)：</strong>Object,为交易生成的访问列表。</p>
+<h2 id="2-4-Events-事件"><a href="#2-4-Events-事件" class="headerlink" title="2.4 Events(事件)"></a>2.4 Events(事件)</h2><h3 id="2-4-1-once"><a href="#2-4-1-once" class="headerlink" title="2.4.1 once"></a>2.4.1 once</h3><p>订阅一个事件并在第一次事件触发或错误发生后立即取消订阅。一个事件仅触发一次。</p>
+<p><strong>参数 ：</strong></p>
+<ol>
+<li><code>event</code> - <code>String</code>: 要订阅的合约事件名, 或者用 <code>&quot;allEvents&quot;</code> 来订阅所有事件。</li>
+<li><code>options</code> - <code>Object</code> （可选）: 用于部署的选项。<ol>
+<li><code>filter</code> - <code>Object</code> （可选）: 按索引参数过滤事件, 例如 <code>&#123;filter: &#123;myNumber: [12,13]&#125;&#125;</code> 表示 “myNumber” 为 12 或 13 的所有事件。</li>
+<li><code>topics</code> - <code>Array</code> （可选）: 手动设置事件过滤器的主题。如果提供了过滤器属性和事件签名，则不会自动设置（topic [0]）</li>
+</ol>
+</li>
+<li><code>callback</code> - <code>Function</code>: 回调函数，触发时把<em>事件</em>对象作为第二个参数，错误作为第一个参数。 关于详细事件结构，参见 getPastEvents 返回值</li>
+</ol>
+<h3 id="2-4-2-events"><a href="#2-4-2-events" class="headerlink" title="2.4.2 events"></a>2.4.2 events</h3><p>订阅指定的合约事件</p>
+<p><strong>参数 ：</strong></p>
+<ol>
+<li><code>options</code> - <code>Object</code> （可选）: 用于部署的选项。<ul>
+<li><code>filter</code> - <code>Object</code> （可选）: 按索引参数过滤事件, 例如 <code>&#123;filter: &#123;myNumber: [12,13]&#125;&#125;</code> 表示 “myNumber” 为 12 或 13 的所有事件。</li>
+<li><code>fromBlock</code> - <code>Number|String|BN|BigNumber</code> （可选）: 读取从该编号开始的区块中的事件（大于或等于该区块号）。 也可以使用预先定义的区块号，比如 <code>&quot;latest&quot;</code>, <code>&quot;earliest&quot;</code>, <code>&quot;pending&quot;</code>, <code>&quot;genesis&quot;</code> 等。</li>
+<li><code>topics</code> - <code>Array</code> （可选）: 手动设置事件过滤器的主题。如果提供了过滤器属性和事件签名，则不会自动设置（topic [0]）。</li>
+</ul>
+</li>
+<li><code>callback</code> - <code>Function</code> （可选）: 回调函数，回调时将以智能合约方法执行结果作为第二个参数，以错误对象作为第一个参数。</li>
+</ol>
+<p><strong>返回值(EventEmitter)：</strong>该事件发生器有以下事件：</p>
+<ul>
+<li><code>&quot;data&quot;</code> 返回 <code>Object</code>: 接收到新传入的事件时触发，参数为事件对象。</li>
+<li><code>&quot;changed&quot;</code> 返回 <code>Object</code>: 当事件从区块链上移除时触发。 该事件带有额外属性 <code>&quot;removed: true&quot;</code>。</li>
+<li><code>&quot;error&quot;</code> 返回 <code>Object</code>: 当订阅中出现错误时触发。</li>
+<li><code>&quot;connected&quot;</code> 返回 <code>String</code>: 当订阅成功连接时触发一次。返回订阅 id。</li>
+</ul>
+<p>返回的事件 “对象” 结构如下：</p>
+<ul>
+<li><code>event</code> - <code>String</code>: 事件名称。</li>
+<li><code>signature</code> - <code>String|Null</code>: 事件签名，如果是匿名事件，其值为 <code>null</code>。</li>
+<li><code>address</code> - <code>String</code>: 该事件的发源地地址。</li>
+<li><code>returnValues</code> - <code>Object</code>: 事件返回值， 比如 <code>&#123;myVar: 1, myVar2: &#39;0x234...&#39;&#125;</code>.</li>
+<li><code>logIndex</code> - <code>Number</code>: 事件在区块中的索引位置。</li>
+<li><code>transactionIndex</code> - <code>Number</code>: 事件所在交易在区块中的索引位置。</li>
+<li><code>transactionHash</code> 32 Bytes - <code>String</code>: 事件所在交易的哈希值。</li>
+<li><code>blockHash</code> 32 Bytes - <code>String</code>: 事件所在区块链的哈希值。区块处于 pending 状态时其值为 <code>null</code> 。</li>
+<li><code>blockNumber</code> - <code>Number</code>: 事件所在区块的区块号。 区块处于 pending 状态时其值为 <code>null</code> 。</li>
+<li><code>raw.data</code> - <code>String</code>: 包含未索引的日志参数。</li>
+<li><code>raw.topics</code> - <code>Array</code>: 最大可保存 4 个 32 字节长的主题数组，主题 1-3 包含事件的索引参数。</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//例子 </span></span><br><span class="line">myContract.<span class="property">events</span>.<span class="title class_">MyEvent</span>(&#123;</span><br><span class="line">    <span class="attr">filter</span>: &#123;<span class="attr">myIndexedParam</span>: [<span class="number">20</span>,<span class="number">23</span>], <span class="attr">myOtherIndexedParam</span>: <span class="string">&#x27;0x123456789...&#x27;</span>&#125;, <span class="comment">// 使用数组表示 或：如 20 或 23。</span></span><br><span class="line">    <span class="attr">fromBlock</span>: <span class="number">0</span></span><br><span class="line">&#125;, <span class="keyword">function</span>(<span class="params">error, event</span>)&#123; <span class="variable language_">console</span>.<span class="title function_">log</span>(event); &#125;)</span><br><span class="line">.<span class="title function_">on</span>(<span class="string">&quot;connected&quot;</span>, <span class="keyword">function</span>(<span class="params">subscriptionId</span>)&#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(subscriptionId);</span><br><span class="line">&#125;)</span><br><span class="line">.<span class="title function_">on</span>(<span class="string">&#x27;data&#x27;</span>, <span class="keyword">function</span>(<span class="params">event</span>)&#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(event); <span class="comment">// 与上述可选的回调结果相同</span></span><br><span class="line">&#125;)</span><br><span class="line">.<span class="title function_">on</span>(<span class="string">&#x27;changed&#x27;</span>, <span class="keyword">function</span>(<span class="params">event</span>)&#123;</span><br><span class="line">    <span class="comment">// 从本地数据库中删除事件</span></span><br><span class="line">&#125;)</span><br><span class="line">.<span class="title function_">on</span>(<span class="string">&#x27;error&#x27;</span>, <span class="keyword">function</span>(<span class="params">error, receipt</span>) &#123; <span class="comment">// 如果交易被网络拒绝并带有交易收据，第二个参数将是交易收据。</span></span><br><span class="line">    ...</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 事件输出例子</span></span><br><span class="line">&gt; &#123;</span><br><span class="line">    <span class="attr">returnValues</span>: &#123;</span><br><span class="line">        <span class="attr">myIndexedParam</span>: <span class="number">20</span>,</span><br><span class="line">        <span class="attr">myOtherIndexedParam</span>: <span class="string">&#x27;0x123456789...&#x27;</span>,</span><br><span class="line">        <span class="attr">myNonIndexParam</span>: <span class="string">&#x27;My String&#x27;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">raw</span>: &#123;</span><br><span class="line">        <span class="attr">data</span>: <span class="string">&#x27;0x7f9fade1c0d57a7af66ab4ead79fade1c0d57a7af66ab4ead7c2c2eb7b11a91385&#x27;</span>,</span><br><span class="line">        <span class="attr">topics</span>: [<span class="string">&#x27;0xfd43ade1c09fade1c0d57a7af66ab4ead7c2c2eb7b11a91ffdd57a7af66ab4ead7&#x27;</span>, <span class="string">&#x27;0x7f9fade1c0d57a7af66ab4ead79fade1c0d57a7af66ab4ead7c2c2eb7b11a91385&#x27;</span>]</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">event</span>: <span class="string">&#x27;MyEvent&#x27;</span>,</span><br><span class="line">    <span class="attr">signature</span>: <span class="string">&#x27;0xfd43ade1c09fade1c0d57a7af66ab4ead7c2c2eb7b11a91ffdd57a7af66ab4ead7&#x27;</span>,</span><br><span class="line">    <span class="attr">logIndex</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">transactionIndex</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">transactionHash</span>: <span class="string">&#x27;0x7f9fade1c0d57a7af66ab4ead79fade1c0d57a7af66ab4ead7c2c2eb7b11a91385&#x27;</span>,</span><br><span class="line">    <span class="attr">blockHash</span>: <span class="string">&#x27;0xfd43ade1c09fade1c0d57a7af66ab4ead7c2c2eb7b11a91ffdd57a7af66ab4ead7&#x27;</span>,</span><br><span class="line">    <span class="attr">blockNumber</span>: <span class="number">1234</span>,</span><br><span class="line">    <span class="attr">address</span>: <span class="string">&#x27;0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-5-getPastEvents"><a href="#2-5-getPastEvents" class="headerlink" title="2.5 getPastEvents"></a>2.5 getPastEvents</h2><p>读取合约历史事件。</p>
+<p><strong>参数 ：</strong></p>
+<ul>
+<li><code>event</code> - <code>String</code>: 合约事件名，或者用 <code>&quot;allEvents&quot;</code> 读取所有事件。</li>
+<li><code>options</code> - <code>Object</code> （可选）: 用于部署的选项。<ol>
+<li><code>filter</code> - <code>Object</code> （可选）: 按索引参数过滤事件, 例如 <code>&#123;filter: &#123;myNumber: [12,13]&#125;&#125;</code> 表示 “myNumber” 为 12 或 13 的所有事件。</li>
+<li><code>fromBlock</code> - <code>Number|String|BN|BigNumber</code> （可选）: 读取从该编号开始的区块中的历史事件（大于或等于该区块号）。 也可以使用预先定义的区块编号，比如 <code>&quot;latest&quot;</code>, <code>&quot;earliest&quot;</code>, <code>&quot;pending&quot;</code>, <code>&quot;genesis&quot;</code> 。</li>
+<li><code>toBlock</code> - <code>Number|String|BN|BigNumber</code> （可选）: 读取截止到该编号的区块中的历史事件（小于或等于该区块号）（默认值为 “latest”）。 也可以使用预先定义的区块编号，比如 <code>&quot;latest&quot;</code>, <code>&quot;earliest&quot;</code>, <code>&quot;pending&quot;</code>, <code>&quot;genesis&quot;</code> 。</li>
+<li><code>topics</code> - <code>Array</code> （可选）: 用来手动设置事件过滤器的主题。如果设置了 filter 属性和事件签名，则不会自动设置（topic [0]）。</li>
+</ol>
+</li>
+<li><code>callback</code> - <code>Function</code> （可选）: 回调函数，回调时将以智能合约方法执行结果作为第二个参数，以错误对象作为第一个参数。</li>
+</ul>
+<p><strong>返回值(Promise)：</strong>Array，满足给定事件或过滤条件的历史事件对象数组</p>
+<h1 id="accounts-生成账户和用来签名交易与数据的函数"><a href="#accounts-生成账户和用来签名交易与数据的函数" class="headerlink" title="accounts(生成账户和用来签名交易与数据的函数)"></a>accounts(生成账户和用来签名交易与数据的函数)</h1><blockquote>
+<p>该程序包尚未经过安全评审，可能存在安全隐患。在用于生产环境之前，请采取必要的措施来合理的清理内存，安全的存储私钥并完整测试交易的接收和发送功能！</p>
+</blockquote>
+<h2 id="3-1-create"><a href="#3-1-create" class="headerlink" title="3.1 create"></a>3.1 create</h2><p>生成具有公私钥的账户对象</p>
+<p><strong>参数 ：</strong><code>entropy</code> - <code>String</code> (可选): 增加混淆度的随机字符串，至少 32 字符长。如果未设定将使用 randomhex 生成一个随机字符串。</p>
+<p><strong>返回值(Object)：</strong> 账户对象，具有如下结构：</p>
+<ul>
+<li><code>address</code> - <code>string</code>: 账户地址。</li>
+<li><code>privateKey</code> - <code>string</code>: 帐户私钥。绝对不要将其共享或以未加密的形式存储在 localstorage 中，并确保使用后将内存清空 。</li>
+<li><code>signTransaction(tx [, callback])</code> - <code>Function</code>: 签名交易的函数. 更多信息可参考 web3.eth.accounts.signTransaction() 。</li>
+<li><code>sign(data)</code> - <code>Function</code>: 用来签名数据的函数. 更多信息可参考 web3.eth.accounts.sign() 。</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//例子 </span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="attr">address</span>: <span class="string">&quot;0xF2CD2AA0c7926743B1D4310b2BC984a0a453c3d4&quot;</span>,</span><br><span class="line">    <span class="attr">privateKey</span>: <span class="string">&quot;0xd7325de5c2c1cf0009fac77d3d04a9c004b038883446b065871bc3e831dcd098&quot;</span>,</span><br><span class="line">    <span class="attr">signTransaction</span>: <span class="keyword">function</span>(<span class="params">tx</span>)&#123;...&#125;,</span><br><span class="line">    <span class="attr">sign</span>: <span class="keyword">function</span>(<span class="params">data</span>)&#123;...&#125;,</span><br><span class="line">    <span class="attr">encrypt</span>: <span class="keyword">function</span>(<span class="params">password</span>)&#123;...&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-2-privateKeyToAccount"><a href="#3-2-privateKeyToAccount" class="headerlink" title="3.2 privateKeyToAccount"></a>3.2 privateKeyToAccount</h2><p>通过私钥来创建账户对象</p>
+<p><strong>参数 ：</strong><code>privateKey</code> - <code>String</code>: 用来创建账户的私钥。</p>
+<p><strong>返回值(Object)：</strong> 具体见web3.eth.accounts.create()</p>
+<h2 id="3-3-signTransaction"><a href="#3-3-signTransaction" class="headerlink" title="3.3 signTransaction"></a>3.3 signTransaction</h2><p>使用给定的私钥签名以太坊交易</p>
+<p><strong>参数 ：</strong></p>
+<ul>
+<li><code>tx</code> <strong>-</strong> <code>Object</code>:交易对象，具有如下结构：<ul>
+<li><code>nonce</code> - <code>String</code>: (可选) 签名交易时所用的 nonce 值。默认使用33. web3.eth.getTransactionCount().</li>
+<li><code>chainId</code> - <code>String</code>: (可选) 签名交易时所用的 chain id。 默认使用 web3.eth.net.getId().</li>
+<li><code>to</code> - <code>String</code>: (可选) 交易接受者，部署合约时其值为空。</li>
+<li><code>data</code> - <code>String</code>: (可选) 交易调用数据，对简单转账交易来说其值为空。</li>
+<li><code>value</code> - <code>String</code>: (可选) 以 wei 为单位的以太币转账数量。</li>
+<li><code>gasPrice</code> - <code>String</code>: (可选) 交易所用的燃料价格，如果传入为空值则会使用 web3.eth.gasPrice()</li>
+<li><code>gas</code> - <code>String</code>: 交易可用的燃料上限。</li>
+<li><code>chain</code> - <code>String</code>: (可选) 默认值为 <code>mainnet</code>.</li>
+<li><code>hardfork</code> - <code>String</code>: (可选) 默认值为 <code>petersburg</code>.</li>
+<li><code>common</code> - <code>Object</code>: (可选) common 对象：<ul>
+<li><code>customChain</code> - <code>Object</code>: 自定义链属性<ul>
+<li><code>name</code> - <code>string</code>: (可选) 链名称</li>
+<li><code>networkId</code> - <code>number</code>: 自定义链的网络 id</li>
+<li><code>chainId</code> - <code>number</code>: 自定义链的 chain id</li>
+</ul>
+</li>
+<li><code>baseChain</code> - <code>string</code>: (可选) <code>mainnet</code>, <code>goerli</code>, <code>kovan</code>, <code>rinkeby</code>, 或 <code>ropsten</code></li>
+<li><code>hardfork</code> - <code>string</code>: (可选) <code>chainstart</code>, <code>homestead</code>, <code>dao</code>, <code>tangerineWhistle</code>, <code>spuriousDragon</code>, <code>byzantium</code>, <code>constantinople</code>, <code>petersburg</code>, 或 <code>istanbul</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>privateKey</code> - <code>String</code>: 签名交易所用的私钥。</li>
+<li><code>callback</code> - <code>Function</code>: (可选) 可选的回调函数, 其第一个返回值为错误对象，第二个返回值为调用结果。</li>
+</ul>
+<p><strong>返回值(Promise)：</strong> <strong>Object</strong>，<strong>RLP 编码的交易对象：</strong></p>
+<ul>
+<li><code>messageHash</code> - <code>String</code>: 给定消息的哈希值。</li>
+<li><code>r</code> - <code>String</code>: 签名的头 32 个字节。</li>
+<li><code>s</code> - <code>String</code>: 签名接下来的 32 个字节。</li>
+<li><code>v</code> - <code>String</code>: 恢复值 + 27。</li>
+<li><code>rawTransaction</code> - <code>String</code>: RLP 编码的交易, 可使用 35.web3.eth.sendSignedTransaction 直接发送。</li>
+<li><code>transactionHash</code> - <code>String</code>: RLP 编码交易的交易哈希。</li>
+</ul>
+<h2 id="3-4-recoverTransaction"><a href="#3-4-recoverTransaction" class="headerlink" title="3.4 recoverTransaction"></a>3.4 recoverTransaction</h2><p>恢复用于签名给定 RLP 编码交易的以太坊地址。</p>
+<p><strong>参数 ：</strong><code>signature</code> - <code>String</code>: RLP 编码的交易。</p>
+<p><strong>返回值(String)：</strong> 用于签名该交易的以太坊地址。</p>
+<h2 id="3-5-hashMessage"><a href="#3-5-hashMessage" class="headerlink" title="3.5 hashMessage"></a>3.5 hashMessage</h2><p>计算给定消息的哈希值，以便于用于 web3.eth.accounts.recover() 函数。 数据采用 UTF-8 十六进制解码封装: <code>&quot;\x19Ethereum Signed Message:\n&quot; + message.length + message</code>，并使用 keccak256 进行哈希运算。</p>
+<p><strong>参数 ：</strong><code>message</code> - <code>String</code>: 要进行哈希运算的消息，如果是 16 进制字符串，首先对其进行 UTF-8 解码。</p>
+<p><strong>返回值(String)：</strong> 哈希运算后的消息</p>
+<h2 id="3-6-sign"><a href="#3-6-sign" class="headerlink" title="3.6 sign"></a>3.6 sign</h2><p>签名任意数据。</p>
+<p><strong>参数 ：</strong></p>
+<ol>
+<li><code>data</code> - <code>String</code>: 要签名的数据。</li>
+<li><code>privateKey</code> - <code>String</code>: 用以签名的私钥</li>
+</ol>
+<p><strong>返回值(<strong>Object</strong>)：</strong> 签名对象</p>
+<ul>
+<li><code>message</code> - <code>String</code>: 给定消息。</li>
+<li><code>messageHash</code> - <code>String</code>: 给定消息的哈希值。</li>
+<li><code>r</code> - <code>String</code>: 签名的头 32 个字节。</li>
+<li><code>s</code> - <code>String</code>: 签名接下来的 32 个字节。</li>
+<li><code>v</code> - <code>String</code>: 恢复值(Recovery) + 27。</li>
+</ul>
+<h2 id="3-7-recover"><a href="#3-7-recover" class="headerlink" title="3.7 recover"></a>3.7 recover</h2><p>恢复用于签名给定数据的以太坊地址。</p>
+<p><strong>参数 ：</strong></p>
+<ul>
+<li><p><code>message|signatureObject</code> - <code>String|Object</code>: 要么是签名消息或哈希，要么是带有下面属性的签名对象：</p>
+<ul>
+<li><code>messageHash</code> - <code>String</code>: 给定消息的哈希值，该消息已加前缀 <code>&quot;\x19Ethereum Signed Message:\n&quot; + message.length + message</code>。</li>
+</ul>
+</li>
+<li><p><code>r</code> - <code>String</code>: 签名的头 32 个字节</p>
+<ul>
+<li><code>s</code> - <code>String</code>: 签名接下来的 32 个字节。</li>
+</ul>
+</li>
+<li><p><code>v</code> - <code>String</code>: 恢复值 + 27。</p>
+</li>
+<li><p><code>signature</code> - <code>String</code>: 原始 RLP 编码签名或者通过第 2-4 号参数指定 v，r，s 值。</p>
+</li>
+<li><p><code>preFixed</code> - <code>Boolean</code> (可选, 默认值: <code>false</code>): 如果其值为 <code>true</code>, 给定的消息不会自动添加前缀 <code>&quot;\x19Ethereum Signed Message:\n&quot; + message.length + message</code>, 假定给定消息已经带了该前缀。</p>
+</li>
+</ul>
+<p><strong>返回值(String)：</strong> 哈希运算后的消息</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//例子</span></span><br><span class="line">web3.<span class="property">eth</span>.<span class="property">accounts</span>.<span class="title function_">recover</span>(&#123;</span><br><span class="line">    <span class="attr">messageHash</span>: <span class="string">&#x27;0x1da44b586eb0729ff70a73c326926f6ed5a25f5b056e7f47fbc6e58d86871655&#x27;</span>,</span><br><span class="line">    <span class="attr">v</span>: <span class="string">&#x27;0x1c&#x27;</span>,</span><br><span class="line">    <span class="attr">r</span>: <span class="string">&#x27;0xb91467e570a6466aa9e9876cbcd013baba02900b8979d43fe208a4a4f339f5fd&#x27;</span>,</span><br><span class="line">    <span class="attr">s</span>: <span class="string">&#x27;0x6007e74cd82e037b800186422fc2da167c747ef045e5d18a5f5d4300f8e1a029&#x27;</span></span><br><span class="line">&#125;)</span><br><span class="line">&gt; <span class="string">&quot;0x2c7536E3605D9C16a7a3D7b1898e529396a65c23&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 签名消息, 签名</span></span><br><span class="line">web3.<span class="property">eth</span>.<span class="property">accounts</span>.<span class="title function_">recover</span>(<span class="string">&#x27;Some data&#x27;</span>, <span class="string">&#x27;0xb91467e570a6466aa9e9876cbcd013baba02900b8979d43fe208a4a4f339f5fd6007e74cd82e037b800186422fc2da167c747ef045e5d18a5f5d4300f8e1a0291c&#x27;</span>);</span><br><span class="line">&gt; <span class="string">&quot;0x2c7536E3605D9C16a7a3D7b1898e529396a65c23&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="3-8-encrypt"><a href="#3-8-encrypt" class="headerlink" title="3.8 encrypt"></a>3.8 encrypt</h2><p>将私钥加密变换为 keystore v3 标准格式</p>
+<p><strong>参数 ：</strong></p>
+<ol>
+<li><code>privateKey</code> - <code>String</code>: 要加密的私钥。</li>
+<li><code>password</code> - <code>String</code>: 用于加密的密码。</li>
+</ol>
+<p><strong>返回值(<strong>Object</strong>)：</strong> 加密后的 keystore v3 JSON。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//例子</span></span><br><span class="line">web3.<span class="property">eth</span>.<span class="property">accounts</span>.<span class="title function_">encrypt</span>(<span class="string">&#x27;0x4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318&#x27;</span>, <span class="string">&#x27;test!&#x27;</span>)</span><br><span class="line">&gt; &#123;</span><br><span class="line">    <span class="attr">version</span>: <span class="number">3</span>,</span><br><span class="line">    <span class="attr">id</span>: <span class="string">&#x27;04e9bcbb-96fa-497b-94d1-14df4cd20af6&#x27;</span>,</span><br><span class="line">    <span class="attr">address</span>: <span class="string">&#x27;2c7536e3605d9c16a7a3d7b1898e529396a65c23&#x27;</span>,</span><br><span class="line">    <span class="attr">crypto</span>: &#123;</span><br><span class="line">        <span class="attr">ciphertext</span>: <span class="string">&#x27;a1c25da3ecde4e6a24f3697251dd15d6208520efc84ad97397e906e6df24d251&#x27;</span>,</span><br><span class="line">        <span class="attr">cipherparams</span>: &#123; <span class="attr">iv</span>: <span class="string">&#x27;2885df2b63f7ef247d753c82fa20038a&#x27;</span> &#125;,</span><br><span class="line">        <span class="attr">cipher</span>: <span class="string">&#x27;aes-128-ctr&#x27;</span>,</span><br><span class="line">        <span class="attr">kdf</span>: <span class="string">&#x27;scrypt&#x27;</span>,</span><br><span class="line">        <span class="attr">kdfparams</span>: &#123;</span><br><span class="line">            <span class="attr">dklen</span>: <span class="number">32</span>,</span><br><span class="line">            <span class="attr">salt</span>: <span class="string">&#x27;4531b3c174cc3ff32a6a7a85d6761b410db674807b2d216d022318ceee50be10&#x27;</span>,</span><br><span class="line">            <span class="attr">n</span>: <span class="number">262144</span>,</span><br><span class="line">            <span class="attr">r</span>: <span class="number">8</span>,</span><br><span class="line">            <span class="attr">p</span>: <span class="number">1</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">mac</span>: <span class="string">&#x27;b8b010fff37f9ae5559a352a185e86f9b9c1d7f7a9f1bd4e82a5dd35468fc7f6&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-9-decrypt"><a href="#3-9-decrypt" class="headerlink" title="3.9 decrypt"></a>3.9 decrypt</h2><p>解密 keystore v3 JSON，并创建账户</p>
+<p><strong>参数 ：</strong></p>
+<ol>
+<li><code>encryptedPrivateKey</code> - <code>String</code>: 要进行解密的加密私钥。</li>
+<li><code>password</code> - <code>String</code>: 用于加密的密码。</li>
+</ol>
+<p><strong>返回值(<strong>Object</strong>)：</strong> 解密的帐户对象。</p>
+<h2 id="3-10-wallet"><a href="#3-10-wallet" class="headerlink" title="3.10 wallet"></a>3.10 wallet</h2><p>一个多账户内存钱包，这些账户可以用于 web3.eth.sendTransaction()。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//例子</span></span><br><span class="line">web3.<span class="property">eth</span>.<span class="property">accounts</span>.<span class="property">wallet</span>;</span><br><span class="line">&gt; <span class="title class_">Wallet</span> &#123;</span><br><span class="line">    <span class="number">0</span>: &#123;...&#125;, <span class="comment">// 账户索引</span></span><br><span class="line">    <span class="string">&quot;0xF0109fC8DF283027b6285cc889F5aA624EaC1F55&quot;</span>: &#123;...&#125;,  <span class="comment">// 账户地址</span></span><br><span class="line">    <span class="string">&quot;0xf0109fc8df283027b6285cc889f5aa624eac1f55&quot;</span>: &#123;...&#125;,  <span class="comment">// 全小写账户地址</span></span><br><span class="line">    <span class="number">1</span>: &#123;...&#125;,</span><br><span class="line">    <span class="string">&quot;0xD0122fC8DF283027b6285cc889F5aA624EaC1d23&quot;</span>: &#123;...&#125;,</span><br><span class="line">    <span class="string">&quot;0xd0122fc8df283027b6285cc889f5aa624eac1d23&quot;</span>: &#123;...&#125;,</span><br><span class="line"></span><br><span class="line">    <span class="attr">add</span>: <span class="keyword">function</span>(<span class="params"></span>)&#123;&#125;,</span><br><span class="line">    <span class="attr">remove</span>: <span class="keyword">function</span>(<span class="params"></span>)&#123;&#125;,</span><br><span class="line">    <span class="attr">save</span>: <span class="keyword">function</span>(<span class="params"></span>)&#123;&#125;,</span><br><span class="line">    <span class="attr">load</span>: <span class="keyword">function</span>(<span class="params"></span>)&#123;&#125;,</span><br><span class="line">    <span class="attr">clear</span>: <span class="keyword">function</span>(<span class="params"></span>)&#123;&#125;,</span><br><span class="line"></span><br><span class="line">    <span class="attr">length</span>: <span class="number">2</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-10-1-wallet-create"><a href="#3-10-1-wallet-create" class="headerlink" title="3.10.1 wallet.create"></a>3.10.1 wallet.create</h3><p>在钱包中创建一个或多个账户。不会覆盖已经存在的钱包。</p>
+<p><strong>参数：</strong></p>
+<ol>
+<li><code>numberOfAccounts</code> - <code>Number</code>: 要创建的账户数量。设为空值时创建空钱包。</li>
+<li><code>entropy</code> - <code>String</code> (可选): 创建账户时为增加随机性而使用的随机字符串，至少 32 个字符长。</li>
+</ol>
+<p><strong>返回值(Object)：</strong>钱包对象</p>
+<h3 id="3-10-2-wallet-add"><a href="#3-10-2-wallet-add" class="headerlink" title="3.10.2 wallet.add"></a>3.10.2 wallet.add</h3><p>使用私钥或账户对象向钱包中添加账户</p>
+<p><strong>参数：</strong><code>account</code> - <code>String|Object</code>: 私钥或者通过 web3.eth.accounts.create() 创建的账户对象。</p>
+<p><strong>返回值(Object)：</strong>所添加的账户</p>
+<h3 id="3-10-3-wallet-remove"><a href="#3-10-3-wallet-remove" class="headerlink" title="3.10.3 wallet.remove"></a>3.10.3 wallet.remove</h3><p>从钱包中移除账户。</p>
+<p><strong>参数：</strong><code>account</code> - <code>String|Number</code>: 账户地址，或者账户在钱包中的索引。</p>
+<p><strong>返回值(Boolean)：</strong>移除成功则返回 <code>true</code> ，否则返回 <code>false</code> 。</p>
+<h3 id="3-10-4-wallet-clear"><a href="#3-10-4-wallet-clear" class="headerlink" title="3.10.4 wallet.clear"></a>3.10.4 wallet.clear</h3><p>安全地清空钱包并移除全部账户。</p>
+<p><strong>返回值(Object)：</strong>钱包对象。</p>
+<h3 id="3-10-5-wallet-encrypt"><a href="#3-10-5-wallet-encrypt" class="headerlink" title="3.10.5 wallet.encrypt"></a>3.10.5 wallet.encrypt</h3><p>加密所有的钱包账户为 keystore v3 对象。</p>
+<p><strong>参数：</strong><code>password</code> - <code>String</code>: 用于加密的密钥。</p>
+<p><strong>返回值(Array)：</strong>已加密的 keystore v3 对象。</p>
+<h3 id="3-10-6-wallet-decrypt"><a href="#3-10-6-wallet-decrypt" class="headerlink" title="3.10.6 wallet.decrypt"></a>3.10.6 wallet.decrypt</h3><p>解密 keystore v3 对象。</p>
+<p><strong>参数：</strong></p>
+<ol>
+<li><code>keystoreArray</code> - <code>Array</code>: 要解密的加密 keystore v3 对象。</li>
+<li><code>password</code> - <code>String</code>: 用来加密的密钥。</li>
+</ol>
+<p><strong>返回值(Object)：</strong>钱包对象</p>
+<h3 id="3-10-7-wallet-save"><a href="#3-10-7-wallet-save" class="headerlink" title="3.10.7 wallet.save"></a>3.10.7 wallet.save</h3><p>将钱包加密并在 local storage 中保存为字符串。</p>
+<p><strong>参数：</strong></p>
+<ol>
+<li><code>password</code> - <code>String</code>: 用来加密钱包的密钥。</li>
+<li><code>keyName</code> - <code>String</code>: (可选) 用来在 local storage 中寻址的健值, 默认值为 <code>&quot;web3js_wallet&quot;</code>。</li>
+</ol>
+<p>**返回值(Boolean)**：是否成功</p>
+<h3 id="3-10-8-wallet-load"><a href="#3-10-8-wallet-load" class="headerlink" title="3.10.8 wallet.load"></a>3.10.8 wallet.load</h3><p>从 local storage 中载入钱包并解密。</p>
+<p><strong>参数：</strong></p>
+<ol>
+<li><code>password</code> - <code>String</code>: 用来加密钱包的密钥。</li>
+<li><code>keyName</code> - <code>String</code>: (可选) 用来在 local storage 中寻址的健值, 默认值为 <code>&quot;web3js_wallet&quot;</code>。</li>
+</ol>
+<p>**返回值(Object)**：钱包对象</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/09/03/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/4-eth.(subscribe%E3%80%81Contract%E3%80%81accounts)/" title="4-eth.(subscribe、Contract、accounts)">https://kongpengyq.com/2022/09/03/区块链/web3/4-eth.(subscribe、Contract、accounts)/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/web3-js/" rel="tag"># web3.js</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/08/31/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/3-Web3.eth/" rel="prev" title="3-Web3.eth">
+      <i class="fa fa-chevron-left"></i> 3-Web3.eth
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/09/05/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/5-eth.(personal%E3%80%81ens%E3%80%81lban%E3%80%81abi)/" rel="next" title="5-eth.(personal、ens、lban、abi)">
+      5-eth.(personal、ens、lban、abi) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#subscribe-%E8%AE%A2%E9%98%85%E5%8C%BA%E5%9D%97%E9%93%BE%E4%B8%AD%E7%9A%84%E6%8C%87%E5%AE%9A%E4%BA%8B%E4%BB%B6"><span class="nav-text">subscribe(订阅区块链中的指定事件)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-clearSubscriptions"><span class="nav-text">1.1 clearSubscriptions</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-subscribe"><span class="nav-text">1.2 subscribe</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-1-subscribe-%E2%80%9CpendingTransactions%E2%80%9D"><span class="nav-text">1.2.1 subscribe(“pendingTransactions”)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-2-subscribe-%E2%80%9CnewBlockHeaders%E2%80%9D"><span class="nav-text">1.2.2 subscribe(“newBlockHeaders”)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-3-subscribe-%E2%80%9Csyncing%E2%80%9D"><span class="nav-text">1.2.3 subscribe(“syncing”)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-4-subscribe-%E2%80%9Clogs%E2%80%9D"><span class="nav-text">1.2.4 subscribe(“logs”)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Contract-%E4%B8%8E%E5%8C%BA%E5%9D%97%E9%93%BE%E4%B8%8A%E7%9A%84%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E4%BA%A4%E4%BA%92"><span class="nav-text">Contract(与区块链上的智能合约交互)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-new-contract"><span class="nav-text">2.1 new contract</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-options-%E9%80%89%E9%A1%B9%E5%B1%9E%E6%80%A7"><span class="nav-text">2.2 options(选项属性)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-1-options-address"><span class="nav-text">2.2.1 options.address</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-2-options-jsonInterface"><span class="nav-text">2.2.2 options.jsonInterface</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-Methods-%E6%96%B9%E6%B3%95"><span class="nav-text">2.3 Methods(方法)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-1-clone"><span class="nav-text">2.3.1 clone</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-2-deploy"><span class="nav-text">2.3.2 deploy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-3-methods"><span class="nav-text">2.3.3 methods</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-3-1-methods-myMethod-call"><span class="nav-text">2.3.3.1 methods.myMethod.call</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-3-2-methods-myMethod-send"><span class="nav-text">2.3.3.2  methods.myMethod.send</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-3-3-methods-myMethod-estimateGas"><span class="nav-text">2.3.3.3 methods.myMethod.estimateGas</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-3-4-methods-myMethod-encodeABI"><span class="nav-text">2.3.3.4 methods.myMethod.encodeABI</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-3-5-methods-myMethod-createaccesslist"><span class="nav-text">2.3.3.5 methods.myMethod.createaccesslist</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-Events-%E4%BA%8B%E4%BB%B6"><span class="nav-text">2.4 Events(事件)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-1-once"><span class="nav-text">2.4.1 once</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-2-events"><span class="nav-text">2.4.2 events</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-5-getPastEvents"><span class="nav-text">2.5 getPastEvents</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#accounts-%E7%94%9F%E6%88%90%E8%B4%A6%E6%88%B7%E5%92%8C%E7%94%A8%E6%9D%A5%E7%AD%BE%E5%90%8D%E4%BA%A4%E6%98%93%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%9A%84%E5%87%BD%E6%95%B0"><span class="nav-text">accounts(生成账户和用来签名交易与数据的函数)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-create"><span class="nav-text">3.1 create</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-privateKeyToAccount"><span class="nav-text">3.2 privateKeyToAccount</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-signTransaction"><span class="nav-text">3.3 signTransaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-4-recoverTransaction"><span class="nav-text">3.4 recoverTransaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-5-hashMessage"><span class="nav-text">3.5 hashMessage</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-6-sign"><span class="nav-text">3.6 sign</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-7-recover"><span class="nav-text">3.7 recover</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-8-encrypt"><span class="nav-text">3.8 encrypt</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-9-decrypt"><span class="nav-text">3.9 decrypt</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-10-wallet"><span class="nav-text">3.10 wallet</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-10-1-wallet-create"><span class="nav-text">3.10.1 wallet.create</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-10-2-wallet-add"><span class="nav-text">3.10.2 wallet.add</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-10-3-wallet-remove"><span class="nav-text">3.10.3 wallet.remove</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-10-4-wallet-clear"><span class="nav-text">3.10.4 wallet.clear</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-10-5-wallet-encrypt"><span class="nav-text">3.10.5 wallet.encrypt</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-10-6-wallet-decrypt"><span class="nav-text">3.10.6 wallet.decrypt</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-10-7-wallet-save"><span class="nav-text">3.10.7 wallet.save</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-10-8-wallet-load"><span class="nav-text">3.10.8 wallet.load</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

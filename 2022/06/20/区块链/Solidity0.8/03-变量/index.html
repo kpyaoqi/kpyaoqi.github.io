@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="变量基础知识回顾一下前面两章提到的变量： 1234567891011121314&#x2F;&#x2F; SPDX-License-Identifier: MITpragma solidity ^0.8.17;contract DataTypes &amp;#123;    string public myString &#x3D; &quot;hello world&quot;;    bool public b &#x3D; true;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="03-变量">
+<meta property="og:url" content="https://kongpengyq.com/2022/06/20/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/03-%E5%8F%98%E9%87%8F/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="变量基础知识回顾一下前面两章提到的变量： 1234567891011121314&#x2F;&#x2F; SPDX-License-Identifier: MITpragma solidity ^0.8.17;contract DataTypes &amp;#123;    string public myString &#x3D; &quot;hello world&quot;;    bool public b &#x3D; true;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-06-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.674Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="Solidity0.8.17">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/06/20/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/03-%E5%8F%98%E9%87%8F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>03-变量 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/06/20/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/03-%E5%8F%98%E9%87%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          03-变量
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-20 00:00:00" itemprop="dateCreated datePublished" datetime="2022-06-20T00:00:00+08:00">2022-06-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Solidity0-8-17/" itemprop="url" rel="index">
+                    <span itemprop="name">Solidity0.8.17</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>9.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="变量基础知识"><a href="#变量基础知识" class="headerlink" title="变量基础知识"></a>变量基础知识</h1><p>回顾一下前面两章提到的变量：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract DataTypes &#123;</span><br><span class="line">    string public myString = &quot;hello world&quot;;</span><br><span class="line">    bool public b = true;</span><br><span class="line">    uint256 public u = 123;</span><br><span class="line"></span><br><span class="line">    int256 public i = -123;</span><br><span class="line">    int256 public minInt = type(int256).min; // 获取最小值</span><br><span class="line">    int256 public maxInt = type(int256).max; // 获取最大值</span><br><span class="line">    address public ads = 0xffD0d80c48F6C3C5387b7cfA7AA03970bdB926ac;</span><br><span class="line">    bytes32 public bys32 = &quot;abc&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-1-初始默认值"><a href="#1-1-初始默认值" class="headerlink" title="1.1 初始默认值"></a>1.1 初始默认值</h2><p><strong>Solidity 是一种静态类型语言</strong>，这意味着需要在声明期间指定变量类型。</p>
+<p>在 Solidity 中没有 null 或者 undefined 的概念，但是新声明的变量总是有一个默认值，具体的默认值跟类型相关，比如 int 类型的默认值为 0。每个变量声明时，都有一个基于其类型的默认值。</p>
+<h4 id="默认值总结"><a href="#默认值总结" class="headerlink" title="默认值总结"></a>默认值总结</h4><ul>
+<li>string: <code>&quot;&quot;</code></li>
+<li>bool: <code>false</code></li>
+<li>int256: <code>0</code></li>
+<li>uint256: <code>0</code></li>
+<li>address: <code>0x0000000000000000000000000000000000000000</code></li>
+<li>bytes32: <code>0x0000000000000000000000000000000000000000000000000000000000000000</code></li>
+<li>enum: <code>0</code></li>
+<li>动态数组: <code>[]</code></li>
+<li>定长数组: 每个元素的默认值</li>
+<li><code>mapping</code> &#x2F; <code>strucr</code> 均为所在类型的默认值</li>
+</ul>
+<h2 id="1-2-作用域和声明"><a href="#1-2-作用域和声明" class="headerlink" title="1.2 作用域和声明"></a>1.2 作用域和声明</h2><p>Solidity 中的作用域规则遵循了 C99：</p>
+<h3 id="1-2-1-作用域的规则"><a href="#1-2-1-作用域的规则" class="headerlink" title="1.2.1 作用域的规则"></a>1.2.1 作用域的规则</h3><ul>
+<li>变量将会从它们被声明之后可见，直到一对 <code>&#123;&#125;</code> 块的结束。</li>
+<li>对于参数形式的变量（例如：函数参数、修饰器参数、catch 参数等等）在其后接着的代码块内有效。<ul>
+<li>这些代码块是函数的实现，catch 语句块等。</li>
+<li>有一个例外，在 for 循环语句中初始化的变量，其可见性仅维持到 <code>for</code> 循环的结束。</li>
+</ul>
+</li>
+<li>那些定义在代码块之外的变量，比如函数、合约、自定义类型等等，并不会影响它们的作用域特性。<ul>
+<li>意味着你可以在实际声明状态变量的语句之前就使用它们，并且递归地调用函数。</li>
+</ul>
+</li>
+</ul>
+<p>在 Solidity 中，如果在内部作用域中使用和外层相同的变量名，会收到警告信息。这种警告是告诉开发者<code>外层声明的变量被“覆盖”</code>了，谨慎检查下是不是期望的。</p>
+<p>上面例子中的 f 函数的 return 值 可以改写为下面的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">function f() public pure returns (uint256 x) &#123;</span><br><span class="line">    x = 1;</span><br><span class="line">    &#123;</span><br><span class="line">        x = 2;</span><br><span class="line">        uint256 x;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-2-必须先声明再赋值"><a href="#1-2-2-必须先声明再赋值" class="headerlink" title="1.2.2 必须先声明再赋值"></a>1.2.2 必须先声明再赋值</h3><p>在 Solidity 现在的版本中，变量必须先声明再赋值，顺序不能倒。</p>
+<p>0.5.0 版本之前，一个变量声明在函数的任意位置，都可以使他在整个函数范围内可见。从 0.5.0 版本开始以后就不能这样了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract C &#123;</span><br><span class="line">    // ✅</span><br><span class="line">    function t() public pure returns (uint256) &#123;</span><br><span class="line">        uint256 x;</span><br><span class="line">        x = 2;</span><br><span class="line">        return x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // ❌</span><br><span class="line">    function f() public pure returns (uint256) &#123;</span><br><span class="line">        // DeclarationError: Undeclared identifier.</span><br><span class="line">        // &quot;x&quot; is not (or not yet) visible at this point.</span><br><span class="line">        x = 2;</span><br><span class="line">        uint256 x;</span><br><span class="line">        return x;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-3-合约外定义的类型和函数"><a href="#1-2-3-合约外定义的类型和函数" class="headerlink" title="1.2.3 合约外定义的类型和函数"></a>1.2.3 合约外定义的类型和函数</h3><ul>
+<li>合约外面可以定义函数和数据结构<ul>
+<li>定义在合约外面的函数，叫自由函数</li>
+<li>定义在合约外面的类型，可以被多个合约使用</li>
+</ul>
+</li>
+<li>不可以定义变量<ul>
+<li>但是可以定义常量，常量那一节有介绍</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">// 结构:</span><br><span class="line">//      定义在合约外面</span><br><span class="line">//      可以被多个合约同时使用</span><br><span class="line">struct Book &#123;</span><br><span class="line">    string title;</span><br><span class="line">    string author;</span><br><span class="line">    uint256 book_id;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 自由函数:</span><br><span class="line">//      定义在合约外面</span><br><span class="line">//      没有可见性</span><br><span class="line">function getBalance() view returns (uint256) &#123;</span><br><span class="line">    return address(msg.sender).balance;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">function add(uint256 a_, uint256 b_) pure returns (uint256) &#123;</span><br><span class="line">    return a_+b_;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">contract Demo1 &#123;</span><br><span class="line">    Book public book1 = Book(&quot;Solidity&quot;, &quot;Anbang&quot;, 1);</span><br><span class="line">    function f() public view returns (uint256) &#123;</span><br><span class="line">        return getBalance();</span><br><span class="line">    &#125;</span><br><span class="line">    function test() public pure returns (uint256) &#123;</span><br><span class="line">        return add(100,200);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">contract Demo2 &#123;</span><br><span class="line">    Book public book2 = Book(&quot;Solidity 2&quot;, &quot;Anbang&quot;, 2);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-3-变量的三种状态"><a href="#1-3-变量的三种状态" class="headerlink" title="1.3 变量的三种状态"></a>1.3 变量的三种状态</h2><p>按作用域划分，状态可以分为下面三种状态：</p>
+<ul>
+<li>状态变量:<ul>
+<li>变量值永久保存在智能合约存储空间中，相当于属于已经写入到区块链中，可以随时调用，除非该条链消失。</li>
+<li>特点:定义在智能合约的存储空间中</li>
+</ul>
+</li>
+<li>局部变量:<ul>
+<li>变量值仅在函数执行过程中有效,供函数内部使用；调用函数时，在虚拟机的内存中；函数退出后，变量无效。类似”闭包”的特性。</li>
+<li>特点: 定义在函数内部</li>
+</ul>
+</li>
+<li>全局变量:<ul>
+<li>保存在全局命名空间，用于获取区块链相关信息的特殊变量。</li>
+<li>特点:存在于 EVM 虚拟机中，不用定义，直接获取即可。</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-3-1-状态变量"><a href="#1-3-1-状态变量" class="headerlink" title="1.3.1 状态变量"></a>1.3.1 状态变量</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract Var&#123;</span><br><span class="line">    uint256 public myUint = 123;</span><br><span class="line">    function changeMyUint (uint256 x) external returns (uint256 )&#123;</span><br><span class="line">        myUint = x;</span><br><span class="line">        return myUint;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-2-局部变量"><a href="#1-3-2-局部变量" class="headerlink" title="1.3.2 局部变量"></a>1.3.2 局部变量</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract Var&#123;</span><br><span class="line">     function test() external pure returns (uint256)&#123;</span><br><span class="line">        uint256 local = 2;// 局部变量</span><br><span class="line">        return local;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-3-全局变量"><a href="#1-3-3-全局变量" class="headerlink" title="1.3.3 全局变量"></a>1.3.3 全局变量</h3><ul>
+<li><code>msg.sender</code></li>
+<li><code>msg.value</code></li>
+<li><code>block.timestamp</code></li>
+<li><code>block.number</code></li>
+</ul>
+<p>先简单了解下，后面会有一节进行详细介绍。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line">contract Demo1 &#123;</span><br><span class="line">    address public owner = msg.sender; // 在状态变量中使用</span><br><span class="line"></span><br><span class="line">    // 在函数内使用</span><br><span class="line">    function global() external view returns(address,uint256,uint256)&#123;</span><br><span class="line">        return(msg.sender,block.timestamp,block.number);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Constant-常量"><a href="#Constant-常量" class="headerlink" title="Constant 常量"></a>Constant 常量</h1><ul>
+<li>普通变量与常量:普通的状态变量，添加 <code>constant</code> 关键词即可声明为常量</li>
+<li>与常规状态变量相比，<strong>常量的 gas 要低很多</strong>。</li>
+<li>常量名字一般使用<strong>全大写</strong>。</li>
+<li>常量<strong>赋值后不可以修改</strong>。</li>
+<li>常量必须<strong>声明和初始化一起完成</strong>，否则编译不通过。</li>
+<li>常量的值储存原理<ul>
+<li>常量的值在编译器确定，因为在编译器确定，所以<strong>不能定义在函数内</strong>。</li>
+<li>编译器并不会为 <code>constant</code> 常量在 <code>storage</code> 上预留空间，它们的每次出现都会被替换为相应的常量表达式（它可能被优化器计算为实际的某个值）。</li>
+<li>因为不是储存在<code>storage</code> 上，所以函数内读取常量不算<code>view</code>，可以使用 pure</li>
+<li>因为不是储存在<code>storage</code> 上，所以可以在任意位置定义常量，比如在合约外面</li>
+<li>也可以在文件级别定义 constant 变量（0.7.2 之后的特性）。</li>
+</ul>
+</li>
+<li>引用类型只支持字符串<ul>
+<li>不是所有的类型都支持常量，当前支持的仅有<strong>值类型（包括地址类型）&#x2F;字符串&#x2F;bytes</strong>。</li>
+</ul>
+</li>
+<li>可以使用内建函数赋值常量</li>
+</ul>
+<h2 id="2-1-常见的赋值方式"><a href="#2-1-常见的赋值方式" class="headerlink" title="2.1 常见的赋值方式"></a>2.1 常见的赋值方式</h2><p>如果状态变量声明为 <code>constant</code>(常量)。在这种情况下，只能使用那些在编译时有确定值的表达式来给它们赋值。</p>
+<ul>
+<li>允许可能对内存分配产生 side effect（副作用）的表达式，但那些可能对其他内存对象产生副作用的表达式则不允许。<ul>
+<li>内建（built-in）函数 <code>keccak256</code> ， <code>sha256</code> ， <code>ripemd160</code> ，<code>ecrecover</code> ， <code>addmod</code> 和 <code>mulmod</code>是允许的（即使他们确实会调用外部合约， <code>keccak256</code> 除外）。</li>
+<li>允许内存分配器的副作用的原因是它可以构造复杂的对象，例如：查找表（lookup-table）。 此功能尚不完全可用。</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-1-1-运算符赋值"><a href="#2-1-1-运算符赋值" class="headerlink" title="2.1.1 运算符赋值"></a>2.1.1 运算符赋值</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo1 &#123;</span><br><span class="line">    uint256 public constant VERSION = 1+1;</span><br><span class="line"></span><br><span class="line">    // 100个ETH</span><br><span class="line">    // 100000000000000000000</span><br><span class="line">    uint256 public  constant VALUE = 100 * 10**18; // 运算符赋值</span><br><span class="line"></span><br><span class="line">    // 1小时</span><br><span class="line">    uint256 public  constant H = 60 * 60;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-1-2-密码学函数赋值"><a href="#2-1-2-密码学函数赋值" class="headerlink" title="2.1.2 密码学函数赋值"></a>2.1.2 密码学函数赋值</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract C &#123;</span><br><span class="line">    uint256 public constant a = addmod(4, 5, 3);</span><br><span class="line">    uint256 public constant b = mulmod(4, 5, 3);</span><br><span class="line">    bytes32 public constant c1 = sha256(&quot;Hello&quot;);</span><br><span class="line">    bytes32 public constant c2 = ripemd160(&quot;Hello&quot;);</span><br><span class="line">    bytes32 public constant myBytes32 = keccak256(&quot;Hello&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-1-3-禁止的一些赋值"><a href="#2-1-3-禁止的一些赋值" class="headerlink" title="2.1.3  禁止的一些赋值"></a>2.1.3  禁止的一些赋值</h3><p>不允许使用状态变量&#x2F;区块链数据来赋值，也不允许外部合约调用来赋值。</p>
+<p>任何通过访问 storage，区块链数据（例如 <code>block.timestamp</code>,<code>address(this).balance</code> 或者 <code>block.number</code>）或执行数据（ <code>msg.value</code> 或<code>gasleft()</code> ） 或对外部合约的调用来给它们赋值都是不允许的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    address public ads1 = msg.sender;</span><br><span class="line">    // address public constant ads2 = msg.sender;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Immutable-不可变量"><a href="#Immutable-不可变量" class="headerlink" title="Immutable 不可变量"></a>Immutable 不可变量</h1><p>上一节我们学习了常量，常量的值是在编译器确定，因为在编译器确定，常量必须声明和初始化一起做掉，否则编译不通过。这就给很多只需要一次赋值，但是又必须需要动态赋值的场景带来了不变。比如合约的 owner 地址等场景。</p>
+<p>然后上面的苦恼，可以通过不可变量来解决。如果我们想要一个变量，赋值后就不可以修改，而且值是部署时候动态赋值，那么可以使用不可变量的类型。通过 <code>immutable</code> 关键字可以声明为不可变量，不可变量的限制要比声明为常量(<code>constant</code>) 的变量的限制少：</p>
+<p>不可变量<strong>可以声明和赋值一起做掉，也可以 storage 中声明</strong>，在合约的构造函数中赋值。无论在哪里赋值，只能赋值一次，也带来更多的安全性。</p>
+<ul>
+<li><p>原理: 在部署的时候确定变量的值，它是一个运行时赋值。</p>
+</li>
+<li><p>特点:它既有 constant 常量不可修改和 Gas 费用低的优势，又有变量动态赋值的优势。</p>
+</li>
+<li><p>原则:</p>
+<ul>
+<li><code>immutable</code> 可以声明和初始化一起做掉，也可以部署时在<code>constructor</code>中做掉。</li>
+<li><code>immutable</code> 必须在<code>constructor</code>运行截止时就赋值</li>
+<li><code>immutable</code>不能用在引用数据类型上</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-1-部署后不可以修改"><a href="#3-1-部署后不可以修改" class="headerlink" title="3.1 部署后不可以修改"></a>3.1 部署后不可以修改</h2><p>注意点：不可变量只能赋值一次，以后就不能再次改变了</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract A &#123;</span><br><span class="line">    address public immutable adsImmut;</span><br><span class="line">    address public immutable ads = address(0);</span><br><span class="line"></span><br><span class="line">    constructor() &#123;</span><br><span class="line">        adsImmut = msg.sender;</span><br><span class="line"></span><br><span class="line">        // Immutable state variable already initialized.</span><br><span class="line">        // ads = msg.sender;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // immutable 部署后不可以修改，如果尝试修改immutable类型变量，会报错</span><br><span class="line">    // Cannot write to immutable here: Immutable variables can only</span><br><span class="line">    // be initialized inline or assigned directly in the constructor.</span><br><span class="line">    // function changeImmutable() external &#123;</span><br><span class="line">    //     adsImmut = msg.sender;</span><br><span class="line">    // &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-2-不可以在赋值前读取"><a href="#3-2-不可以在赋值前读取" class="headerlink" title="3.2 不可以在赋值前读取"></a>3.2 不可以在赋值前读取</h2><p>并且在赋值之后才可以读取 immutable 变量，如果赋值之前读取会报错。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract A &#123;</span><br><span class="line">    address public immutable adsImmut;</span><br><span class="line">    address public ads;</span><br><span class="line"></span><br><span class="line">    constructor() &#123;</span><br><span class="line">        // Immutable variables cannot be read before they are initialized.</span><br><span class="line">        // ads = adsImmut;</span><br><span class="line"></span><br><span class="line">        adsImmut = msg.sender;</span><br><span class="line">        ads = adsImmut;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-3-不可以在-constructor-之外赋值其他不可变量"><a href="#3-3-不可以在-constructor-之外赋值其他不可变量" class="headerlink" title="3.3 不可以在 constructor 之外赋值其他不可变量"></a>3.3 不可以在 <code>constructor</code> 之外赋值其他不可变量</h2><p>不可变量可以在声明时赋值，不过只有在合约的构造函数执行时才被视为视为初始化。这意味着，你不能用一个依赖于不可变量的值初始化另一个不可变量。</p>
+<p>因为不可变量在构造函数中才真正赋值，所以在合约的构造函数中这样做。这样的机制是为了防止对状态变量初始化和构造函数顺序的不同解释，特别是继承时，出现问题。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    uint256 public a1 = 1;</span><br><span class="line">    uint256 public a2 = a1;</span><br><span class="line"></span><br><span class="line">    uint256 public immutable b1 = 1;</span><br><span class="line">    // Immutable variables cannot be read before they are initialized.</span><br><span class="line">    // uint256 public b2 = b1;</span><br><span class="line">    uint256 public b2;</span><br><span class="line"></span><br><span class="line">    uint256 public immutable b3;</span><br><span class="line"></span><br><span class="line">    constructor() &#123;</span><br><span class="line">        b2 = b1;</span><br><span class="line">        b3 = b1;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>核心：在部署的时候确定变量的值，它是一个运行时赋值。</p>
+<h2 id="3-4constant-和-immutable-总结"><a href="#3-4constant-和-immutable-总结" class="headerlink" title="3.4constant 和 immutable 总结"></a>3.4constant 和 immutable 总结</h2><h4 id="值的确定时机不同"><a href="#值的确定时机不同" class="headerlink" title="值的确定时机不同"></a>值的确定时机不同</h4><p>状态变量声明为 constant (常量)或者 immutable （不可变量），在这两种情况下，合约一旦部署之后，变量将不在修改。</p>
+<ul>
+<li>对于 constant 常量, 他的值在编译器确定.</li>
+<li>对于 immutable, 它的值在部署时确定。</li>
+</ul>
+<h4 id="gas-不同"><a href="#gas-不同" class="headerlink" title="gas 不同"></a>gas 不同</h4><p>与常规状态变量相比，常量和不可变量的 gas 成本要低得多。</p>
+<ul>
+<li>对于常量，赋值给它的表达式将复制到所有访问该常量的位置，并且每次都会对其进行重新求值。这样可以进行本地优化。</li>
+<li>不可变变量在构造时进行一次求值，并将其值复制到代码中访问它们的所有位置。 对于这些值，将保留 32 个字节，即使它们适合较少的字节也是如此。很多时候常量的 gas 更低。</li>
+</ul>
+<p>如果可以使用常量的时候，推荐使用常量。</p>
+<h4 id="支持的数据不同"><a href="#支持的数据不同" class="headerlink" title="支持的数据不同"></a>支持的数据不同</h4><p>不是所有类型的状态变量都支持用 <code>constant</code> 或 <code>immutable</code> 来修饰</p>
+<ul>
+<li>当前<code>constant</code>仅支持值类型和引用类型中的 string 和 bytes</li>
+<li><code>immutable</code>仅支持值类型</li>
+</ul>
+<h1 id="变量名的命名规则"><a href="#变量名的命名规则" class="headerlink" title="变量名的命名规则"></a>变量名的命名规则</h1><p>在为变量命名时，请记住以下规则：</p>
+<ul>
+<li>禁止使用<strong>保留关键字</strong>作为变量名。</li>
+<li>变量名首字母禁止使用数字，必须以字母或下划线开头。</li>
+<li>变量名大小写敏感。</li>
+</ul>
+<h3 id="1-禁止使用保留关键字作为变量名"><a href="#1-禁止使用保留关键字作为变量名" class="headerlink" title="1.禁止使用保留关键字作为变量名"></a>1.禁止使用<strong>保留关键字</strong>作为变量名</h3><p>禁止使用<strong>保留关键字</strong>作为变量名。例如：<code>break</code> &#x2F; <code>boolean</code> &#x2F; <code>contract</code> 这些是无效的变量名。</p>
+<ul>
+<li>abstract</li>
+<li>after</li>
+<li>alias</li>
+<li>apply</li>
+<li>auto</li>
+<li>case</li>
+<li>catch</li>
+<li>copyof</li>
+<li>default</li>
+<li>define</li>
+<li>final</li>
+<li>immutable</li>
+<li>implements</li>
+<li>in</li>
+<li>inline</li>
+<li>let</li>
+<li>macro</li>
+<li>match</li>
+<li>mutable</li>
+<li>null</li>
+<li>of</li>
+<li>override</li>
+<li>partial</li>
+<li>promise</li>
+<li>reference</li>
+<li>relocatable</li>
+<li>sealed</li>
+<li>sizeof</li>
+<li>static</li>
+<li>supports</li>
+<li>switch</li>
+<li>try</li>
+<li>typedef</li>
+<li>typeof</li>
+<li>unchecked</li>
+</ul>
+<h3 id="2-变量名必须以字母或者下划线开头"><a href="#2-变量名必须以字母或者下划线开头" class="headerlink" title="2.变量名必须以字母或者下划线开头"></a>2.变量名必须以字母或者下划线开头</h3><p>禁止使用数字作为变量名的开始，例如：<code>123abc</code> 是一个无效的变量名，但是 <code>_123abc</code> 是一个有效的变量名。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    uint8 public abc = 1;</span><br><span class="line">    uint8 public _123abc = 1;</span><br><span class="line"></span><br><span class="line">    // Expected identifier but got &#x27;ILLEGAL&#x27;</span><br><span class="line">    uint8 public 123abc = 1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-变量名大小写敏感"><a href="#3-变量名大小写敏感" class="headerlink" title="3.变量名大小写敏感"></a>3.变量名大小写敏感</h3><p>例如：Name 和 name 是两个不同的变量。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    string public name = &quot;Anbang&quot;;</span><br><span class="line">    string public constant Name = &quot;Anbang&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="变量的可见性"><a href="#变量的可见性" class="headerlink" title="变量的可见性"></a>变量的可见性</h1><p>可见性仅存在于状态变量和函数中</p>
+<ul>
+<li>局部变量的可见性仅限于定义它们的函数，函数有四可见型，分别是 <code>private</code> &#x2F; <code>external</code> &#x2F; <code>internal</code> &#x2F; <code>public</code></li>
+<li>状态变量可以有三种可见型，分别是 <code>private</code> &#x2F; <code>internal</code> &#x2F; <code>public</code></li>
+</ul>
+<p>我们这里重点介绍状态变量可见型。</p>
+<p>internal 和 private 类型的变量不能被外部访问，而 public 变量能够被外部访问。</p>
+<p>警告: 设置为 <code>private</code>或 <code>internal</code>，只能防止其他合约读取或修改信息，但它仍然可以在链外查看到。你不要想着通过设置可见型，让别人看不到你的代码。反编译可以得到大部分需要的逻辑。</p>
+<h2 id="5-1-private"><a href="#5-1-private" class="headerlink" title="5.1 private"></a>5.1 private</h2><p><strong>private</strong>: 私有，仅在当前合约中可以访问</p>
+<p>在继承的合约内不可访问，私有状态变量就像内部变量一样，但它们在派生合约中是不可见的。</p>
+<h2 id="5-2-internal-默认"><a href="#5-2-internal-默认" class="headerlink" title="5.2 internal(默认)"></a>5.2 internal(默认)</h2><p><strong>internal</strong>: 内部可视(合约内部和被继承的子合约中都可视)</p>
+<ul>
+<li>状态变量如果不显示声明，<strong>默认是 internal 权限</strong></li>
+<li>内部可见性状态变量只能在它们所定义的合约和派生合同中访问。 它们不能被外部访问。 这是状态变量的默认可见性。</li>
+</ul>
+<h2 id="5-3-external"><a href="#5-3-external" class="headerlink" title="5.3 external"></a>5.3 external</h2><p><strong>external</strong>: 外部可视(合约外部可视，在内部是不可见)</p>
+<p><strong><code>external</code> 不能声明在状态变量上，只能标识在函数上</strong>,因为如果一个状态变量在合约自身如果没有办法读取的话，那就没有存在的必要了。</p>
+<h2 id="5-4-public"><a href="#5-4-public" class="headerlink" title="5.4 public"></a>5.4 public</h2><p><strong>public</strong>: 公开可视(合约内部，被继承的，外部都可以调用)</p>
+<h1 id="全局：时间单位"><a href="#全局：时间单位" class="headerlink" title="全局：时间单位"></a>全局：时间单位</h1><p>在做时间相关业务时候可以使用 分钟，小时，天，周的概念。</p>
+<h2 id="6-1-基本用法"><a href="#6-1-基本用法" class="headerlink" title="6.1 基本用法"></a>6.1 基本用法</h2><p>秒是缺省时间单位,可以不写，在时间单位之间，数字后面带有 <code>seconds</code>、 <code>minutes</code>、 <code>hours</code>、 <code>days</code>、 <code>weeks</code> 可以进行换算，基本换算关系如下：</p>
+<ul>
+<li><code>1 == 1 seconds</code></li>
+<li><code>1 minutes == 60 seconds</code></li>
+<li><code>1 hours == 60 minutes</code></li>
+<li><code>1 days == 24 hours</code></li>
+<li><code>1 weeks == 7 days</code></li>
+</ul>
+<h2 id="6-2-两种时间逻辑"><a href="#6-2-两种时间逻辑" class="headerlink" title="6.2 两种时间逻辑"></a>6.2 两种时间逻辑</h2><p>注意：由于闰年造成的每年不都是 365 天、每天不都是 24 小时，所以<strong>如果你要使用这些单位计算日期和时间</strong>，请注意这个问题。因为是无法预测的，所以需要借助外部的预言机来对一个确定的日期代码库进行时间矫正。</p>
+<p>时间在项目中有两种逻辑</p>
+<ol>
+<li>像之前众筹合约里介绍的那样，使用持续时间来代表时间。比如持续 2 两小时结束，常见于众筹&#x2F;拍卖合约</li>
+<li>到某个时间点开始抢购活动，比如到 XX 年 XX 月 XX 日 XX 分 XX 秒，开启抢购，这种需要借助预言机才能正确完成</li>
+</ol>
+<p>请按照自己的业务需求选择合适的时间方式。</p>
+<h1 id="全局：区块和交易属性"><a href="#全局：区块和交易属性" class="headerlink" title="全局：区块和交易属性"></a>全局：区块和交易属性</h1><p>分别是 <code>block</code> &#x2F; <code>msg</code> &#x2F; <code>tx</code> 三个全局变量，因为功能相似，我们把 <code>blockhash()</code> 和 <code>gasleft()</code> 这两个全局函数也一起介绍。</p>
+<h2 id="预览"><a href="#预览" class="headerlink" title="预览"></a>预览</h2><table>
+<thead>
+<tr>
+<th>名称 (返回值)</th>
+<th>返回</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>block.basefee (uint256)</td>
+<td>当前区块的基本费用（ <a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3198">EIP-3198</a> 和 <a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>）</td>
+</tr>
+<tr>
+<td>block.chainid (uint256)</td>
+<td>当前链 id</td>
+</tr>
+<tr>
+<td>block.difficulty (uint256)</td>
+<td>当前区块的难度</td>
+</tr>
+<tr>
+<td>block.gaslimit (uint256)</td>
+<td>当前区块的 gaslimit</td>
+</tr>
+<tr>
+<td>block.number (uint256)</td>
+<td>当前区块的 number</td>
+</tr>
+<tr>
+<td>block.timestamp (uint256)</td>
+<td>当前区块的时间戳，为 unix 纪元以来的秒</td>
+</tr>
+<tr>
+<td>block.coinbase (address payable)</td>
+<td>当前区块矿工的地址</td>
+</tr>
+<tr>
+<td>msg.sender (address)</td>
+<td>消息发送者 (当前 caller)</td>
+</tr>
+<tr>
+<td>msg.value (uint256)</td>
+<td>当前消息的 wei 值</td>
+</tr>
+<tr>
+<td>msg.data (bytes calldata)</td>
+<td>完整的 calldata</td>
+</tr>
+<tr>
+<td>msg.sig (bytes4)</td>
+<td>calldata 的前四个字节 – (function identifier&#x2F;即函数标识符)</td>
+</tr>
+<tr>
+<td>tx.gasprice (uint256)</td>
+<td>交易的 gas 价格</td>
+</tr>
+<tr>
+<td>tx.origin (address)</td>
+<td>交易的发送方 （完整的调用链）</td>
+</tr>
+<tr>
+<td>blockhash(uint256 blockNumber) returns (bytes32)</td>
+<td>给定区块的哈希值 – 只适用于 256 最近区块, 不包含当前区块</td>
+</tr>
+<tr>
+<td>gasleft() returns (uint256)</td>
+<td>剩余 gas</td>
+</tr>
+<tr>
+<td>blockhash() 获取给定区块的哈希值</td>
+<td>给定区块的哈希值;在 0.5.0 版本中删除,现使用<code>blockhash()</code>获取</td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/06/20/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/03-%E5%8F%98%E9%87%8F/" title="03-变量">https://kongpengyq.com/2022/06/20/区块链/Solidity0.8/03-变量/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/Solidity0-8-17/" rel="tag"># Solidity0.8.17</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/06/15/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/02-%E6%95%B0%E6%8D%AE/" rel="prev" title="02-数据">
+      <i class="fa fa-chevron-left"></i> 02-数据
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/21/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/04-%E5%87%BD%E6%95%B0/" rel="next" title="04-函数">
+      04-函数 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%98%E9%87%8F%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="nav-text">变量基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-%E5%88%9D%E5%A7%8B%E9%BB%98%E8%AE%A4%E5%80%BC"><span class="nav-text">1.1 初始默认值</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%BB%98%E8%AE%A4%E5%80%BC%E6%80%BB%E7%BB%93"><span class="nav-text">默认值总结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-%E4%BD%9C%E7%94%A8%E5%9F%9F%E5%92%8C%E5%A3%B0%E6%98%8E"><span class="nav-text">1.2 作用域和声明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-1-%E4%BD%9C%E7%94%A8%E5%9F%9F%E7%9A%84%E8%A7%84%E5%88%99"><span class="nav-text">1.2.1 作用域的规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-2-%E5%BF%85%E9%A1%BB%E5%85%88%E5%A3%B0%E6%98%8E%E5%86%8D%E8%B5%8B%E5%80%BC"><span class="nav-text">1.2.2 必须先声明再赋值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-3-%E5%90%88%E7%BA%A6%E5%A4%96%E5%AE%9A%E4%B9%89%E7%9A%84%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%87%BD%E6%95%B0"><span class="nav-text">1.2.3 合约外定义的类型和函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-%E5%8F%98%E9%87%8F%E7%9A%84%E4%B8%89%E7%A7%8D%E7%8A%B6%E6%80%81"><span class="nav-text">1.3 变量的三种状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-1-%E7%8A%B6%E6%80%81%E5%8F%98%E9%87%8F"><span class="nav-text">1.3.1 状态变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-2-%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F"><span class="nav-text">1.3.2 局部变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-3-%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F"><span class="nav-text">1.3.3 全局变量</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Constant-%E5%B8%B8%E9%87%8F"><span class="nav-text">Constant 常量</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E5%B8%B8%E8%A7%81%E7%9A%84%E8%B5%8B%E5%80%BC%E6%96%B9%E5%BC%8F"><span class="nav-text">2.1 常见的赋值方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-1-%E8%BF%90%E7%AE%97%E7%AC%A6%E8%B5%8B%E5%80%BC"><span class="nav-text">2.1.1 运算符赋值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-2-%E5%AF%86%E7%A0%81%E5%AD%A6%E5%87%BD%E6%95%B0%E8%B5%8B%E5%80%BC"><span class="nav-text">2.1.2 密码学函数赋值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-3-%E7%A6%81%E6%AD%A2%E7%9A%84%E4%B8%80%E4%BA%9B%E8%B5%8B%E5%80%BC"><span class="nav-text">2.1.3  禁止的一些赋值</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Immutable-%E4%B8%8D%E5%8F%AF%E5%8F%98%E9%87%8F"><span class="nav-text">Immutable 不可变量</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-%E9%83%A8%E7%BD%B2%E5%90%8E%E4%B8%8D%E5%8F%AF%E4%BB%A5%E4%BF%AE%E6%94%B9"><span class="nav-text">3.1 部署后不可以修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-%E4%B8%8D%E5%8F%AF%E4%BB%A5%E5%9C%A8%E8%B5%8B%E5%80%BC%E5%89%8D%E8%AF%BB%E5%8F%96"><span class="nav-text">3.2 不可以在赋值前读取</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-%E4%B8%8D%E5%8F%AF%E4%BB%A5%E5%9C%A8-constructor-%E4%B9%8B%E5%A4%96%E8%B5%8B%E5%80%BC%E5%85%B6%E4%BB%96%E4%B8%8D%E5%8F%AF%E5%8F%98%E9%87%8F"><span class="nav-text">3.3 不可以在 constructor 之外赋值其他不可变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-4constant-%E5%92%8C-immutable-%E6%80%BB%E7%BB%93"><span class="nav-text">3.4constant 和 immutable 总结</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%80%BC%E7%9A%84%E7%A1%AE%E5%AE%9A%E6%97%B6%E6%9C%BA%E4%B8%8D%E5%90%8C"><span class="nav-text">值的确定时机不同</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#gas-%E4%B8%8D%E5%90%8C"><span class="nav-text">gas 不同</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%94%AF%E6%8C%81%E7%9A%84%E6%95%B0%E6%8D%AE%E4%B8%8D%E5%90%8C"><span class="nav-text">支持的数据不同</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%98%E9%87%8F%E5%90%8D%E7%9A%84%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99"><span class="nav-text">变量名的命名规则</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E7%A6%81%E6%AD%A2%E4%BD%BF%E7%94%A8%E4%BF%9D%E7%95%99%E5%85%B3%E9%94%AE%E5%AD%97%E4%BD%9C%E4%B8%BA%E5%8F%98%E9%87%8F%E5%90%8D"><span class="nav-text">1.禁止使用保留关键字作为变量名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%8F%98%E9%87%8F%E5%90%8D%E5%BF%85%E9%A1%BB%E4%BB%A5%E5%AD%97%E6%AF%8D%E6%88%96%E8%80%85%E4%B8%8B%E5%88%92%E7%BA%BF%E5%BC%80%E5%A4%B4"><span class="nav-text">2.变量名必须以字母或者下划线开头</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%8F%98%E9%87%8F%E5%90%8D%E5%A4%A7%E5%B0%8F%E5%86%99%E6%95%8F%E6%84%9F"><span class="nav-text">3.变量名大小写敏感</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%98%E9%87%8F%E7%9A%84%E5%8F%AF%E8%A7%81%E6%80%A7"><span class="nav-text">变量的可见性</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1-private"><span class="nav-text">5.1 private</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-2-internal-%E9%BB%98%E8%AE%A4"><span class="nav-text">5.2 internal(默认)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-3-external"><span class="nav-text">5.3 external</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-4-public"><span class="nav-text">5.4 public</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%A8%E5%B1%80%EF%BC%9A%E6%97%B6%E9%97%B4%E5%8D%95%E4%BD%8D"><span class="nav-text">全局：时间单位</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#6-1-%E5%9F%BA%E6%9C%AC%E7%94%A8%E6%B3%95"><span class="nav-text">6.1 基本用法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-2-%E4%B8%A4%E7%A7%8D%E6%97%B6%E9%97%B4%E9%80%BB%E8%BE%91"><span class="nav-text">6.2 两种时间逻辑</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%A8%E5%B1%80%EF%BC%9A%E5%8C%BA%E5%9D%97%E5%92%8C%E4%BA%A4%E6%98%93%E5%B1%9E%E6%80%A7"><span class="nav-text">全局：区块和交易属性</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E8%A7%88"><span class="nav-text">预览</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

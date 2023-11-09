@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Providers提供者(Provider)是以太坊网络连接的抽象,为标准以太坊节点功能提供简洁、一致的接口. ethers.js 库 提供了几种选项应该涵盖了绝大多数用例,但如果需要个性化配置,也包括了子类化所需的函数和类. 大多数用户应该使用默认的Provider. 1.1 默认的Provider默认的 provider 是在Ethereum上最简单、最安全的方法方式,而且它也具备足够强的鲁棒">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2-Provider方法">
+<meta property="og:url" content="https://kongpengyq.com/2022/08/07/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/2-Provider%E6%96%B9%E6%B3%95/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="Providers提供者(Provider)是以太坊网络连接的抽象,为标准以太坊节点功能提供简洁、一致的接口. ethers.js 库 提供了几种选项应该涵盖了绝大多数用例,但如果需要个性化配置,也包括了子类化所需的函数和类. 大多数用户应该使用默认的Provider. 1.1 默认的Provider默认的 provider 是在Ethereum上最简单、最安全的方法方式,而且它也具备足够强的鲁棒">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-08-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.702Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="ether@5.4.js">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/08/07/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/2-Provider%E6%96%B9%E6%B3%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>2-Provider方法 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/08/07/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/2-Provider%E6%96%B9%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2-Provider方法
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-08-07 00:00:00" itemprop="dateCreated datePublished" datetime="2022-08-07T00:00:00+08:00">2022-08-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ether-5-4-js/" itemprop="url" rel="index">
+                    <span itemprop="name">ether@5.4.js</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Providers"><a href="#Providers" class="headerlink" title="Providers"></a>Providers</h1><p><strong>提供者</strong>(<strong>Provider</strong>)是以太坊网络连接的抽象,为标准以太坊节点功能提供简洁、一致的接口.</p>
+<p>ethers.js 库 提供了几种选项应该涵盖了绝大多数用例,但如果需要个性化配置,也包括了子类化所需的函数和类.</p>
+<p>大多数用户应该使用默认的Provider.</p>
+<h2 id="1-1-默认的Provider"><a href="#1-1-默认的Provider" class="headerlink" title="1.1 默认的Provider"></a>1.1 默认的Provider</h2><p>默认的 provider 是在<em>Ethereum</em>上最简单、最安全的方法方式,而且它也具备足够强的鲁棒性,可以在生产环境中使用.</p>
+<p>它创建一个连接到尽可能多的后端服务的FallbackProvider.当发出一个请求时,它会同时发送到多个后端.当从每个后端返回响应时,会检查它们是否同意. 一旦达到规定数量(即足够多的后端同意),你的应用程序就会得到相应.它确保后端不同步或者被破坏,那么会放弃这个响应,选择接受而支持大多数认同的响应.</p>
+<p><em><strong>ethers*.getDefaultProvider( [ <em>network</em> , [ <em>options</em> ] ] ) ⇒ *Provider</strong></em></p>
+<p>返回一个新的Provider,由多个服务支持连接到 <em>网络</em>.如果没有提供<em>网络</em>,那么将会使用 <strong>homestead</strong> (例如mainnet) .</p>
+<p><em>网络</em> 也可以作为 URL 来连接,比如 <code>http://localhost:8545</code> 或 <code>wss://example.com</code>.</p>
+<p><em><strong>options</strong></em> 参数是一个对象,有以下几个属性:</p>
+<table>
+<thead>
+<tr>
+<th><strong>Property</strong></th>
+<th><strong>Description</strong></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>alchemy</em></td>
+<td>Alchemy API Token</td>
+<td></td>
+</tr>
+<tr>
+<td><em>etherscan</em></td>
+<td>Etherscan API Token</td>
+<td></td>
+</tr>
+<tr>
+<td><em>infura</em></td>
+<td>INFURA Project ID 或 <code>&#123; projectId, projectSecret &#125;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><em>pocket</em></td>
+<td>Pocket Network Application ID 或 <code>&#123; applicationId, applicationSecretKey &#125;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><em>quorum</em></td>
+<td>必须满足规定的后端同意数量 <em>(默认: 2 for mainnet, 1 for testnets)</em></td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="1-2-网络"><a href="#1-2-网络" class="headerlink" title="1.2 网络"></a>1.2 网络</h2><p>任何接收Networkish 的API都可以传递一个通用名称(如 <code>&quot;mainnet&quot;</code> or <code>&quot;ropsten&quot;</code>) 或者 chain ID、自定义的参数来定义网络.</p>
+<p><em>ethers</em>.<em>providers</em>.<strong>getNetwork</strong>( <em>Networkish</em> ) ⇒ <em>Network.</em></p>
+<p>通过给定标准规范的Networkish,返回完整的 Network .</p>
+<p>这对于希望接受Networkish作为输入参数的函数和类非常有用.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 通过链名</span></span><br><span class="line"><span class="title function_">getNetwork</span>(<span class="string">&quot;homestead&quot;</span>);</span><br><span class="line"><span class="comment">// &#123;</span></span><br><span class="line"><span class="comment">//   chainId: 1,</span></span><br><span class="line"><span class="comment">//   ensAddress: &#x27;0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e&#x27;,</span></span><br><span class="line"><span class="comment">//   name: &#x27;homestead&#x27;</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过链ID</span></span><br><span class="line"><span class="title function_">getNetwork</span>(<span class="number">1</span>);</span><br><span class="line"><span class="comment">// &#123;</span></span><br><span class="line"><span class="comment">//   chainId: 1,</span></span><br><span class="line"><span class="comment">//   ensAddress: &#x27;0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e&#x27;,</span></span><br><span class="line"><span class="comment">//   name: &#x27;homestead&#x27;</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="1-3-自定义的-ENS-合约"><a href="#1-3-自定义的-ENS-合约" class="headerlink" title="1.3 自定义的 ENS 合约"></a>1.3 <strong>自定义的 ENS 合约</strong></h2><p>这是因为通常需要在为Network 指定自定义属性来覆盖root ENS registry,或者是在一个通用的网络中拦截ENS 方法,又或者是在一个开发环境的网络中（绝大多数开发环境中的网络中的ENS合约需要你手动部署)指定ENS registry.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> network = &#123;</span><br><span class="line">    <span class="attr">name</span>: <span class="string">&quot;dev&quot;</span>,</span><br><span class="line">    <span class="attr">chainId</span>: <span class="number">1337</span>,</span><br><span class="line">    <span class="attr">ensAddress</span>: customEnsAddress</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-4-Provider"><a href="#1-4-Provider" class="headerlink" title="1.4 Provider"></a>1.4 <strong>Provider</strong></h2><p>在ethers里面,<strong>Provider</strong> 是访问区块链数据的只读抽象.</p>
+<blockquote>
+<p>如果你用过Web3.js,以下是与ethers.js最大不同点:ethers library 在 <strong>Provider</strong>和<strong>Signer</strong>可执行的操作之间创建了一个强大的划分,而Web3.js将二者结合在一起.这种划分的关注点在于Provider严格的操作子集允许更多的后端、更一致的API,并确保其他库可以在不依赖任何潜在假设的情况下运行.</p>
+</blockquote>
+<h1 id="账户的方法"><a href="#账户的方法" class="headerlink" title="账户的方法"></a>账户的方法</h1><h2 id="2-1-getBalance"><a href="#2-1-getBalance" class="headerlink" title="2.1 getBalance"></a>2.1 <strong>getBalance</strong></h2><p><em>provider</em>.<strong>getBalance</strong>( <em>address</em> [ , <em>blockTag</em> &#x3D; <em>latest</em> ] ) ⇒ <em>Promise&lt; 大数(**BigNumber**) &gt;</em></p>
+<p>返回给定的<em>blockTag</em> 区块高度下<strong>地址的余额</strong></p>
+<h2 id="2-2-getCode"><a href="#2-2-getCode" class="headerlink" title="2.2 getCode"></a>2.2 <strong>getCode</strong></h2><p><em>provider</em>.<strong>getCode</strong>( <em>address</em> [ , <em>blockTag</em> &#x3D; <em>latest</em> ] ) ⇒ <em>Promise&lt; string&lt; **DataHexString** &gt; &gt;</em></p>
+<p>返回给定的<em>blockTag</em> 区块高度下的<strong>合约源代码</strong>,如果当前没有合约被部署, 将返回 <code>0x</code>.</p>
+<h2 id="2-3-getStorageAt"><a href="#2-3-getStorageAt" class="headerlink" title="2.3 getStorageAt"></a>2.3 <strong>getStorageAt</strong></h2><p><em>provider</em>.<strong>getStorageAt</strong>( <em>addr</em> , <em>pos</em> [ , <em>blockTag</em> &#x3D; <em>latest</em> ] ) ⇒ <em>Promise&lt; string&lt; **DataHexString** &gt; &gt;</em></p>
+<p>在当前的<em>blockTag</em>下,输入address参数addr和position(位置)参数pos,返回类型为<code>Bytes32</code>的值.</p>
+<h2 id="2-4-getTransactionCount"><a href="#2-4-getTransactionCount" class="headerlink" title="2.4 getTransactionCount"></a>2.4 <strong>getTransactionCount</strong></h2><p><em>provider</em>.<strong>getTransactionCount</strong>( <em>address</em> [ , <em>blockTag</em> &#x3D; <em>latest</em> ] ) ⇒ <em>Promise&lt; **number** &gt;</em></p>
+<p>在当前的<em>blockTag</em>下,返回已经发送的交易的数量,这个值是用来提供给<strong>发送</strong>到网络的下一个交易的<strong>nonce值</strong>.</p>
+<h1 id="区块的方法"><a href="#区块的方法" class="headerlink" title="区块的方法"></a>区块的方法</h1><h2 id="3-1-getBlock"><a href="#3-1-getBlock" class="headerlink" title="3.1 getBlock"></a>3.1 <strong>getBlock</strong></h2><p><em>provider</em>.<strong>getBlock</strong>( <em>block</em> ) ⇒ <em>Promise&lt; **Block** &gt;</em></p>
+<p>从网络中得到某个<strong>区块信息</strong>, <code>result.transactions</code> 是一串交易集合的哈希值</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">await</span> provider.<span class="title function_">getBlock</span>(<span class="params"><span class="number">99</span></span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">_difficulty</span>: &#123; <span class="title class_">BigNumber</span>: <span class="string">&quot;3849295379889&quot;</span> &#125;,</span><br><span class="line">  <span class="attr">difficulty</span>: <span class="number">3849295379889</span>,</span><br><span class="line">  <span class="attr">extraData</span>: <span class="string">&#x27;0x476574682f76312e302e312d39383130306634372f6c696e75782f676f312e34&#x27;</span>,</span><br><span class="line">  <span class="attr">gasLimit</span>: &#123; <span class="title class_">BigNumber</span>: <span class="string">&quot;3141592&quot;</span> &#125;,</span><br><span class="line">  <span class="attr">gasUsed</span>: &#123; <span class="title class_">BigNumber</span>: <span class="string">&quot;21000&quot;</span> &#125;,</span><br><span class="line">  <span class="attr">hash</span>: <span class="string">&#x27;0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63&#x27;</span>,</span><br><span class="line">  <span class="attr">miner</span>: <span class="string">&#x27;0x909755D480A27911cB7EeeB5edB918fae50883c0&#x27;</span>,</span><br><span class="line">  <span class="attr">nonce</span>: <span class="string">&#x27;0x1a455280001cc3f8&#x27;</span>,</span><br><span class="line">  <span class="attr">number</span>: <span class="number">100004</span>,</span><br><span class="line">  <span class="attr">parentHash</span>: <span class="string">&#x27;0x73d88d376f6b4d232d70dc950d9515fad3b5aa241937e362fdbfd74d1c901781&#x27;</span>,</span><br><span class="line">  <span class="attr">timestamp</span>: <span class="number">1439799168</span>,</span><br><span class="line">  <span class="attr">transactions</span>: [</span><br><span class="line">    <span class="string">&#x27;0x6f12399cc2cb42bed5b267899b08a847552e8c42a64f5eb128c1bcbd1974fb0c&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;0x7f12399cc2cb42bed5b267899b08a847552e8c42a64f5eb128c1bcbd1974fb0c&#x27;</span>,</span><br><span class="line">    ....</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-2-getBlockWithTransactions"><a href="#3-2-getBlockWithTransactions" class="headerlink" title="3.2 getBlockWithTransactions"></a>3.2 <strong>getBlockWithTransactions</strong></h2><p><em>provider</em>.<strong>getBlockWithTransactions</strong>( <em>block</em> ) ⇒ <em>Promise&lt; **BlockWithTransactions** &gt;</em></p>
+<p>从网络中得到某个<strong>区块信息</strong>, <code>result.transactions</code> 是 一个<strong>TransactionResponse</strong> 对象的数组集合.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">await</span> provider.<span class="title function_">getBlock</span>(<span class="params"><span class="number">99</span></span>)</span><br><span class="line">&#123;</span><br><span class="line">  ...(参考上面)</span><br><span class="line">  <span class="attr">transactions</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="attr">accessList</span>: <span class="literal">null</span>,</span><br><span class="line">        <span class="attr">blockHash</span>: <span class="string">&#x27;0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63&#x27;</span>,</span><br><span class="line">        <span class="attr">blockNumber</span>: <span class="number">100004</span>,</span><br><span class="line">        <span class="attr">chainId</span>: <span class="number">0</span>,</span><br><span class="line">        <span class="attr">confirmations</span>: <span class="number">16283837</span>,</span><br><span class="line">        <span class="attr">creates</span>: <span class="literal">null</span>,</span><br><span class="line">        <span class="attr">data</span>: <span class="string">&#x27;0x&#x27;</span>,</span><br><span class="line">        <span class="attr">from</span>: <span class="string">&#x27;0xcf00A85f3826941e7A25BFcF9Aac575d40410852&#x27;</span>,</span><br><span class="line">        <span class="attr">gasLimit</span>: &#123; <span class="title class_">BigNumber</span>: <span class="string">&quot;90000&quot;</span> &#125;,</span><br><span class="line">        <span class="attr">gasPrice</span>: &#123; <span class="title class_">BigNumber</span>: <span class="string">&quot;54588778004&quot;</span> &#125;,</span><br><span class="line">        <span class="attr">hash</span>: <span class="string">&#x27;0x6f12399cc2cb42bed5b267899b08a847552e8c42a64f5eb128c1bcbd1974fb0c&#x27;</span>,</span><br><span class="line">        <span class="attr">nonce</span>: <span class="number">25</span>,</span><br><span class="line">        <span class="attr">r</span>: <span class="string">&#x27;0xb23adc880d3735e4389698dddc953fb02f1fa9b57e84d3510a2a4b3597ac2486&#x27;</span>,</span><br><span class="line">        <span class="attr">s</span>: <span class="string">&#x27;0x4e856f95c4e2828933246fb4765a5bfd2ca5959840643bef0e80b4e3a243d064&#x27;</span>,</span><br><span class="line">        <span class="attr">to</span>: <span class="string">&#x27;0xD9666150A9dA92d9108198a4072970805a8B3428&#x27;</span>,</span><br><span class="line">        <span class="attr">transactionIndex</span>: <span class="number">0</span>,</span><br><span class="line">        <span class="attr">type</span>: <span class="number">0</span>,</span><br><span class="line">        <span class="attr">v</span>: <span class="number">27</span>,</span><br><span class="line">        <span class="attr">value</span>: &#123; <span class="title class_">BigNumber</span>: <span class="string">&quot;5000000000000000000&quot;</span> &#125;,</span><br><span class="line">        <span class="attr">wait</span>: [<span class="title class_">Function</span>]</span><br><span class="line">    &#125;,</span><br><span class="line">    ....</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="以太坊域名服务-ENS-方法"><a href="#以太坊域名服务-ENS-方法" class="headerlink" title="以太坊域名服务 (ENS) 方法"></a><strong>以太坊域名服务 (ENS) 方法</strong></h1><p><strong>以太坊域名服务 (ENS)</strong> 允许一个简短且易于记忆的ENS名称附加到任何一组键和值.</p>
+<p>最常见的用法之一是使用一个简单的命名来<strong>引用以太坊地址</strong>.</p>
+<h2 id="4-1-lookupAddress"><a href="#4-1-lookupAddress" class="headerlink" title="4.1 lookupAddress"></a>4.1 <strong>lookupAddress</strong></h2><p><em>provider</em>.<strong>lookupAddress</strong>( <em>address</em> ) ⇒ <em>Promise&lt; **string** &gt;</em></p>
+<p>使用<em>反向注册器</em>对<strong>ENS中的地址进行反向查找</strong>.如果名称不存在,或者正向查找不匹配,则返回<code>null</code>.</p>
+<p>ENS名称需要额外的配置来设置反向记录,它们不会自动设置.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">await</span> provider.<span class="title function_">lookupAddress</span>(<span class="string">&quot;0x5555763613a12D8F3e73be831DFf8598089d3dCa&quot;</span>);</span><br><span class="line">&gt; <span class="string">&#x27;ricmoo.eth&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="4-2-resolveName"><a href="#4-2-resolveName" class="headerlink" title="4.2 resolveName"></a>4.2 <strong>resolveName</strong></h2><p><em>provider</em>.<strong>resolveName</strong>( <em>name</em> ) ⇒ <em>Promise&lt; string&lt; **Address** &gt; &gt;</em></p>
+<p><strong>查找一个名称的地址</strong>,如果这个<em>名称</em>没有被拥有,或者没有配置一个解析器,或者解析器没有配置一个地址,则返回<code>null</code>.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">await</span> provider.<span class="title function_">resolveName</span>(<span class="string">&quot;ricmoo.eth&quot;</span>);</span><br><span class="line">&gt; <span class="string">&#x27;0x5555763613a12D8F3e73be831DFf8598089d3dCa&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="4-3-getResolver"><a href="#4-3-getResolver" class="headerlink" title="4.3 getResolver"></a>4.3 <strong>getResolver</strong></h2><p><em>provider</em>.<strong>getResolver</strong>( <em>name</em> ) ⇒ <em>Promise&lt; **EnsResolver** &gt;</em></p>
+<p><strong>返回一个EnsResolver实例,该实例可用于进一步查询ENS命名的特定实体.</strong></p>
+<h2 id="4-4-EnsResolver"><a href="#4-4-EnsResolver" class="headerlink" title="4.4 EnsResolver"></a>4.4 EnsResolver</h2><p><strong>Resolver 的名称</strong>:<em>resolver</em>.<strong>name</strong> ⇒ <em>string</em></p>
+<p><strong>Resolver 的地址</strong>:<em>resolver</em>.<strong>address</strong> ⇒ <em>string&lt; 地址(**Address**) &gt;</em></p>
+<h3 id="4-4-1-getAddress"><a href="#4-4-1-getAddress" class="headerlink" title="4.4.1 getAddress"></a>4.4.1 <strong>getAddress</strong></h3><p><em>resolver</em>.<strong>getAddress</strong>( [ <em>cointType</em> &#x3D; <em>60</em> ] ) ⇒ <em>Promise&lt; **string** &gt;</em></p>
+<p>返回一个解析的类型为EIP-2304 <em>多币地址</em>的 Promise,默认情况下,<strong>返回一个以太坊的地址(Address)</strong>(<code>coinType = 60</code>).</p>
+<h3 id="4-4-2-getContentHash"><a href="#4-4-2-getContentHash" class="headerlink" title="4.4.2 getContentHash"></a>4.4.2 <strong>getContentHash</strong></h3><p><em>resolver</em>.<strong>getContentHash</strong>( ) ⇒ <em>Promise&lt; **string** &gt;</em></p>
+<p>返回一个Promise,解析为任何<strong>存储的EIP-1577内容哈希</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">await</span> resolver.<span class="title function_">getContentHash</span>();</span><br><span class="line">&gt; <span class="string">&#x27;ipfs://QmdTPkMMBWQvL8t7yXogo7jq5pAcWg8J7RkLrDsWZHT82y&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-3-getText"><a href="#4-4-3-getText" class="headerlink" title="4.4.3 getText"></a>4.4.3 <strong>getText</strong></h3><p><em>resolver</em>.<strong>getText</strong>( <em>key</em> ) ⇒ <em>Promise&lt; **string** &gt;</em></p>
+<p>返回一个Promise,解析为任何<strong>存储的EIP-634作为key的文本实体</strong>.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">await</span> resolver.<span class="title function_">getText</span>(<span class="string">&quot;email&quot;</span>);</span><br><span class="line">&gt; <span class="string">&#x27;me@ricmoo.com&#x27;</span></span><br><span class="line"></span><br><span class="line">&gt; <span class="keyword">await</span> resolver.<span class="title function_">getText</span>(<span class="string">&quot;url&quot;</span>);</span><br><span class="line">&gt; <span class="string">&#x27;https://www.ricmoo.com/&#x27;</span></span><br><span class="line"></span><br><span class="line">&gt; <span class="keyword">await</span> resolver.<span class="title function_">getText</span>(<span class="string">&quot;com.twitter&quot;</span>);</span><br><span class="line">&gt; <span class="string">&#x27;@ricmoo&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Logs方法"><a href="#Logs方法" class="headerlink" title="Logs方法"></a>Logs方法</h1><p><em>provider</em>.<strong>getLogs</strong>( <em>filter</em> ) ⇒ <em>Promise</em><em>&lt; Array&lt; Log &gt;</em>* &gt;*</p>
+<p>返回<strong>匹配筛选器的 Log数组</strong>.</p>
+<blockquote>
+<p>许多后端会丢弃旧的事件,并且请求范围太广可能也会被丢弃,因为它们需要太多的资源来执行查询.</p>
+</blockquote>
+<h1 id="网络状态方法"><a href="#网络状态方法" class="headerlink" title="网络状态方法"></a><strong>网络状态方法</strong></h1><h2 id="6-1-getNetwork"><a href="#6-1-getNetwork" class="headerlink" title="6.1 getNetwork"></a>6.1 getNetwork</h2><p><em>provider</em>.<strong>getNetwork</strong>( ) ⇒ <em>Promise&lt; **Network** &gt;</em></p>
+<p>返回这个 Provider 所<strong>连接的 Network</strong>.</p>
+<h2 id="6-2-getBlockNumber"><a href="#6-2-getBlockNumber" class="headerlink" title="6.2 getBlockNumber"></a>6.2 getBlockNumber</h2><p><em>provider</em>.<strong>getBlockNumber</strong>( ) ⇒ <em>Promise&lt; **number** &gt;</em></p>
+<p>返回<strong>最近挖出的区块的序号(或高度</strong>).</p>
+<h2 id="6-3-getGasPrice"><a href="#6-3-getGasPrice" class="headerlink" title="6.3 getGasPrice"></a>6.3 getGasPrice</h2><p><em>provider</em>.<strong>getGasPrice</strong>( ) ⇒ <em>Promise&lt; 大数(**BigNumber**) &gt;</em></p>
+<p>返回一个 关于这个交易中的 <strong>gas price的<em>最准预测</em></strong>.</p>
+<h2 id="6-4-getFeeData"><a href="#6-4-getFeeData" class="headerlink" title="6.4 getFeeData"></a>6.4 getFeeData</h2><p><em>provider</em>.<strong>getFeeData</strong>( ) ⇒ <em>Promise&lt; **FeeDatba** &gt;</em></p>
+<p>返回在一笔交易中当前的<strong>建议 FeeData</strong>.</p>
+<p>对于 EIP-1559 的交易, 应该使用 <code>maxFeePerGas</code> 和 <code>maxPriorityFeePerGas</code>.</p>
+<p>对于不支持 EIP-1559 中被遗留的交易和网络,应该使用 <code>gasPrice</code>.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 燃料价格 (单位: wei)...</span></span><br><span class="line">feeData = <span class="keyword">await</span> provider.<span class="title function_">getFeeData</span>(<span class="params"></span>)</span><br><span class="line">&#123;</span><br><span class="line">   <span class="attr">gasPrice</span>: &#123; <span class="title class_">BigNumber</span>: <span class="string">&quot;16674318809&quot;</span> &#125;,</span><br><span class="line">   <span class="attr">lastBaseFeePerGas</span>: &#123; <span class="title class_">BigNumber</span>: <span class="string">&quot;16492712329&quot;</span> &#125;,</span><br><span class="line">   <span class="attr">maxFeePerGas</span>: &#123; <span class="title class_">BigNumber</span>: <span class="string">&quot;34485424658&quot;</span> &#125;,</span><br><span class="line">   <span class="attr">maxPriorityFeePerGas</span>: &#123; <span class="title class_">BigNumber</span>: <span class="string">&quot;1500000000&quot;</span> &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通常来说燃料的价格用 gwei 会更好理解</span></span><br><span class="line">utils.<span class="title function_">formatUnits</span>(feeData.<span class="property">maxFeePerGas</span>, <span class="string">&quot;gwei&quot;</span>)</span><br><span class="line"><span class="string">&#x27;34.485424658&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="6-5-ready"><a href="#6-5-ready" class="headerlink" title="6.5 ready"></a>6.5 ready</h2><p><em>provider</em>.<strong>ready</strong> ⇒ <em>Promise&lt; **Network** &gt;</em></p>
+<p>返回一个 Promise ,直到网络建立就失效,忽略由于目标节点还未激活而出现的错误. </p>
+<p>这可以用于测试或附上脚本,以等待节点启动并顺利运行.</p>
+<h1 id="交易方法"><a href="#交易方法" class="headerlink" title="交易方法"></a>交易方法</h1><h2 id="7-1-call"><a href="#7-1-call" class="headerlink" title="7.1 call"></a>7.1 call</h2><p><em>provider</em>.<strong>call</strong>( <em>transaction</em> [ , <em>blockTag</em> &#x3D; <em>latest</em> ] ) ⇒ <em>Promise&lt; string&lt; **DataHexString** &gt; &gt;</em></p>
+<p>使用<em>call</em>返回<strong>执行交易的结果</strong>,调用不需要任何的以太,但不能改变任何状态.这在合约上调用getter方法是非常有用的.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">await</span> provider.<span class="title function_">call</span>(&#123;</span><br><span class="line">  <span class="comment">// ENS public resovler address</span></span><br><span class="line">  <span class="attr">to</span>: <span class="string">&quot;0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41&quot;</span>,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// `function addr(namehash(&quot;ricmoo.eth&quot;)) view returns (address)`</span></span><br><span class="line">  <span class="attr">data</span>: <span class="string">&quot;0x3b3b57debf074faa138b72c65adbdcfb329847e4f2c04bde7f7dd7fcad5a52d2f395a558&quot;</span></span><br><span class="line">&#125;);</span><br><span class="line">&gt; <span class="string">&#x27;0x0000000000000000000000005555763613a12d8f3e73be831dff8598089d3dca&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="7-2-estimateGas"><a href="#7-2-estimateGas" class="headerlink" title="7.2 estimateGas"></a>7.2 estimateGas</h2><p><em>provider</em>.<strong>estimateGas</strong>( <em>transaction</em> ) ⇒ <em>Promise&lt; 大数(**BigNumber**) &gt;</em></p>
+<p>返回向网络提交<strong>交易所需的预估gas值</strong>.</p>
+<blockquote>
+<p>估计的gas值可能不准确,因为网络上可能有另一个交易没有被计算在内,但在被挖出来之后就会影响相关状态.</p>
+</blockquote>
+<h2 id="7-3-getTransaction"><a href="#7-3-getTransaction" class="headerlink" title="7.3 getTransaction"></a>7.3 getTransaction</h2><p><em>provider</em>.<strong>getTransaction</strong>( <em>hash</em> ) ⇒ <em>Promise&lt; **TransactionResponse** &gt;</em></p>
+<p>返回<strong>带有哈希值的交易</strong>,如果交易未知,则返回null.</p>
+<p>如果一个交易还没有被挖出,这个方法将搜索交易池.各种后端可能有更多的限制交易池访问(例如,燃料价格太低或交易最近才发送,还没有索引),在这种情况下,这个方法也可能返回null.</p>
+<h2 id="7-4-getTransactionReceipt"><a href="#7-4-getTransactionReceipt" class="headerlink" title="7.4 getTransactionReceipt"></a>7.4 getTransactionReceipt</h2><p><em>provider</em>.<strong>getTransactionReceipt</strong>( <em>hash</em> ) ⇒ <em>Promise&lt; **TransactionReceipt** &gt;</em></p>
+<p>返回<strong>交易收据的哈希值</strong>,如果交易还没有被挖出则返回null.</p>
+<p>如果需要等待交易被挖出,请考虑下面的<code>waitForTransaction</code>方法.</p>
+<h2 id="7-5-sendTransaction"><a href="#7-5-sendTransaction" class="headerlink" title="7.5 sendTransaction"></a>7.5 sendTransaction</h2><p><em>provider</em>.<strong>sendTransaction</strong>( <em>transaction</em> ) ⇒ <em>Promise&lt; **TransactionResponse** &gt;</em></p>
+<p>向在挖区块的网络提交交易,<strong>交易必须经过签名</strong>,并且需要合法(例如:nonce值需要正确并且账户要有足够的余额来进行该笔交易的支付）</p>
+<h2 id="7-6-waitForTransaction"><a href="#7-6-waitForTransaction" class="headerlink" title="7.6 waitForTransaction"></a>7.6 waitForTransaction</h2><p><em>provider</em>.<strong>waitForTransaction</strong>( <em>hash</em> [ , <em>confirms</em> &#x3D; <em>1</em> [ , <em>timeout</em> ] ] ) ⇒ <em>Promise&lt; **TxReceipt** &gt;</em></p>
+<p>返回一个Promise,直到transactionHash被挖出来,才能够被解析.</p>
+<p>如果<em>confirms</em>参数为0,这个方法是非阻塞的,如果交易还没有被挖出,则返回null. </p>
+<p>否则,该方法是阻塞的,直到这个包含该交易的、被<em>confirms</em>标识的区块被挖出.</p>
+<h1 id="事件方法"><a href="#事件方法" class="headerlink" title="事件方法"></a>事件方法</h1><h2 id="eventName参数"><a href="#eventName参数" class="headerlink" title="eventName参数"></a>eventName参数</h2><p><strong>Log Filter</strong>:一个过滤器是一个对象.表示合约log Filter它具有可选的<code>address</code> (合约地址) 和 <code>topics</code> (一个要匹配的主题集).</p>
+<p>如果参数<code>address</code>未被指定.则过滤器匹配任何合约地址.</p>
+<p><strong>Topic-Set Filter</strong>:<strong>主题集过滤器</strong>的值是一个主题集数组.</p>
+<p>此事件与日志过滤器相同.但参数<code>address</code>可以不用填(匹配任何合约).</p>
+<p><strong>Transaction Filter</strong>:<strong>交易过滤器</strong>的值是交易的哈希值.</p>
+<p>这个事件会在任何给定的交易挖出的链上区块中触发. 使用once方法比使用on方法要普遍地多.</p>
+<p><strong>除了交易和过滤事件外.还有几个命名事件:</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>EventName</strong></th>
+<th><strong>Arguments</strong></th>
+<th><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&quot;block&quot;</code></td>
+<td><em>blockNumber</em></td>
+<td>当一个区块被挖出时触发</td>
+</tr>
+<tr>
+<td><code>&quot;error&quot;</code></td>
+<td><em>error</em></td>
+<td>只要有错误就触发</td>
+</tr>
+<tr>
+<td><code>&quot;pending&quot;</code></td>
+<td><em>pendingTransaction</em></td>
+<td>当一个新交易进入内存池时触发;只有特定的providers提供此事件.从而在运行在自己的节点上获得可靠的数据</td>
+</tr>
+<tr>
+<td><code>&quot;willPoll&quot;</code></td>
+<td><em>pollId</em></td>
+<td>在一个polling loop开始之前触发;<em>(大多数开发者很少使用)</em></td>
+</tr>
+<tr>
+<td><code>&quot;poll&quot;</code></td>
+<td><em>pollId</em>, <em>blockNumber</em></td>
+<td>在每个poll cycle中.<code>blockNumber</code>更新之后(如果改变了).以及与在poll loop中任何其他的事件(如果有)之前触发; <em>(大多数开发者很少使用)</em></td>
+</tr>
+<tr>
+<td><code>&quot;didPoll&quot;</code></td>
+<td><em>pollId</em></td>
+<td>在polling loop中的所有事件被触发后触发;(<em>大多数开发者很少使用</em>)</td>
+</tr>
+<tr>
+<td><code>&quot;debug&quot;</code></td>
+<td>provider dependent</td>
+<td>每个Provider可以使用它来发出有用的调试信息.格式由开发者决定;<em>(大多数开发者很少使用)</em> <em>(very rarely used by most developers)</em></td>
+</tr>
+</tbody></table>
+<h2 id="8-1-on"><a href="#8-1-on" class="headerlink" title="8.1 on"></a>8.1 on</h2><p><em>provider</em>.<strong>on</strong>( <em>eventName</em> , <em>listener</em> ) ⇒ <em><strong>this</strong></em></p>
+<p>为<strong>每一个参数为<em>eventName</em>的 事件添加<em>监听器</em></strong>.</p>
+<h2 id="8-2-once"><a href="#8-2-once" class="headerlink" title="8.2 once"></a>8.2 once</h2><p><em>provider</em>.<strong>once</strong>( <em>eventName</em> , <em>listener</em> ) ⇒ <em><strong>this</strong></em></p>
+<p>为参数<strong>为<em>eventName</em>的 事件添加<em>监听器</em>,监听使用过后将会被移除</strong>.</p>
+<h2 id="8-3-emit"><a href="#8-3-emit" class="headerlink" title="8.3 emit"></a>8.3 emit</h2><p><em>provider</em>.<strong>emit</strong>( <em>eventName</em> , …<em>args</em> ) ⇒ <em><strong>boolean</strong></em></p>
+<p><strong>通知所有的<em>eventName</em> event监听器,并把参数传递给它们,这通常只在内部使用.</strong></p>
+<h2 id="8-4-off"><a href="#8-4-off" class="headerlink" title="8.4 off"></a>8.4 off</h2><p><em>provider</em>.<strong>off</strong>( <em>eventName</em> [ , <em>listener</em> ] ) ⇒ <em><strong>this</strong></em></p>
+<p><strong>移除一个参数为<em>eventName</em>的事件<em>监听器</em></strong>,如果没有提供<em>listener</em>参数,则移除所有关于<em>eventName</em>的监听器.</p>
+<h2 id="8-5-removeAllListeners"><a href="#8-5-removeAllListeners" class="headerlink" title="8.5 removeAllListeners"></a><strong>8.5</strong> removeAllListeners</h2><p><em>provider</em>.<strong>removeAllListeners</strong>( [ <em>eventName</em> ] ) ⇒ <em><strong>this</strong></em></p>
+<p><strong>移除所有参数为<em>eventName</em>的事件监听器</strong>,如果没有提供<em>eventName</em>参数,则移除<strong>所有</strong>事件.</p>
+<h2 id="8-6-listenerCount"><a href="#8-6-listenerCount" class="headerlink" title="8.6 listenerCount"></a>8.6 listenerCount</h2><p><em>provider</em>.<strong>listenerCount</strong>( [ <em>eventName</em> ] ) ⇒ <em><strong>number</strong></em></p>
+<p><strong>返回所有参数为<em>eventName</em>事件的监听器数量</strong>,如果没有提供<em>eventName</em>参数,返回所有监听器的数量.</p>
+<h2 id="8-7-listeners"><a href="#8-7-listeners" class="headerlink" title="8.7 listeners"></a>8.7 listeners</h2><p><em>provider</em>.<strong>listeners</strong>( <em>eventName</em> ) ⇒ <em>Array&lt; **Listener** &gt;</em></p>
+<p><strong>返回参数为<em>eventName</em>事件监听器的list集合.</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">provider.<span class="title function_">on</span>(<span class="string">&quot;block&quot;</span>, <span class="function">(<span class="params">blockNumber</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 只有有一个区块改变就会触发</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">provider.<span class="title function_">once</span>(txHash, <span class="function">(<span class="params">transaction</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 当含有交易的区块被挖出就会触发</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 这个过滤器也可以通过Contract或接口API生成。</span></span><br><span class="line"><span class="comment">// 如果不指定address，则默认匹配任何地址，</span></span><br><span class="line"><span class="comment">// 如果不指定topics，则默认匹配任何日志。</span></span><br><span class="line">filter = &#123;</span><br><span class="line">    <span class="attr">address</span>: <span class="string">&quot;dai.tokens.ethers.eth&quot;</span>,</span><br><span class="line">    <span class="attr">topics</span>: [</span><br><span class="line">        utils.<span class="title function_">id</span>(<span class="string">&quot;Transfer(address,address,uint256)&quot;</span>)</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br><span class="line">provider.<span class="title function_">on</span>(filter, <span class="function">(<span class="params">log, event</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 当 DAI token 发生转账时触发</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 注意，这是一个主题集数组，与使用没有address参数的过滤器相同(即匹配任何地址)</span></span><br><span class="line">topicSets = [</span><br><span class="line">    utils.<span class="title function_">id</span>(<span class="string">&quot;Transfer(address,address,uint256)&quot;</span>),</span><br><span class="line">    <span class="literal">null</span>,</span><br><span class="line">    [</span><br><span class="line">        <span class="title function_">hexZeroPad</span>(myAddress, <span class="number">32</span>),</span><br><span class="line">        <span class="title function_">hexZeroPad</span>(myOtherAddress, <span class="number">32</span>)</span><br><span class="line">    ]</span><br><span class="line">]</span><br><span class="line">provider.<span class="title function_">on</span>(topicSets, <span class="function">(<span class="params">log, event</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 当任何一个token 发送到我的或者我的其他的地址时触发</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">provider.<span class="title function_">on</span>(<span class="string">&quot;pending&quot;</span>, <span class="function">(<span class="params">tx</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 当有一笔pending交易被捕获时触发</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">provider.<span class="title function_">on</span>(<span class="string">&quot;error&quot;</span>, <span class="function">(<span class="params">tx</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 只要有错误就会触发</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h1 id="校验方法"><a href="#校验方法" class="headerlink" title="校验方法"></a>校验方法</h1><p><em>Provider</em>.<strong>isProvider</strong>( <em>object</em> ) ⇒ <em><strong>boolean</strong></em></p>
+<p>当且仅<strong>当参数<em>object</em>是Provider返回 true .</strong></p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/08/07/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/2-Provider%E6%96%B9%E6%B3%95/" title="2-Provider方法">https://kongpengyq.com/2022/08/07/区块链/ether@5.4/2-Provider方法/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/ether-5-4-js/" rel="tag"># ether@5.4.js</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/08/02/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/1-%E5%BC%80%E5%A7%8B/" rel="prev" title="1-开始">
+      <i class="fa fa-chevron-left"></i> 1-开始
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/08/08/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/3-Providers/" rel="next" title="3-Providers">
+      3-Providers <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Providers"><span class="nav-text">Providers</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-%E9%BB%98%E8%AE%A4%E7%9A%84Provider"><span class="nav-text">1.1 默认的Provider</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-%E7%BD%91%E7%BB%9C"><span class="nav-text">1.2 网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-%E8%87%AA%E5%AE%9A%E4%B9%89%E7%9A%84-ENS-%E5%90%88%E7%BA%A6"><span class="nav-text">1.3 自定义的 ENS 合约</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4-Provider"><span class="nav-text">1.4 Provider</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B4%A6%E6%88%B7%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-text">账户的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-getBalance"><span class="nav-text">2.1 getBalance</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-getCode"><span class="nav-text">2.2 getCode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-getStorageAt"><span class="nav-text">2.3 getStorageAt</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-getTransactionCount"><span class="nav-text">2.4 getTransactionCount</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8C%BA%E5%9D%97%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-text">区块的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-getBlock"><span class="nav-text">3.1 getBlock</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-getBlockWithTransactions"><span class="nav-text">3.2 getBlockWithTransactions</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%9F%9F%E5%90%8D%E6%9C%8D%E5%8A%A1-ENS-%E6%96%B9%E6%B3%95"><span class="nav-text">以太坊域名服务 (ENS) 方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1-lookupAddress"><span class="nav-text">4.1 lookupAddress</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-resolveName"><span class="nav-text">4.2 resolveName</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-3-getResolver"><span class="nav-text">4.3 getResolver</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-4-EnsResolver"><span class="nav-text">4.4 EnsResolver</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-1-getAddress"><span class="nav-text">4.4.1 getAddress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-2-getContentHash"><span class="nav-text">4.4.2 getContentHash</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-3-getText"><span class="nav-text">4.4.3 getText</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Logs%E6%96%B9%E6%B3%95"><span class="nav-text">Logs方法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E7%8A%B6%E6%80%81%E6%96%B9%E6%B3%95"><span class="nav-text">网络状态方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#6-1-getNetwork"><span class="nav-text">6.1 getNetwork</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-2-getBlockNumber"><span class="nav-text">6.2 getBlockNumber</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-3-getGasPrice"><span class="nav-text">6.3 getGasPrice</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-4-getFeeData"><span class="nav-text">6.4 getFeeData</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-5-ready"><span class="nav-text">6.5 ready</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%A4%E6%98%93%E6%96%B9%E6%B3%95"><span class="nav-text">交易方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#7-1-call"><span class="nav-text">7.1 call</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-2-estimateGas"><span class="nav-text">7.2 estimateGas</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-3-getTransaction"><span class="nav-text">7.3 getTransaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-4-getTransactionReceipt"><span class="nav-text">7.4 getTransactionReceipt</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-5-sendTransaction"><span class="nav-text">7.5 sendTransaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-6-waitForTransaction"><span class="nav-text">7.6 waitForTransaction</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E6%96%B9%E6%B3%95"><span class="nav-text">事件方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#eventName%E5%8F%82%E6%95%B0"><span class="nav-text">eventName参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-1-on"><span class="nav-text">8.1 on</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-2-once"><span class="nav-text">8.2 once</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-3-emit"><span class="nav-text">8.3 emit</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-4-off"><span class="nav-text">8.4 off</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-5-removeAllListeners"><span class="nav-text">8.5 removeAllListeners</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-6-listenerCount"><span class="nav-text">8.6 listenerCount</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-7-listeners"><span class="nav-text">8.7 listeners</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A0%A1%E9%AA%8C%E6%96%B9%E6%B3%95"><span class="nav-text">校验方法</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

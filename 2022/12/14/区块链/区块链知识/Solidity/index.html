@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="solidity上如何在数组删除一个数根据下标用delete使其变为默认值，如果是动态数组可以通过pop方法移除该数组不过需要与最后一个位置的元素交换 你是如何用以太坊实现资金托管的function用payable修饰，然后可以对合约账户balance 低级CALL调用不需要payable address,transfer 和 send 只能是 payable address transfer()">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Solidity">
+<meta property="og:url" content="https://kongpengyq.com/2022/12/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/Solidity/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="solidity上如何在数组删除一个数根据下标用delete使其变为默认值，如果是动态数组可以通过pop方法移除该数组不过需要与最后一个位置的元素交换 你是如何用以太坊实现资金托管的function用payable修饰，然后可以对合约账户balance 低级CALL调用不需要payable address,transfer 和 send 只能是 payable address transfer()">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-12-13T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.764Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链知识">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/12/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/Solidity/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Solidity | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/12/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/Solidity/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Solidity
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-12-14 00:00:00" itemprop="dateCreated datePublished" datetime="2022-12-14T00:00:00+08:00">2022-12-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/" itemprop="url" rel="index">
+                    <span itemprop="name">区块链知识</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>14k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>13 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="solidity上如何在数组删除一个数"><a href="#solidity上如何在数组删除一个数" class="headerlink" title="solidity上如何在数组删除一个数"></a>solidity上如何在数组删除一个数</h1><p>根据下标用delete使其变为默认值，如果是动态数组可以通过pop方法移除该数组不过需要与最后一个位置的元素交换</p>
+<h1 id="你是如何用以太坊实现资金托管的"><a href="#你是如何用以太坊实现资金托管的" class="headerlink" title="你是如何用以太坊实现资金托管的"></a>你是如何用以太坊实现资金托管的</h1><p>function用payable修饰，然后可以对合约账户balance</p>
+<p>低级CALL调用<strong>不需要<code>payable address</code></strong>,transfer 和 send <strong>只能是 <code>payable address</code></strong></p>
+<p>transfer()错误会回滚，send会返回一个bool，call也是返回bool和返回数据bytes memory</p>
+<p>call的 gas 可以动态调整,transfer 和 send 只能是固定制 <code>2300</code></p>
+<h1 id="如何对一个数组去重"><a href="#如何对一个数组去重" class="headerlink" title="如何对一个数组去重"></a>如何对一个数组去重</h1><p>用一个map检查数组元素有无出现，无出现就装进res</p>
+<p>双重循环</p>
+<p>还有其他实现吗(使用 Solidity 的 Set 数据结构进行去重，一个库）</p>
+<p>跟最后一个元素互换然后pop &#x2F; 直接delete</p>
+<h1 id="solidity的function的可见性"><a href="#solidity的function的可见性" class="headerlink" title="solidity的function的可见性"></a>solidity的function的可见性</h1><ul>
+<li>函数有四可见型，分别是 <code>private</code> &#x2F; <code>external</code> &#x2F; <code>internal</code> &#x2F; <code>public</code></li>
+<li>状态变量可以有三种可见型，分别是 <code>private</code> &#x2F; <code>internal</code> &#x2F; <code>public</code></li>
+</ul>
+<ol>
+<li><p><strong>private</strong>: 私有，仅在当前合约中可以访问，在继承的合约内不可访问</p>
+</li>
+<li><p><strong>internal(默认)</strong>: 能在它们所定义的合约和派生合同中访问,它们不能被外部访问</p>
+<blockquote>
+<p>需要注意的是不能加前缀 this，前缀 this 是表示通过外部方式访问</p>
+</blockquote>
+</li>
+<li><p><strong>external:</strong> 只能从智能合约外部调用。 如果要从智能合约中调用它，则必须使用this</p>
+</li>
+<li><p><strong>public</strong>: 公开可视(合约内部，被继承的，外部都可以调用)</p>
+</li>
+</ol>
+<h1 id="合约发布的数据结构"><a href="#合约发布的数据结构" class="headerlink" title="合约发布的数据结构"></a>合约发布的数据结构</h1><p>合约发布的数据结构主要包括状态变量和函数：</p>
+<p>状态变量（State Variables）：状态变量是在合约中声明的变量，存储在区块链上。</p>
+<p>函数（Functions）：合约中的函数定义了合约的行为和操作。函数可以接受参数、返回值，并且可以修改合约的状态（通过修改状态变量）。</p>
+<h1 id="solidity函数修饰器"><a href="#solidity函数修饰器" class="headerlink" title="solidity函数修饰器"></a>solidity函数修饰器</h1><p>可以将一些通用的操作提取出来，包装为函数修改器，来提高代码的复用性，改善编码效率。是函数高内聚，低耦合的延伸。</p>
+<p>作用: 常用于在函数执行前检查某种前置条件。</p>
+<ul>
+<li>比如地址对不对，余额是否充足，参数值是否允许等</li>
+<li>修改器内可以写逻辑</li>
+</ul>
+<p>如果同一个函数有多个修改器 modifier，它们之间以空格隔开，修改器 modifier 会依次检查执行。</p>
+<p><strong>修改器不能隐式地访问或改变它们所修饰的函数的参数和返回值。</strong> 这些值只能在调用时明确地以参数传递。</p>
+<p><code>_</code> 符号可以在修改器中出现多次，每处都会替换为函数体。</p>
+<h1 id="Solc编译器的原理、汇编过程"><a href="#Solc编译器的原理、汇编过程" class="headerlink" title="Solc编译器的原理、汇编过程"></a>Solc编译器的原理、汇编过程</h1><p>Solc是Solidity编译器，它的主要功能是将Solidity源代码编译成EVM字节码</p>
+<ol>
+<li><p>原理：<strong>Solc编译器会先对Solidity源代码进行词法分析和语法分析，生成抽象语法树（AST）。然后，Solc编译器会将AST转换为中间语言（IR），并进行优化和分析。最后，Solc编译器会将IR转换为EVM字节码，并输出编译结果。</strong></p>
+</li>
+<li><p>汇编过程</p>
+<p>（1）将Solidity源代码转换为中间语言（IR）。</p>
+<p>（2）对IR进行优化和分析，包括常量折叠、死代码删除、控制流图重构等操作。</p>
+<p>（3）将IR转换为EVM汇编代码，包括指令选择、寄存器分配、代码生成等操作。</p>
+<p>（4）将EVM汇编代码转换为二进制字节码。</p>
+<p>在上述过程中，Solc编译器使用了多种技术和算法，包括词法分析、语法分析、AST转换、中间代码优化、寄存器分配、指令选择等。这些技术和算法的目的是提高编译器的性能和生成的字节码的质量，从而使Solidity合约在EVM上的执行更加高效和安全。</p>
+</li>
+</ol>
+<h1 id="说一下合约的安全分析方法、原理"><a href="#说一下合约的安全分析方法、原理" class="headerlink" title="说一下合约的安全分析方法、原理"></a>说一下合约的安全分析方法、原理</h1><ol>
+<li><strong>静态分析：</strong>静态分析是通过<strong>检查源代码或字节码</strong>来识别潜在的安全问题。它可以帮助<strong>发现潜在的漏洞、错误和安全隐患</strong>。静态分析工具<strong>会检查代码中的常见安全问题，例如整数溢出、未经授权的访问、重入漏洞等，并给出相应的警告或错误信息。</strong></li>
+<li><strong>污点分析：</strong>污点分析是一种静态或动态分析技术，用于<strong>追踪数据流中的敏感信息（称为污点）并检测潜在的漏洞</strong>。在合约中，污点分析可用于<strong>追踪用户输入数据（如交易输入、合约参数等）如何在代码中传播，并检测是否存在未经适当处理的污点数据访问或潜在的漏洞。</strong></li>
+<li><strong>符号执行：</strong>符号执行是一种静态分析技术，它通过<strong>符号变量替代具体输入值</strong>，以<strong>遍历可能的执行路径并生成约束条件</strong>。通过符号执行，可以<strong>检测合约中的潜在漏洞，如条件分支错误、溢出漏洞等</strong>。然而，由于符号执行的复杂性，它在实际中的应用受到一些限制。</li>
+<li><strong>模糊测试：</strong>模糊测试是一种动态测试技术，<strong>通过生成大量的随机或半随机输入来评估系统的安全性</strong>。在合约中，模糊测试可以<strong>通过生成随机交易和参数等输入来模拟潜在的攻击情景，以便发现合约中的漏洞和异常行为。</strong></li>
+<li><strong>形式验证：</strong>形式验证是一种基于数学和逻辑推理的方法，用于<strong>验证合约是否满足特定的安全属性或规范</strong>。通过形式验证，可以<strong>对合约的正确性进行严格的数学证明</strong>，从而<strong>排除特定类型的漏洞</strong>。然而，<strong>形式验证通常需要高度专业的知识和复杂的建模过程，因此在实践中的应用相对较少。</strong></li>
+<li><strong>动态分析：</strong>动态分析是<strong>在实际运行合约时监测和分析其行为</strong>。通过<strong>模拟不同的输入和交互场景</strong>，可以发现潜在的漏洞和异常情况。动态分析可以<strong>帮助检测运行时的安全问题，例如重入攻击、溢出等</strong>。</li>
+</ol>
+<h1 id="合约内部调用和外部调用"><a href="#合约内部调用和外部调用" class="headerlink" title="合约内部调用和外部调用"></a>合约内部调用和外部调用</h1><p>内部：合约内部调用是指<strong>在同一个合约内部调用另一个函数</strong>，可以直接使用函数名进行调用，无需指定地址，<strong>可以访问所有的状态变量和函数。</strong></p>
+<p>外部：合约外部调用是指<strong>在一个合约中调用另一个合约的函数</strong>。在合约外部调用时，<strong>需要指定被调用合约的地址，并使用<code>call</code>、<code>delegatecall</code>或<code>staticcall</code>等函数进行调用</strong>。在合约外部调用时，<strong>只能访问公共状态变量和函数。</strong></p>
+<h1 id="内部函数和外部函数区别"><a href="#内部函数和外部函数区别" class="headerlink" title="内部函数和外部函数区别"></a>内部函数和外部函数区别</h1><ol>
+<li>访问权限：<strong>内部函数可以被当前合约以及继承自当前合约的合约访问</strong>，包括私有（private）和内部（internal）函数。而<strong>外部函数只能被其他合约或外部账户通过消息调用的方式访问，通过合约地址和函数签名来执行外部调用。</strong></li>
+<li>调用开销：<strong>内部函数的调用不涉及 EVM 的上下文切换和消息传递</strong>，因为调用发生在同一个合约内部，没有跨合约的开销。而<strong>外部函数的调用涉及 EVM 的上下文切换和消息传递，需要通过消息调用（message call）机制执行，因此具有更高的调用开销。</strong></li>
+<li>函数可见性修饰符：为了明确指定函数的可见性，<strong>内部函数使用 <code>internal</code> 修饰符进行声明，而外部函数使用 <code>external</code> 修饰符进行声明。</strong></li>
+</ol>
+<h1 id="Solidity引用类型storage、memory、calldata"><a href="#Solidity引用类型storage、memory、calldata" class="headerlink" title="Solidity引用类型storage、memory、calldata"></a>Solidity引用类型storage、memory、calldata</h1><p><code>storage</code>是指<strong>永久存储在区块链上的数据位置</strong>，用于<strong>存储合约状态变量</strong>和映射类型的值。</p>
+<p><code>memory</code>是指<strong>临时存储在计算机内存中的数据位置</strong>，用于<strong>存储函数局部变量和函数参数</strong>。在函数内部声明的变量默认情况下会使用<code>memory</code>数据位置，<code>memory</code> 中的数据只在函数执行期间存在，并在函数执行结束后被清除。<strong>引用类型局部变量，要显式指定数据位置</strong>。</p>
+<p><code>calldata</code>是指<strong>用于保存函数参数和外部函数调用数据的特殊区域</strong>，<strong>包括函数参数和函数签名等信息</strong>。在函数调用时，函数参数会被复制到<code>calldata</code>中，并传递给被调用函数。在函数内部访问函数参数时，默认情况下会使用<code>calldata</code>数据位置。<code>calldata</code> 是只读的。</p>
+<p>按照函数参数:</p>
+<ul>
+<li>内部函数参数: (包括返回参数)都存储在<strong>memory（内存）</strong>中。</li>
+<li>外部函数参数: (不包括返回参数)存储在 <code>calldata</code> 中。</li>
+</ul>
+<h1 id="数据赋值时何时进行值传递、何时进行引用传递"><a href="#数据赋值时何时进行值传递、何时进行引用传递" class="headerlink" title="数据赋值时何时进行值传递、何时进行引用传递"></a>数据赋值时何时进行值传递、何时进行引用传递</h1><ol>
+<li><strong>在 storage 和 memory 之间两两赋值（或者从 calldata 赋值 ），值传递</strong>。</li>
+<li>从 memory 到 memory 的两个引用赋值，引用传递。</li>
+</ol>
+<h1 id="说一下ERC20、ERC721的函数和作用、以及对应的缺点和改进的方案"><a href="#说一下ERC20、ERC721的函数和作用、以及对应的缺点和改进的方案" class="headerlink" title="说一下ERC20、ERC721的函数和作用、以及对应的缺点和改进的方案"></a>说一下ERC20、ERC721的函数和作用、以及对应的缺点和改进的方案</h1><p> <strong>标准 ERC20 接口</strong></p>
+<p>3 个查询：</p>
+<ul>
+<li><code>balanceOf</code>: 查询指定地址的 Token 数量</li>
+<li><code>totalSupply</code>: 查询当前合约的 Token 总量</li>
+<li><code>allowance</code>: 查询指定地址对另外一个地址的剩余授权额度</li>
+</ul>
+<p>2 个交易：</p>
+<ul>
+<li><code>transfer</code>: 从当前调用者地址发送指定数量的 Token 到指定地址,这是一个写入方法，所以还会抛出一个 <code>Transfer</code> 事件。</li>
+<li><code>transferFrom</code>: 当向另外一个合约地址存款时，对方合约必须调用 transferFrom 才可以把 Token 拿到它自己的合约中。</li>
+</ul>
+<p>1 个授权：<code>approve</code>: 授权指定地址可以操作调用者的最大 Token 数量。</p>
+<p>缺点：ERC20标准<strong>没有考虑到代币的独特性，所有代币都是同质化的，无法区分不同的代币。</strong></p>
+<p>改进方案：<strong>ERC1155标准是一种新的代币标准，它支持多种类型的代币，并且可以在一个合约中管理多种代币。</strong></p>
+<p><strong>标准 ERC721 接口</strong></p>
+<p>4 个查询：</p>
+<ul>
+<li><code>balanceOf</code>: 查询指定地址的 NFT数量</li>
+<li><code>ownerOf</code>: 查询当前NFT 的所属地址</li>
+<li><code>isApprovedForAll</code>: 查询一个地址是否是另一个地址的授权操作员</li>
+<li><code>getApproved</code>:获取单个 NFT 的授权地址</li>
+</ul>
+<p>2 个交易：</p>
+<ul>
+<li><code>safeTransferFrom</code>: 从 <code>_from</code> 地址转移到 <code>_to</code> 地址。与 <code>transferFrom</code> 不同，<code>safeTransferFrom</code> 函数在转移代币时会进行安全性检查。它会检查接收方合约是否实现了 ERC721Receiver 接口，并调用接收方合约中的 <code>onERC721Received</code> 方法，旨在确保代币转移的目的地是一个合适的接收方，并且能够正确处理接收的代币。</li>
+<li><code>transferFrom</code>:从 <code>_from</code> 地址转移到 <code>_to</code> 地址，但它并没有提供任何安全性检查机制。</li>
+</ul>
+<p>2个授权：</p>
+<ul>
+<li><code>approve</code>: 授权指定地址可以操作某个NFT</li>
+<li><code>setApprovalForAll</code>：授权指定地址可以操作msg.sender地址下的所有NFT</li>
+</ul>
+<p>缺点：ERC721标准的转账操作比较复杂，需要调用多个函数才能完成，而且转账过程中可能会出现错误，导致代币丢失。</p>
+<p>改进方案：ERC998标准是一种新的代币标准，它支持代币的组合和嵌套，可以将多个代币组合成一个更复杂的代币，并且可以在一个合约中管理多种代币。这样可以简化转账操作，减少出错的可能性。</p>
+<h1 id="事件中加indexed属性的作用"><a href="#事件中加indexed属性的作用" class="headerlink" title="事件中加indexed属性的作用"></a>事件中加indexed属性的作用</h1><p>indexed 数据会被记录到 <code>topics</code> 中，可以用于检索，主题（topic）让我们可以可以搜索事件，比如在为某些事件过滤一些区块，还可以按发起事件的合同地址来过滤事件。</p>
+<h1 id="映射能否被声明为memory类型、映射中的key能否为复杂类型、映射的key是keccak256哈希还是真实的值、映射能否作为返回值、映射能否嵌套"><a href="#映射能否被声明为memory类型、映射中的key能否为复杂类型、映射的key是keccak256哈希还是真实的值、映射能否作为返回值、映射能否嵌套" class="headerlink" title="映射能否被声明为memory类型、映射中的key能否为复杂类型、映射的key是keccak256哈希还是真实的值、映射能否作为返回值、映射能否嵌套"></a>映射能否被声明为memory类型、映射中的key能否为复杂类型、映射的key是keccak256哈希还是真实的值、映射能否作为返回值、映射能否嵌套</h1><ol>
+<li><strong>映射不能被声明为 <code>memory</code> 类型</strong>。<code>memory</code> 类型用于临时存储和操作函数内的数据，而映射（<code>mapping</code>）是一种存储在存储器（<code>storage</code>）中的数据结构，无法在 <code>memory</code> 中声明。</li>
+<li><strong>映射的键（<code>key</code>）可以是复杂类型，包括结构体、枚举和数组等。</strong>映射的键类型不仅限于基本数据类型，你可以使用复杂类型作为映射的键。</li>
+<li><strong>映射的键存储它的 <code>keccak256</code> 哈希值</strong>，从而便于查询实际的值。正因为如此，映射是没有长度的，也没有 <code>key 的集合</code>或 <code>value 的集合</code>的概念</li>
+<li><strong>映射不能用于合约公有函数的参数或返回值，只允许作为状态变量或作为函数内的存储引用或作为库函数的参数。</strong></li>
+<li><strong>映射可以进行嵌套</strong></li>
+</ol>
+<h1 id="Solidity中receive函数、fallback函数"><a href="#Solidity中receive函数、fallback函数" class="headerlink" title="Solidity中receive函数、fallback函数"></a>Solidity中receive函数、fallback函数</h1><p>fallback 函数是调用合约没有的方法时候执行，同时也可以设置为允许接收网络主币。</p>
+<p>receive 只负责接收主币,一个合约最多有一个 <code>receive</code> 函数，receive 函数类型必须是 <code>payable</code> 的，声明为 payable 之后，其所消耗的 gas 最大量就会被限定在 2300。</p>
+<h1 id="Solidity中view函数、pure函数的作用和区别"><a href="#Solidity中view函数、pure函数的作用和区别" class="headerlink" title="Solidity中view函数、pure函数的作用和区别"></a>Solidity中view函数、pure函数的作用和区别</h1><p>pure: 既<strong>不读取也不修改状态变量</strong>，这种函数被称为<strong>纯函数</strong></p>
+<p>view: 读取状态变量，但是不修改状态变量，这种函数被称为<strong>视图函数</strong>，状态变量的 Getter 方法默认是 view 函数。</p>
+<h1 id="Solidity中字符串和字节有什么不同（bytes元素的内存是紧密连续存放的，不是按照-32-个字节为一单元）"><a href="#Solidity中字符串和字节有什么不同（bytes元素的内存是紧密连续存放的，不是按照-32-个字节为一单元）" class="headerlink" title="Solidity中字符串和字节有什么不同（bytes元素的内存是紧密连续存放的，不是按照 32 个字节为一单元）"></a>Solidity中字符串和字节有什么不同（bytes元素的内存是紧密连续存放的，不是按照 32 个字节为一单元）</h1><p>字节分为定长字节数组(值类型)和变长字节数组(引用类型)，字符串是引用类型</p>
+<p>定长字节数组：length、下标访问元素</p>
+<p>不定长字节数组：length、下标访问元素、concat 拼接、push添加单个字节、pop删除数组的最后一个元素、delete、x[start:end]:数组切片</p>
+<p>字符串：无length属性、无下标访问元素、concat 拼接</p>
+<p>字符串（string）是动态大小的UTF-8编码字符序列，而字节（bytes）是一个固定大小的字节数组。在存储时，字符串会占用一个指针，指向实际存储字符串内容的位置，而字节则直接存储其内容。</p>
+<blockquote>
+<p>比较两个字符串</p>
+<ul>
+<li><code>keccak256(abi.encodePacked(s1)) == keccak256(abi.encodePacked(s2))</code></li>
+<li><code>keccak256(bytes(s1)) == keccak256(bytes(s2))</code>:更省 gas</li>
+</ul>
+</blockquote>
+<h1 id="bytes和bytes32的应用场景和区别"><a href="#bytes和bytes32的应用场景和区别" class="headerlink" title="bytes和bytes32的应用场景和区别"></a>bytes和bytes32的应用场景和区别</h1><p>bytes类型适用于处理动态长度的字节数组，比如存储可变长度的文本数据或二进制数据。</p>
+<p>bytes32类型适用于处理固定长度的字节数组，比如存储哈希值、加密签名等固定长度的二进制数据。</p>
+<p>bytes类型没有固定的长度限制，可以根据需要动态调整大小。可以进行拼接、截取、访问等操作。</p>
+<p>bytes32类型具有固定的长度限制，长度为32字节（256位）。可以进行比较、运算等操作。</p>
+<h1 id="Solidity中constant和immutable的作用和区别"><a href="#Solidity中constant和immutable的作用和区别" class="headerlink" title="Solidity中constant和immutable的作用和区别"></a>Solidity中constant和immutable的作用和区别</h1><p>gas 要低很多、赋值后不可以修改</p>
+<p>constant常量不是储存在<code>storage</code> 上，所以函数内读取常量不算<code>view</code>，可以使用 pure</p>
+<p>constant常量在编译时确定，支持的仅有<strong>值类型（包括地址类型）&#x2F;字符串&#x2F;bytes</strong>，不允许任何通过访问 storage，区块链数据（例如 <code>block.timestamp</code>,<code>address(this).balance</code> 或者 <code>block.number</code>）或执行数据（ <code>msg.value</code> 或<code>gasleft()</code> ）对其赋值，</p>
+<p>immutable不可变量可以在构建时确定，<code>immutable</code>仅支持值类型</p>
+<h1 id="Solidity中创建合约的两种方式的区别和应用场景"><a href="#Solidity中创建合约的两种方式的区别和应用场景" class="headerlink" title="Solidity中创建合约的两种方式的区别和应用场景"></a>Solidity中创建合约的两种方式的区别和应用场景</h1><p>通过 <code>new</code> 创建合约 &#x2F; <code>create</code>：在<strong>创建合约时根据创建合约的地址和创建合约交易时的 <code>nonce</code> 来计算合约的地址</strong>。</p>
+<p>通过 <code>salt</code> 创建合约 &#x2F; <code>create2</code>：指定了一个可选的 <code>salt</code> （一个 bytes32 值），它将<strong>根据给定的 <code>salt</code></strong> ，<strong>创建合约的字节码和构造函数参数</strong>来计算创建合约的地址，不再使用 <code>nonce</code>。</p>
+<p>Uniswap中利用create2创建交易对，然后通过交易对代币地址可以推测出交易对地址与之交互，确保每次实例化的合约地址都是唯一的</p>
+<blockquote>
+<p>salt 决定了合约地址，不能重复使用，除非之前 salt 生成的合约被销毁了。</p>
+</blockquote>
+<h1 id="Solidity中的错误类型（Panic和Error）出现的场景和表示意义"><a href="#Solidity中的错误类型（Panic和Error）出现的场景和表示意义" class="headerlink" title="Solidity中的错误类型（Panic和Error）出现的场景和表示意义"></a>Solidity中的错误类型（Panic和Error）出现的场景和表示意义</h1><ol>
+<li>Panic（紧急情况）：<ul>
+<li>场景：Panic<strong>在发生无法恢复的严重错误或异常情况时触发</strong>，例如<strong>数组越界、除零操作、无效的操作</strong>等。这些错误通常表示<strong>合约处于一个不可处理的状态，无法继续执行，需要立即停止。</strong></li>
+<li>表示意义：Panic表示了<strong>一种严重的错误或异常情况，合约无法继续正常执行</strong>。它的目的是提醒开发者和用户发生了不可恢复的错误，可能需要修复合约代码或采取其他措施来处理问题。</li>
+</ul>
+</li>
+<li>Error（错误）：<ul>
+<li>场景：Error通常在<strong>可处理的错误或异常情况下触发</strong>，例如<strong>输入验证失败、外部调用返回错误结果</strong>等。这些错误通常可以<strong>通过适当的错误处理逻辑进行处理或恢复，不会导致合约无法继续执行</strong>。</li>
+<li>表示意义：Error表示了<strong>一种可处理的错误或异常情况，合约可以通过适当的错误处理逻辑进行恢复</strong>。它的目的是<strong>提供一种错误处理机制，使合约能够适当地处理错误情况，继续执行或采取适当的措施。</strong></li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<p>Panic通常通过使用<code>revert()</code>、<code>require()</code>或<code>assert()</code>等函数来触发。这些函数会中止当前的合约执行并回滚状态改变。而Error可以通过自定义的错误处理逻辑或使用<code>try-catch</code>语句来捕获和处理</p>
+</blockquote>
+<h1 id="Solidity中assert和require的区别和应用场景"><a href="#Solidity中assert和require的区别和应用场景" class="headerlink" title="Solidity中assert和require的区别和应用场景"></a>Solidity中assert和require的区别和应用场景</h1><ul>
+<li><code>require</code>：用于验证<strong>前置条件，例如输入验证、边界检查和约束条件的断言。</strong>返还剩余的燃气</li>
+<li><code>assert</code>：用于<strong>验证合约内部的不变量和内部错误，主要用于验证内部逻辑的正确性。</strong>不返还剩余的燃气</li>
+</ul>
+<h1 id="Solidity中transfer、send、call转账的区别"><a href="#Solidity中transfer、send、call转账的区别" class="headerlink" title="Solidity中transfer、send、call转账的区别"></a>Solidity中transfer、send、call转账的区别</h1><p>低级CALL调用<strong>不需要<code>payable address</code></strong>,ransfer 和 send <strong>只能是 <code>payable address</code></strong></p>
+<p>transfer()失败时抛出异常,send()失败时仅会返回false,不会终止执行（合约地址转账）</p>
+<p>call的 gas 可以动态调整,transfer 和 send 只能是固定制 <code>2300</code></p>
+<p>call除了可以转账外，可以还可以调用不知道 ABI 的方法，还可以调用的时候转账</p>
+<h1 id="Solidity中call、delegatecall、staticcall、callcode区别"><a href="#Solidity中call、delegatecall、staticcall、callcode区别" class="headerlink" title="Solidity中call、delegatecall、staticcall、callcode区别"></a>Solidity中call、delegatecall、staticcall、callcode区别</h1><p>为了与不知道 ABI 的合约进行交互，Solidity 提供了函数 <code>call</code>&#x2F;<code>delegatecall</code>&#x2F;<code>staticcall</code> 直接控制编码。它们都带有一个 <code>bytes memory</code> 参数和返回执行<strong>成功状态</strong>（bool）和<strong>数据</strong>（bytes memory）。</p>
+<p><strong>三种方法都提供 <code>gas</code> 选项，而 <code>value</code> 选项仅 <code>call</code> 支持</strong> 。</p>
+<p>call()：被调用合约内部如果有状态变量修改，则会被修改</p>
+<p>delegatecall()：<code>delegatecall</code> 只调用给定地址的代码（函数），其他状态属性如（存储，余额 …）都来自当前合约。<code>delegatecall</code> 的目的是使用另一个合约中的库代码。(用于升级合约)</p>
+<p>staticcall()：与 call 基本相同，但<strong>如果被调用的函数以任何方式修改状态变量，都将回退</strong></p>
+<p>callcode()：在Solidity v0.5.0版本中被废弃，用于在当前合约的上下文中调用另一个合约的函数，但<strong>共享相同的存储空间。</strong></p>
+<h1 id="Solidity中的隐式转换和显示转换、函数可见性类型转换"><a href="#Solidity中的隐式转换和显示转换、函数可见性类型转换" class="headerlink" title="Solidity中的隐式转换和显示转换、函数可见性类型转换"></a>Solidity中的隐式转换和显示转换、函数可见性类型转换</h1><p><strong>隐式转换：值类型，源类型必须是目标类型的子集。</strong></p>
+<p>例如，<code>uint8</code> 可以转换为 <code>uint16</code>&#x2F;<code>uint24</code>..&#x2F;<code>uint256</code>，因为<code>uint8</code>是<code>uint16</code>这些类型的子集。</p>
+<p>但是 <code>int8</code> 不可以转换为 <code>uint256</code>，因为 <code>int8</code> 可以包含 <code>uint256</code> 中不允许的负值，比如 <code>-1</code>。</p>
+<p><strong>显示转换：使用类型关键字，显式地将数据类型转换为另一种类型</strong></p>
+<p>整型加大数据位置是从左侧增加，减小数据位置也是从左侧移除；（<strong>整型是右对齐</strong>）</p>
+<p>字节加大数据位置是从右侧增加，减小数据位置也是从右侧移除；（<strong>字节是左对齐</strong>）</p>
+<p>只有当字节类型和整数类型大小相同时，才可以进行转换。</p>
+<p>bytes 和 bytesN 之间转换左对齐</p>
+<p>bytes 与 address 转换：地址是取 <code>bytes32</code> 数据中的后 20 位，address(uint160(uint256(bytes32)))</p>
+<p><strong>pure转view、view转non-payable、payable转non-payable</strong></p>
+<h1 id="Solidity中合约继承方式、继承多个合约的顺序写法、super关键字作用"><a href="#Solidity中合约继承方式、继承多个合约的顺序写法、super关键字作用" class="headerlink" title="Solidity中合约继承方式、继承多个合约的顺序写法、super关键字作用"></a>Solidity中合约继承方式、继承多个合约的顺序写法、super关键字作用</h1><p>使用 <code>is</code> 实现继承：子类可以访问父类的权限修饰符只有：<code>public/internal</code>，不能是 <code>external/private</code>。</p>
+<p>传参：contract C is A(“n”),B(“v”) {}   &#x2F;     constructor(string memory _name) A(_name) {}</p>
+<p>一个合约<strong>同时继承 2 个合约时，这种情况叫多重继承</strong>，多重继承中不允许出现相同的<strong>函数名</strong>、<strong>事件名</strong>、<strong>修改器名</strong>以及<strong>状态变量名</strong>等，使用逗号分隔它们，并按照从左到右的顺序进行继承。</p>
+<p><code>super</code>关键字作用：</p>
+<ul>
+<li>在子合约中，可以使用<code>super</code>关键字来引用父合约的函数和状态。</li>
+<li>通过<code>super</code>关键字，可以调用父合约中的同名函数，并且可以在子合约中访问父合约的状态变量。</li>
+<li>使用<code>super</code>关键字可以实现在子合约中对父合约行为的扩展或覆盖。</li>
+</ul>
+<h1 id="Solidity中函数重写规则"><a href="#Solidity中函数重写规则" class="headerlink" title="Solidity中函数重写规则"></a>Solidity中函数重写规则</h1><p>solidity 引入了 <code>abstract</code>, <code>virtual</code>, <code>override</code> 几个关键字，用于重写函数。<strong>父合约标记为 <code>virtual</code>函数可以在继承合约里重写(overridden)以更改他们的行为</strong>。重写的函数需要使用关键字 <code>override</code> 修饰。</p>
+<p>对于多重继承，如果有多个父合约有相同定义的函数， override 关键字后必须指定所有父合约名。</p>
+<p> <code>nonpayable</code> 可以被 <code>view</code> 和<code>pure</code> 覆盖。 <code>view</code> 可以被 <code>pure</code> 覆盖。 <code>payable</code>是一个例外，不能更改为任何其他可变性。</p>
+<p>基础合约中可以包含没有实现代码的函数，也就是纯虚函数，那么基础合约必须声明为 <code>abstract</code>(interface)</p>
+<h1 id="Solidity中的接口是什么"><a href="#Solidity中的接口是什么" class="headerlink" title="Solidity中的接口是什么"></a>Solidity中的接口是什么</h1><p>接口需要有 interface 关键字，并且内部只需要有函数的声明，不用实现，用于调用，里面的函数都没有实现且都是external，可以被继承和重写，限制：不包含变量或状态</p>
+<h1 id="Solidity中的库"><a href="#Solidity中的库" class="headerlink" title="Solidity中的库"></a>Solidity中的库</h1><p>library 是智能合约的精简版，像智能合约一样，位于区块链上，通过EVM的delegatecall实现调用，库无状态变量，不能继承其他合约，如果被继承传参是引用，参数标识为storage，库合约函数的可视范围通常为internal，可变性为pure</p>
+<p>直接调用库合约方法：Math.max(_x, _y);</p>
+<p>using…for… 使用库合约：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">using ArrayLib for uint256[];</span><br><span class="line">uint256[] public arr = [10, 11, 12, 13, 14,...];</span><br><span class="line">...</span><br><span class="line">arr.find(15); // 直接使用</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<h1 id="如何分析链上交易过程、如何借助区块浏览器查询信息"><a href="#如何分析链上交易过程、如何借助区块浏览器查询信息" class="headerlink" title="如何分析链上交易过程、如何借助区块浏览器查询信息"></a>如何分析链上交易过程、如何借助区块浏览器查询信息</h1><p>搜索栏中输入要查询的信息，如<strong>交易哈希、地址或合约地址。</strong></p>
+<p>显示您查询相关的信息，如<strong>交易细节、区块高度、转账金额等。</strong></p>
+<p>查看交易的<strong>确认状态、合约代码、事件日志等其他相关信息。</strong></p>
+<p><strong>查看交易的输入和输出</strong>，以了解合约函数的调用、转账操作等。</p>
+<p><strong>检查合约事件日志</strong>，了解触发的事件和相关数据。</p>
+<p>可以<strong>查看合约的源代码、合约持有人、合约创建者等详细信息</strong>。</p>
+<p><strong>Tenderly：</strong></p>
+<p>智能合约调试：逐步执行合约代码，查看变量值和调用栈跟踪，更容易地定位和解决合约中的 bug 和问题。</p>
+<p>交易模拟和回放：测试合约的行为和效果。这对于验证合约在不同情况下的行为非常有用，并且可以帮助发现潜在的安全问题和错误。</p>
+<p>监视和警报：跟踪合约的状态变化、事件触发和交易执行情况，设置自定义警报规则，及时接收关键事件的通知。</p>
+<p>性能分析：分析智能合约的性能和瓶颈，识别潜在的效率问题，并提供优化建议。</p>
+<p>团队协作和共享：允许多个开发人员共同使用和管理合约，并在开发过程中共享调试会话、测试结果和分析数据。</p>
+<h1 id="ABI的编码方式、solidity内置的ABI相关函数"><a href="#ABI的编码方式、solidity内置的ABI相关函数" class="headerlink" title="ABI的编码方式、solidity内置的ABI相关函数"></a>ABI的编码方式、solidity内置的ABI相关函数</h1><p>ABI编码方式取决于参数的类型,以下是一些常见的数据类型和对应的ABI编码方式：</p>
+<ul>
+<li>布尔类型（bool）：布尔值 <code>true</code> 编码为 1，布尔值 <code>false</code> 编码为 0。</li>
+<li>整数类型（uint、int）：整数类型按照固定长度进行编码，如 uint8 编码为一个字节（8 位），uint256 编码为 32 字节（256 位）。整数类型的值通过大端（big-endian）字节序进行编码。</li>
+<li>地址类型（address）：地址类型编码为 20 字节，其中前面 12 个字节为 0，后面 20 个字节表示地址的真实值。</li>
+<li>字符串类型（string）：字符串类型的ABI编码与动态大小的字节数组类似，也包含一个32个字节的偏移量和实际的字符串数据。</li>
+<li>字节数组类型（bytes）：动态大小的字节数组的ABI编码分为两部分，第一部分是32个字节的偏移量，指示实际数据在字节数组中的位置；第二部分是实际的字节数组数据。</li>
+<li>动态数组类型（uint[]、address[]、string[] 等）：动态数组类型首先编码一个固定长度的字节数组，其中包含数组元素的 ABI 编码。然后在编码的开头添加表示数组长度的 32 位整数。</li>
+<li>结构体类型（struct）：结构体类型的编码方式将结构体的各个成员依次进行 ABI 编码，按顺序将编码后的值拼接在一起。</li>
+</ul>
+<p>以上是一些常见数据类型的ABI编码方式，对于更复杂的数据类型，如映射（mapping）和函数类型（function），其ABI编码方式会更加复杂。</p>
+<p>Solidity 内置的 ABI 相关函数：进行ABI编码和解码，使得在Solidity中<strong>与其他合约进行交互更加简单和高效。</strong></p>
+<ul>
+<li><code>abi.encode(...) returns (bytes)</code>：将函数参数编码为字节数组</li>
+<li><code>abi.encodePacked(...) returns (bytes)</code>：类似于 <code>abi.encode()</code>，但是不会为编码的参数添加长度前缀，返回一个紧凑的字节数组。</li>
+<li><code>abi.decode(bytes memory encodedData, (...)) returns (...)</code>: 对给定的数据进行 ABI 解码，而数据的类型在括号中第二个参数给出 。 例如: <code>(uint a, uint[2] memory b, bytes memory c) = abi.decode(data, (uint, uint[2], bytes))</code></li>
+<li><code>abi.encodeWithSelector(bytes4 selector, ...) returns (bytes)</code>： :用于将函数名称和参数编码为一个字节数组，包括函数选择器。它接受函数选择器和函数参数列表作为参数，并返回编码后的字节数组。</li>
+<li><code>abi.encodeWithSignature(string signature, ...) returns (bytes)</code>：类似于 <code>abi.encodeWithSelector()</code>，但是使用函数的完整签名来生成函数选择器。等价于 <code>abi.encodeWithSelector(bytes4(keccak256(selector), ...)</code></li>
+<li><code>abi.encodeCall(function functionPointer, (...)) returns (bytes memory)</code>: 使用 tuple 类型参数 ABI 编码调用 <code>functionPointer</code> 。执行完整的类型检查, 确保类型匹配函数签名。结果和 <code>abi.encodeWithSelector(functionPointer.selector, (...))</code> 一致。</li>
+</ul>
+<h1 id="用户发起交易的整个过程描述一下，包括交易的数据结构、交易的过程"><a href="#用户发起交易的整个过程描述一下，包括交易的数据结构、交易的过程" class="headerlink" title="用户发起交易的整个过程描述一下，包括交易的数据结构、交易的过程"></a>用户发起交易的整个过程描述一下，包括交易的数据结构、交易的过程</h1><ol>
+<li>RLP编码：首先，<strong>将交易数据按照RLP编码规则进行序列化</strong>。RLP编码会将交易的各个字段转换为字节流，并添加长度前缀以表示字段的长度。(节省空间)</li>
+<li>私钥签名：<strong>使用发送者的私钥对RLP编码后的交易数据进行签名</strong>。这个过程使用<strong>椭圆曲线数字签名算法</strong>（ECDSA），通过将交易哈希与私钥进行加密生成数字签名。</li>
+<li>广播交易：<strong>将签名后的交易广播到区块链网络中的节点。</strong></li>
+<li>进入交易池：<strong>广播的交易首先进入待处理的交易池中。</strong>交易池是存储待处理交易的缓冲区。<strong>节点将验证交易的签名和有效性，</strong>确保交易满足一些基本的规则和约束条件。</li>
+<li>排序：在交易池中，<strong>交易会按照一定的规则进行排序</strong>。常见的排序规则包括<strong>按照交易的优先级、交易费用等进行排序。</strong></li>
+<li>打包进区块：<strong>矿工节点从交易池中选择一些交易，并将它们打包进一个新的区块中。</strong>矿工会将交易进行有效性验证，并根据交易费用的高低选择收入最高的交易。</li>
+<li>广播上链：一旦区块被<strong>矿工节点打包完成，它会广播到网络中的其他节点。</strong>其他节点会验证该区块的有效性，并将其添加到自己的本地副本中。</li>
+</ol>
+<p>所提交的交易包括下列信息：</p>
+<ul>
+<li><code>recipient</code> – 接收地址</li>
+<li><code>signature</code> – 发送者的标识符。 当通过发送者的私钥签名交易来确保发送者已授权此交易时，生成此签名。</li>
+<li><code>nonce</code> - 一个连续的递增计数器，表示帐户中的交易编号。</li>
+<li><code>value</code> – 发送人向接收人转移的以太币金额（以以太币的一种面值 WEI 为单位）</li>
+<li><code>data</code> – 可包括任意数据的可选字段</li>
+<li><code>gasLimit</code> – 交易可以消耗的最大数量的燃料单位。 燃料单位代表计算步骤</li>
+<li><code>maxPriorityFeePerGas</code> - 作为验证者小费包含的最大燃料数量</li>
+<li><code>maxFeePerGas</code> - 愿意为交易支付的最大燃料数量</li>
+</ul>
+<h1 id="函数选择器的生成方式、组成、作用、为什么只取前4字节、以及在合约执行中的作用"><a href="#函数选择器的生成方式、组成、作用、为什么只取前4字节、以及在合约执行中的作用" class="headerlink" title="函数选择器的生成方式、组成、作用、为什么只取前4字节、以及在合约执行中的作用"></a>函数选择器的生成方式、组成、作用、为什么只取前4字节、以及在合约执行中的作用</h1><p>函数选择器（Function Selector）是在以太坊智能合约中用于<strong>标识函数的唯一标识符</strong>。它由<strong>函数的签名生成，并且通常只取前4个字节。</strong></p>
+<p><strong>生成方式：</strong>将函数的名称和参数类型按照特定规则进行编码，使用Keccak-256哈希算法（也称为SHA3-256）对编码后的数据进行哈希计算，从哈希结果中取前4个字节作为函数选择器。</p>
+<p><strong>作用：</strong>唯一标识函数、优化函数调用 (由于函数选择器只取前4个字节，因此可以减少传输的数据量，提高交易的效率。)</p>
+<p><strong>在合约执行中的作用</strong>:确定要执行的函数,确保在合约中正确地执行所需的操作。</p>
+<h1 id="详细说一下基于栈的虚拟机EVM（256位）、其上下文有哪些、存储空间有哪几类（stack、memory、storage）、stack的深度、访问的最大深度"><a href="#详细说一下基于栈的虚拟机EVM（256位）、其上下文有哪些、存储空间有哪几类（stack、memory、storage）、stack的深度、访问的最大深度" class="headerlink" title="详细说一下基于栈的虚拟机EVM（256位）、其上下文有哪些、存储空间有哪几类（stack、memory、storage）、stack的深度、访问的最大深度"></a>详细说一下基于栈的虚拟机EVM（256位）、其上下文有哪些、存储空间有哪几类（stack、memory、storage）、stack的深度、访问的最大深度</h1><p>EVM使用了基于栈的执行模型，其中包含以下几个关键组件：</p>
+<ol>
+<li>栈（Stack）：EVM<strong>使用一个栈来存储和处理数据</strong>。栈是一种<strong>后进先出的数据结构</strong>，用于<strong>保存操作数、中间结果和返回值等</strong>。</li>
+<li>存储器（Memory）：EVM提供了<strong>一个字节数组作为存储器</strong>，用于<strong>临时存储合约执行过程中的数据</strong>。存储器可以<strong>通过索引访问，并且可以动态扩展。</strong></li>
+<li>存储（Storage）：EVM提供了<strong>一个持久化的键值存储</strong>，用于<strong>在合约之间共享数据。存储是永久性的，即使合约执行结束后仍然保留。</strong></li>
+<li>指令集（Instruction Set）：EVM<strong>定义了一套指令集，用于执行各种操作</strong>，如算术运算、逻辑运算、内存访问、存储访问等。每个指令都有特定的操作码和操作数。</li>
+<li>状态转换（State Transition）：EVM<strong>通过执行指令来改变合约的状态。每个指令都会消耗一定的气体（Gas）</strong>，而气体是以太坊中的计价单位，用于限制合约执行的资源消耗。</li>
+</ol>
+<p>EVM的设计目标是实现安全、确定性和可验证性。它提供了一个隔离的执行环境，<strong>确保合约的执行结果在不同节点上是一致的</strong>，并且可以通过区块链上的交易历史进行验证。</p>
+<blockquote>
+<p>栈的最大深度为1024个元素,每层 32 字节,当栈的深度达到1024时，进一步的栈操作将会导致栈溢出错误（Stack Overflow Error）并终止合约的执行。</p>
+</blockquote>
+<h1 id="详细说一下EVM的“stack-too-deep”错误"><a href="#详细说一下EVM的“stack-too-deep”错误" class="headerlink" title="详细说一下EVM的“stack too deep”错误"></a>详细说一下EVM的“stack too deep”错误</h1><p>EVM栈最多 1024 层，每层 32 字节， <strong>对EVM栈的访问并不是完全严格按照先进后出，允许将顶端的 16 个元素中的某一个复制或者交换到栈顶</strong>。每次操作<strong>只能取栈顶的若干元素，把结果压栈</strong>。也能够把<strong>栈顶元素放到 memory 或者 storage 区域保存</strong>。<strong>因此一个函数最多16个变量。</strong></p>
+<h1 id="从EVM的角度阐述交易发送和调用合约的整个过程"><a href="#从EVM的角度阐述交易发送和调用合约的整个过程" class="headerlink" title="从EVM的角度阐述交易发送和调用合约的整个过程"></a>从EVM的角度阐述交易发送和调用合约的整个过程</h1><ul>
+<li><strong>交易创建：</strong>用户通过以太坊钱包或其他工具<strong>创建一笔交易</strong>。交易包括发送者地址、接收者地址、数额以及其他必要的信息。交易被<strong>广播到以太坊网络中。</strong></li>
+<li><strong>交易验证：</strong>矿工节点在收到交易后，首先会<strong>对交易进行验证</strong>。验证包括检查交易的签名是否有效、发送者账户是否有足够的余额支付燃气费用等。</li>
+<li><strong>燃气消耗评估：</strong>在验证通过后，矿工节点会评估交易执行所需的燃气消耗。每个操作码都有对应的燃气消耗，矿工节点会根据交易中的操作码和参数来计算燃气消耗。</li>
+<li><strong>合约创建&#x2F;调用：</strong>如果<strong>交易的接收者地址是一个合约地址，则是对合约的调用。如果接收者地址是空，则是合约的创建。</strong>对于合约的调用，矿工节点会<strong>加载合约的字节码和状态，并按照交易中指定的函数和参数执行合约代码。</strong>对于合约的创建，矿工节点会在以太坊网络上创建新的合约账户，并<strong>将合约的字节码存储到账户的代码字段</strong>。</li>
+<li><strong>状态变更：</strong>在执行合约的过程中，<strong>EVM会根据合约的代码逻辑和数据操作来进行状态变更。</strong>这包括更新合约的存储（Storage）和内存（Memory），修改账户余额，创建新的合约账户等。<strong>状态变更会被记录在内存中</strong>，但<strong>尚未写入区块链</strong>。</li>
+<li><strong>状态回滚：</strong>如果<strong>合约执行过程中发生错误或抛出异常，EVM会回滚之前的状态变更，恢复到执行前的状态。</strong></li>
+<li><strong>交易广播：</strong>如果交易通过了所有验证，并且燃气消耗检查也通过，<strong>矿工节点将把交易添加到待处理交易池中</strong>，等待被打包进区块。</li>
+</ul>
+<h1 id="以太坊的字节码、操作码是什么、如何进行单步调试、观察栈、内存的变化"><a href="#以太坊的字节码、操作码是什么、如何进行单步调试、观察栈、内存的变化" class="headerlink" title="以太坊的字节码、操作码是什么、如何进行单步调试、观察栈、内存的变化"></a>以太坊的字节码、操作码是什么、如何进行单步调试、观察栈、内存的变化</h1><p>字节码是一种低级的<strong>指令集</strong>，用于在以太坊虚拟机（EVM）上执行智能合约。操作码是字节码中的<strong>具体指令</strong>，用于执行各种操作，例如算术运算、逻辑运算、内存访问等</p>
+<p>Remix、Geth控制台、Tenderly….</p>
+<h1 id="合约中的数据在存储中的组织形式、内存布局"><a href="#合约中的数据在存储中的组织形式、内存布局" class="headerlink" title="合约中的数据在存储中的组织形式、内存布局"></a>合约中的数据在存储中的组织形式、内存布局</h1><p>数据可以存储在两个地方：存储（storage）和内存（memory）。</p>
+<ol>
+<li>存储（Storage）：存储<strong>是永久性的，用于持久化保存合约的状态数据</strong>。存储使用键值对的形式进行组织，其中键是一个256位的整数，值可以是任意大小的字节串。存储的访问是昂贵的，每次读取或写入都会消耗燃气。存储的内容在区块链上永久保存，并且可以被其他合约或外部账户访问。</li>
+<li>内存（Memory）：内存<strong>是临时性的，用于在合约执行期间存储临时数据</strong>。内存的访问速度较快，但在合约执行结束后会被清空。内存的布局是线性的，从位置0开始，可以按需分配和释放。合约可以通过指定偏移量和长度来访问内存中的数据。</li>
+</ol>
+<p>内存布局包括以下几个部分：</p>
+<ul>
+<li>栈（Stack）：栈用于存储函数调用时的局部变量、函数参数和返回值等数据。栈以先进后出的方式管理数据。</li>
+<li>活动区域（Active Area）：活动区域用于存储当前正在执行的函数的局部变量和临时变量等数据。</li>
+<li>自由区域（Free Area）：自由区域是未被使用的内存空间，可以用于存储额外的临时数据。</li>
+</ul>
+<h1 id="哪些地方会收取交易费gas？"><a href="#哪些地方会收取交易费gas？" class="headerlink" title="哪些地方会收取交易费gas？"></a>哪些地方会收取交易费gas？</h1><p>每个操作码都有一个固定的燃气成本，对存储区域的写入和读取操作都会消耗燃气</p>
+<p>非cesop（constant external state operation）操作：cesop操作是指不修改合约状态的操作，如只读函数调用。这些操作不会产生燃气费用。</p>
+<h1 id="合约的内联汇编是什么、如何通过内联汇编操作数据"><a href="#合约的内联汇编是什么、如何通过内联汇编操作数据" class="headerlink" title="合约的内联汇编是什么、如何通过内联汇编操作数据"></a>合约的内联汇编是什么、如何通过内联汇编操作数据</h1><p>内联汇编是一种在<strong>底层访问以太坊虚拟机的语言</strong>，实现一些高级语言无法直接表达的功能。</p>
+<p>通过 <code>assembly &#123;&#125;</code> 包裹代码</p>
+<h1 id="智能合约"><a href="#智能合约" class="headerlink" title="智能合约"></a>智能合约</h1><p>智能合约是存储在区块链上的一段程序代码，智能合约无需信任，其有几个特点：自动执行、结果可预见、记录公开可审计、透明和不可篡改、去中心化等等</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/12/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/Solidity/" title="Solidity">https://kongpengyq.com/2022/12/14/区块链/区块链知识/Solidity/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/" rel="tag"># 区块链知识</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/12/12/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/%E9%A2%84%E8%A8%80%E6%9C%BA/" rel="prev" title="预言机">
+      <i class="fa fa-chevron-left"></i> 预言机
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/12/18/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="next" title="区块链">
+      区块链 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#solidity%E4%B8%8A%E5%A6%82%E4%BD%95%E5%9C%A8%E6%95%B0%E7%BB%84%E5%88%A0%E9%99%A4%E4%B8%80%E4%B8%AA%E6%95%B0"><span class="nav-text">solidity上如何在数组删除一个数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%A0%E6%98%AF%E5%A6%82%E4%BD%95%E7%94%A8%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%AE%9E%E7%8E%B0%E8%B5%84%E9%87%91%E6%89%98%E7%AE%A1%E7%9A%84"><span class="nav-text">你是如何用以太坊实现资金托管的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%AF%B9%E4%B8%80%E4%B8%AA%E6%95%B0%E7%BB%84%E5%8E%BB%E9%87%8D"><span class="nav-text">如何对一个数组去重</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#solidity%E7%9A%84function%E7%9A%84%E5%8F%AF%E8%A7%81%E6%80%A7"><span class="nav-text">solidity的function的可见性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%88%E7%BA%A6%E5%8F%91%E5%B8%83%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-text">合约发布的数据结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#solidity%E5%87%BD%E6%95%B0%E4%BF%AE%E9%A5%B0%E5%99%A8"><span class="nav-text">solidity函数修饰器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solc%E7%BC%96%E8%AF%91%E5%99%A8%E7%9A%84%E5%8E%9F%E7%90%86%E3%80%81%E6%B1%87%E7%BC%96%E8%BF%87%E7%A8%8B"><span class="nav-text">Solc编译器的原理、汇编过程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%B4%E4%B8%80%E4%B8%8B%E5%90%88%E7%BA%A6%E7%9A%84%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90%E6%96%B9%E6%B3%95%E3%80%81%E5%8E%9F%E7%90%86"><span class="nav-text">说一下合约的安全分析方法、原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%88%E7%BA%A6%E5%86%85%E9%83%A8%E8%B0%83%E7%94%A8%E5%92%8C%E5%A4%96%E9%83%A8%E8%B0%83%E7%94%A8"><span class="nav-text">合约内部调用和外部调用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E9%83%A8%E5%87%BD%E6%95%B0%E5%92%8C%E5%A4%96%E9%83%A8%E5%87%BD%E6%95%B0%E5%8C%BA%E5%88%AB"><span class="nav-text">内部函数和外部函数区别</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8Bstorage%E3%80%81memory%E3%80%81calldata"><span class="nav-text">Solidity引用类型storage、memory、calldata</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%B5%8B%E5%80%BC%E6%97%B6%E4%BD%95%E6%97%B6%E8%BF%9B%E8%A1%8C%E5%80%BC%E4%BC%A0%E9%80%92%E3%80%81%E4%BD%95%E6%97%B6%E8%BF%9B%E8%A1%8C%E5%BC%95%E7%94%A8%E4%BC%A0%E9%80%92"><span class="nav-text">数据赋值时何时进行值传递、何时进行引用传递</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%B4%E4%B8%80%E4%B8%8BERC20%E3%80%81ERC721%E7%9A%84%E5%87%BD%E6%95%B0%E5%92%8C%E4%BD%9C%E7%94%A8%E3%80%81%E4%BB%A5%E5%8F%8A%E5%AF%B9%E5%BA%94%E7%9A%84%E7%BC%BA%E7%82%B9%E5%92%8C%E6%94%B9%E8%BF%9B%E7%9A%84%E6%96%B9%E6%A1%88"><span class="nav-text">说一下ERC20、ERC721的函数和作用、以及对应的缺点和改进的方案</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E4%B8%AD%E5%8A%A0indexed%E5%B1%9E%E6%80%A7%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-text">事件中加indexed属性的作用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%98%A0%E5%B0%84%E8%83%BD%E5%90%A6%E8%A2%AB%E5%A3%B0%E6%98%8E%E4%B8%BAmemory%E7%B1%BB%E5%9E%8B%E3%80%81%E6%98%A0%E5%B0%84%E4%B8%AD%E7%9A%84key%E8%83%BD%E5%90%A6%E4%B8%BA%E5%A4%8D%E6%9D%82%E7%B1%BB%E5%9E%8B%E3%80%81%E6%98%A0%E5%B0%84%E7%9A%84key%E6%98%AFkeccak256%E5%93%88%E5%B8%8C%E8%BF%98%E6%98%AF%E7%9C%9F%E5%AE%9E%E7%9A%84%E5%80%BC%E3%80%81%E6%98%A0%E5%B0%84%E8%83%BD%E5%90%A6%E4%BD%9C%E4%B8%BA%E8%BF%94%E5%9B%9E%E5%80%BC%E3%80%81%E6%98%A0%E5%B0%84%E8%83%BD%E5%90%A6%E5%B5%8C%E5%A5%97"><span class="nav-text">映射能否被声明为memory类型、映射中的key能否为复杂类型、映射的key是keccak256哈希还是真实的值、映射能否作为返回值、映射能否嵌套</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%ADreceive%E5%87%BD%E6%95%B0%E3%80%81fallback%E5%87%BD%E6%95%B0"><span class="nav-text">Solidity中receive函数、fallback函数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%ADview%E5%87%BD%E6%95%B0%E3%80%81pure%E5%87%BD%E6%95%B0%E7%9A%84%E4%BD%9C%E7%94%A8%E5%92%8C%E5%8C%BA%E5%88%AB"><span class="nav-text">Solidity中view函数、pure函数的作用和区别</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%AD%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%92%8C%E5%AD%97%E8%8A%82%E6%9C%89%E4%BB%80%E4%B9%88%E4%B8%8D%E5%90%8C%EF%BC%88bytes%E5%85%83%E7%B4%A0%E7%9A%84%E5%86%85%E5%AD%98%E6%98%AF%E7%B4%A7%E5%AF%86%E8%BF%9E%E7%BB%AD%E5%AD%98%E6%94%BE%E7%9A%84%EF%BC%8C%E4%B8%8D%E6%98%AF%E6%8C%89%E7%85%A7-32-%E4%B8%AA%E5%AD%97%E8%8A%82%E4%B8%BA%E4%B8%80%E5%8D%95%E5%85%83%EF%BC%89"><span class="nav-text">Solidity中字符串和字节有什么不同（bytes元素的内存是紧密连续存放的，不是按照 32 个字节为一单元）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#bytes%E5%92%8Cbytes32%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E5%92%8C%E5%8C%BA%E5%88%AB"><span class="nav-text">bytes和bytes32的应用场景和区别</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%ADconstant%E5%92%8Cimmutable%E7%9A%84%E4%BD%9C%E7%94%A8%E5%92%8C%E5%8C%BA%E5%88%AB"><span class="nav-text">Solidity中constant和immutable的作用和区别</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%AD%E5%88%9B%E5%BB%BA%E5%90%88%E7%BA%A6%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%96%B9%E5%BC%8F%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-text">Solidity中创建合约的两种方式的区别和应用场景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%AD%E7%9A%84%E9%94%99%E8%AF%AF%E7%B1%BB%E5%9E%8B%EF%BC%88Panic%E5%92%8CError%EF%BC%89%E5%87%BA%E7%8E%B0%E7%9A%84%E5%9C%BA%E6%99%AF%E5%92%8C%E8%A1%A8%E7%A4%BA%E6%84%8F%E4%B9%89"><span class="nav-text">Solidity中的错误类型（Panic和Error）出现的场景和表示意义</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%ADassert%E5%92%8Crequire%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-text">Solidity中assert和require的区别和应用场景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%ADtransfer%E3%80%81send%E3%80%81call%E8%BD%AC%E8%B4%A6%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-text">Solidity中transfer、send、call转账的区别</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%ADcall%E3%80%81delegatecall%E3%80%81staticcall%E3%80%81callcode%E5%8C%BA%E5%88%AB"><span class="nav-text">Solidity中call、delegatecall、staticcall、callcode区别</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%AD%E7%9A%84%E9%9A%90%E5%BC%8F%E8%BD%AC%E6%8D%A2%E5%92%8C%E6%98%BE%E7%A4%BA%E8%BD%AC%E6%8D%A2%E3%80%81%E5%87%BD%E6%95%B0%E5%8F%AF%E8%A7%81%E6%80%A7%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2"><span class="nav-text">Solidity中的隐式转换和显示转换、函数可见性类型转换</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%AD%E5%90%88%E7%BA%A6%E7%BB%A7%E6%89%BF%E6%96%B9%E5%BC%8F%E3%80%81%E7%BB%A7%E6%89%BF%E5%A4%9A%E4%B8%AA%E5%90%88%E7%BA%A6%E7%9A%84%E9%A1%BA%E5%BA%8F%E5%86%99%E6%B3%95%E3%80%81super%E5%85%B3%E9%94%AE%E5%AD%97%E4%BD%9C%E7%94%A8"><span class="nav-text">Solidity中合约继承方式、继承多个合约的顺序写法、super关键字作用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%AD%E5%87%BD%E6%95%B0%E9%87%8D%E5%86%99%E8%A7%84%E5%88%99"><span class="nav-text">Solidity中函数重写规则</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%AD%E7%9A%84%E6%8E%A5%E5%8F%A3%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-text">Solidity中的接口是什么</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Solidity%E4%B8%AD%E7%9A%84%E5%BA%93"><span class="nav-text">Solidity中的库</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E9%93%BE%E4%B8%8A%E4%BA%A4%E6%98%93%E8%BF%87%E7%A8%8B%E3%80%81%E5%A6%82%E4%BD%95%E5%80%9F%E5%8A%A9%E5%8C%BA%E5%9D%97%E6%B5%8F%E8%A7%88%E5%99%A8%E6%9F%A5%E8%AF%A2%E4%BF%A1%E6%81%AF"><span class="nav-text">如何分析链上交易过程、如何借助区块浏览器查询信息</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ABI%E7%9A%84%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F%E3%80%81solidity%E5%86%85%E7%BD%AE%E7%9A%84ABI%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0"><span class="nav-text">ABI的编码方式、solidity内置的ABI相关函数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E5%8F%91%E8%B5%B7%E4%BA%A4%E6%98%93%E7%9A%84%E6%95%B4%E4%B8%AA%E8%BF%87%E7%A8%8B%E6%8F%8F%E8%BF%B0%E4%B8%80%E4%B8%8B%EF%BC%8C%E5%8C%85%E6%8B%AC%E4%BA%A4%E6%98%93%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E3%80%81%E4%BA%A4%E6%98%93%E7%9A%84%E8%BF%87%E7%A8%8B"><span class="nav-text">用户发起交易的整个过程描述一下，包括交易的数据结构、交易的过程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E9%80%89%E6%8B%A9%E5%99%A8%E7%9A%84%E7%94%9F%E6%88%90%E6%96%B9%E5%BC%8F%E3%80%81%E7%BB%84%E6%88%90%E3%80%81%E4%BD%9C%E7%94%A8%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AA%E5%8F%96%E5%89%8D4%E5%AD%97%E8%8A%82%E3%80%81%E4%BB%A5%E5%8F%8A%E5%9C%A8%E5%90%88%E7%BA%A6%E6%89%A7%E8%A1%8C%E4%B8%AD%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-text">函数选择器的生成方式、组成、作用、为什么只取前4字节、以及在合约执行中的作用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%A6%E7%BB%86%E8%AF%B4%E4%B8%80%E4%B8%8B%E5%9F%BA%E4%BA%8E%E6%A0%88%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BAEVM%EF%BC%88256%E4%BD%8D%EF%BC%89%E3%80%81%E5%85%B6%E4%B8%8A%E4%B8%8B%E6%96%87%E6%9C%89%E5%93%AA%E4%BA%9B%E3%80%81%E5%AD%98%E5%82%A8%E7%A9%BA%E9%97%B4%E6%9C%89%E5%93%AA%E5%87%A0%E7%B1%BB%EF%BC%88stack%E3%80%81memory%E3%80%81storage%EF%BC%89%E3%80%81stack%E7%9A%84%E6%B7%B1%E5%BA%A6%E3%80%81%E8%AE%BF%E9%97%AE%E7%9A%84%E6%9C%80%E5%A4%A7%E6%B7%B1%E5%BA%A6"><span class="nav-text">详细说一下基于栈的虚拟机EVM（256位）、其上下文有哪些、存储空间有哪几类（stack、memory、storage）、stack的深度、访问的最大深度</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%A6%E7%BB%86%E8%AF%B4%E4%B8%80%E4%B8%8BEVM%E7%9A%84%E2%80%9Cstack-too-deep%E2%80%9D%E9%94%99%E8%AF%AF"><span class="nav-text">详细说一下EVM的“stack too deep”错误</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%8EEVM%E7%9A%84%E8%A7%92%E5%BA%A6%E9%98%90%E8%BF%B0%E4%BA%A4%E6%98%93%E5%8F%91%E9%80%81%E5%92%8C%E8%B0%83%E7%94%A8%E5%90%88%E7%BA%A6%E7%9A%84%E6%95%B4%E4%B8%AA%E8%BF%87%E7%A8%8B"><span class="nav-text">从EVM的角度阐述交易发送和调用合约的整个过程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A5%E5%A4%AA%E5%9D%8A%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%81%E6%93%8D%E4%BD%9C%E7%A0%81%E6%98%AF%E4%BB%80%E4%B9%88%E3%80%81%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%E3%80%81%E8%A7%82%E5%AF%9F%E6%A0%88%E3%80%81%E5%86%85%E5%AD%98%E7%9A%84%E5%8F%98%E5%8C%96"><span class="nav-text">以太坊的字节码、操作码是什么、如何进行单步调试、观察栈、内存的变化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%88%E7%BA%A6%E4%B8%AD%E7%9A%84%E6%95%B0%E6%8D%AE%E5%9C%A8%E5%AD%98%E5%82%A8%E4%B8%AD%E7%9A%84%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F%E3%80%81%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="nav-text">合约中的数据在存储中的组织形式、内存布局</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%93%AA%E4%BA%9B%E5%9C%B0%E6%96%B9%E4%BC%9A%E6%94%B6%E5%8F%96%E4%BA%A4%E6%98%93%E8%B4%B9gas%EF%BC%9F"><span class="nav-text">哪些地方会收取交易费gas？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%88%E7%BA%A6%E7%9A%84%E5%86%85%E8%81%94%E6%B1%87%E7%BC%96%E6%98%AF%E4%BB%80%E4%B9%88%E3%80%81%E5%A6%82%E4%BD%95%E9%80%9A%E8%BF%87%E5%86%85%E8%81%94%E6%B1%87%E7%BC%96%E6%93%8D%E4%BD%9C%E6%95%B0%E6%8D%AE"><span class="nav-text">合约的内联汇编是什么、如何通过内联汇编操作数据</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6"><span class="nav-text">智能合约</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

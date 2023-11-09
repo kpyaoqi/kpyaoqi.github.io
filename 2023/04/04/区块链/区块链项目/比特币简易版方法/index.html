@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="基本原型123456789&#x2F;&#x2F; 区块type Block struct &amp;#123;	Timestamp     int64          &#x2F;&#x2F;时间戳	Transactions  []*Transaction &#x2F;&#x2F;存储交易	PrevBlockHash []byte         &#x2F;&#x2F;前面区块的哈希值	Hash          []byte         &#x2F;&#x2F;哈希值	Nonce">
+<meta property="og:type" content="article">
+<meta property="og:title" content="比特币简易版方法">
+<meta property="og:url" content="https://kongpengyq.com/2023/04/04/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E9%A1%B9%E7%9B%AE/%E6%AF%94%E7%89%B9%E5%B8%81%E7%AE%80%E6%98%93%E7%89%88%E6%96%B9%E6%B3%95/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="基本原型123456789&#x2F;&#x2F; 区块type Block struct &amp;#123;	Timestamp     int64          &#x2F;&#x2F;时间戳	Transactions  []*Transaction &#x2F;&#x2F;存储交易	PrevBlockHash []byte         &#x2F;&#x2F;前面区块的哈希值	Hash          []byte         &#x2F;&#x2F;哈希值	Nonce">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-04-03T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.815Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链项目">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/04/04/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E9%A1%B9%E7%9B%AE/%E6%AF%94%E7%89%B9%E5%B8%81%E7%AE%80%E6%98%93%E7%89%88%E6%96%B9%E6%B3%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>比特币简易版方法 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/04/04/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E9%A1%B9%E7%9B%AE/%E6%AF%94%E7%89%B9%E5%B8%81%E7%AE%80%E6%98%93%E7%89%88%E6%96%B9%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          比特币简易版方法
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-04-04 00:00:00" itemprop="dateCreated datePublished" datetime="2023-04-04T00:00:00+08:00">2023-04-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE%E9%A1%B9%E7%9B%AE/" itemprop="url" rel="index">
+                    <span itemprop="name">区块链项目</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="基本原型"><a href="#基本原型" class="headerlink" title="基本原型"></a>基本原型</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 区块</span></span><br><span class="line"><span class="keyword">type</span> Block <span class="keyword">struct</span> &#123;</span><br><span class="line">	Timestamp     <span class="type">int64</span>          <span class="comment">//时间戳</span></span><br><span class="line">	Transactions  []*Transaction <span class="comment">//存储交易</span></span><br><span class="line">	PrevBlockHash []<span class="type">byte</span>         <span class="comment">//前面区块的哈希值</span></span><br><span class="line">	Hash          []<span class="type">byte</span>         <span class="comment">//哈希值</span></span><br><span class="line">	Nonce         <span class="type">int</span>            <span class="comment">//用于找到pow</span></span><br><span class="line">	Height        <span class="type">int</span>            <span class="comment">//区块高度</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建区块</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewBlock</span><span class="params">(transactions []*Transaction, prevBlockHash []<span class="type">byte</span>, height <span class="type">int</span>)</span></span> *Block &#123;</span><br><span class="line">   <span class="comment">//新建一个区块</span></span><br><span class="line">   block := &amp;Block&#123;time.Now().Unix(), transactions, prevBlockHash, []<span class="type">byte</span>&#123;&#125;, <span class="number">0</span>, height&#125;</span><br><span class="line">   <span class="comment">//计算nonce来符合pow共识</span></span><br><span class="line">   pow := NewProofOfWork(block)</span><br><span class="line">   nonce, hash := pow.Run()</span><br><span class="line">   block.Hash = hash[:]</span><br><span class="line">   block.Nonce = nonce</span><br><span class="line">   <span class="keyword">return</span> block</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 区块链</span></span><br><span class="line"><span class="keyword">type</span> Blockchain <span class="keyword">struct</span> &#123;</span><br><span class="line">   <span class="comment">//数据库中存储的最后一个块的哈希</span></span><br><span class="line">   tip []<span class="type">byte</span></span><br><span class="line">   db  *bolt.DB</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 添加区块</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(bc *Blockchain)</span></span> MineBlock(transactions []*Transaction) *Block &#123;</span><br><span class="line">	<span class="keyword">var</span> lastHash []<span class="type">byte</span></span><br><span class="line">	<span class="keyword">var</span> lastHeight <span class="type">int</span></span><br><span class="line">	<span class="comment">//在一笔交易被放入一个块之前进行验证</span></span><br><span class="line">	<span class="keyword">for</span> _, tx := <span class="keyword">range</span> transactions &#123;</span><br><span class="line">		<span class="keyword">if</span> bc.VerifyTransaction(tx) != <span class="literal">true</span> &#123;</span><br><span class="line">			log.Panic(<span class="string">&quot;ERROR:Invalid transaction&quot;</span>)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//获取最后一个块的哈希</span></span><br><span class="line">	bc.db.View(<span class="function"><span class="keyword">func</span><span class="params">(tx *bolt.Tx)</span></span> <span class="type">error</span> &#123;</span><br><span class="line">		b := tx.Bucket([]<span class="type">byte</span>(blocksBucket))</span><br><span class="line">		lastHash = b.Get([]<span class="type">byte</span>(<span class="string">&quot;l&quot;</span>))</span><br><span class="line">		blockData := b.Get(lastHash)</span><br><span class="line">		block := DeserializeBlock(blockData)</span><br><span class="line">		lastHeight = block.Height</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;)</span><br><span class="line">	<span class="comment">//挖出一个新的块</span></span><br><span class="line">	newBlock := NewBlock(transactions, lastHash, lastHeight+<span class="number">1</span>)</span><br><span class="line">    <span class="comment">//修改区块链的数据</span></span><br><span class="line">	bc.db.Update(<span class="function"><span class="keyword">func</span><span class="params">(tx *bolt.Tx)</span></span> <span class="type">error</span> &#123;</span><br><span class="line">		b := tx.Bucket([]<span class="type">byte</span>(blocksBucket))</span><br><span class="line">		b.Put(newBlock.Hash, newBlock.Serialize())</span><br><span class="line">		b.Put([]<span class="type">byte</span>(<span class="string">&quot;l&quot;</span>), newBlock.Hash)</span><br><span class="line">		bc.tip = newBlock.Hash</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;)</span><br><span class="line">	<span class="keyword">return</span> newBlock</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="工作量证明"><a href="#工作量证明" class="headerlink" title="工作量证明"></a>工作量证明</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 循环直到符合pow证明</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(pow *ProofOfWork)</span></span> Run() (<span class="type">int</span>, []<span class="type">byte</span>) &#123;</span><br><span class="line">	<span class="keyword">var</span> hashInt big.Int</span><br><span class="line">	<span class="keyword">var</span> hash [<span class="number">32</span>]<span class="type">byte</span></span><br><span class="line">	nonce := <span class="number">0</span></span><br><span class="line">	fmt.Printf(<span class="string">&quot;Mining the block containing&quot;</span>)</span><br><span class="line">	<span class="keyword">for</span> nonce &lt; maxNonce &#123;</span><br><span class="line">		data := pow.prepareData(nonce)</span><br><span class="line">		hash = sha256.Sum256(data)</span><br><span class="line">		<span class="keyword">if</span> math.Remainder(<span class="type">float64</span>(nonce), <span class="number">100000</span>) == <span class="number">0</span> &#123;</span><br><span class="line">			fmt.Printf(<span class="string">&quot;\r%x&quot;</span>, hash)</span><br><span class="line">		&#125;</span><br><span class="line">		hashInt.SetBytes(hash[:])</span><br><span class="line">        <span class="comment">//符合要求</span></span><br><span class="line">		<span class="keyword">if</span> hashInt.Cmp(pow.target) == <span class="number">-1</span> &#123;</span><br><span class="line">			fmt.Printf(<span class="string">&quot;\r%x&quot;</span>, hash)</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			nonce++</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Printf(<span class="string">&quot;\n\n&quot;</span>)</span><br><span class="line">	<span class="keyword">return</span> nonce, hash[:]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="持久化和命令行接口"><a href="#持久化和命令行接口" class="headerlink" title="持久化和命令行接口"></a>持久化和命令行接口</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//序列化</span></span><br><span class="line"><span class="comment">//定义一个 buffer 存储序列化之后的数据。然后，我们初始化一个 gob encoder 并对 block 进行编码，结果作为一个字节数组返回。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Block)</span></span> Serialize() []<span class="type">byte</span> &#123;</span><br><span class="line">	<span class="comment">//Buffer是一个实现了读写方法的可变大小的字节缓冲</span></span><br><span class="line">	<span class="keyword">var</span> result bytes.Buffer</span><br><span class="line">	<span class="comment">//NewEncoder返回一个将编码后数据写入result的*Encoder</span></span><br><span class="line">	encoder := gob.NewEncoder(&amp;result)</span><br><span class="line">	<span class="comment">//Encode方法将b编码后发送，并且会保证所有的类型信息都先发送</span></span><br><span class="line">	encoder.Encode(b)</span><br><span class="line">	<span class="comment">//返回未读取部分字节数据的切片</span></span><br><span class="line">	<span class="keyword">return</span> result.Bytes()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">DeserializeBlock</span><span class="params">(d []<span class="type">byte</span>)</span></span> *Block &#123;</span><br><span class="line">	<span class="keyword">var</span> block Block</span><br><span class="line">	<span class="comment">//函数返回一个从r读取数据的*Decoder，如果r不满足io.ByteReader接口，则会包装r为bufio.Reader。</span></span><br><span class="line">	decoder := gob.NewDecoder(bytes.NewReader(d))</span><br><span class="line">	<span class="comment">//Decode从输入流读取下一个之并将该值存入&amp;block</span></span><br><span class="line">	decoder.Decode(&amp;block)</span><br><span class="line">	<span class="keyword">return</span> &amp;block</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//新建区块链</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewBlockchain</span><span class="params">()</span></span> *Blockchain &#123;</span><br><span class="line">	<span class="keyword">var</span> tip []<span class="type">byte</span></span><br><span class="line">    <span class="comment">//打开一个 BoltDB 文件</span></span><br><span class="line">	db, err := bolt.Open(dbFile, <span class="number">0600</span>, <span class="literal">nil</span>)</span><br><span class="line">    <span class="comment">//先获取了存储区块的 bucket：如果存在，就从中读取 l 键</span></span><br><span class="line">	err = db.Update(<span class="function"><span class="keyword">func</span><span class="params">(tx *bolt.Tx)</span></span> <span class="type">error</span> &#123;</span><br><span class="line">		b := tx.Bucket([]<span class="type">byte</span>(blocksBucket))</span><br><span class="line">        <span class="comment">//如果不存在，就生成创世块，创建 bucket，并将区块保存到里面，然后更新 l 键以存储链中最后一个块的哈希。</span></span><br><span class="line">		<span class="keyword">if</span> b == <span class="literal">nil</span> &#123;</span><br><span class="line">			genesis := NewGenesisBlock()</span><br><span class="line">			b, err := tx.CreateBucket([]<span class="type">byte</span>(blocksBucket))</span><br><span class="line">			err = b.Put(genesis.Hash, genesis.Serialize())</span><br><span class="line">			err = b.Put([]<span class="type">byte</span>(<span class="string">&quot;l&quot;</span>), genesis.Hash)</span><br><span class="line">			tip = genesis.Hash</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			tip = b.Get([]<span class="type">byte</span>(<span class="string">&quot;l&quot;</span>))</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;)</span><br><span class="line">	bc := Blockchain&#123;tip, db&#125;</span><br><span class="line">	<span class="keyword">return</span> &amp;bc</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建一个新的、名为getbalance，采用flag.ExitOnError为错误处理策略的FlagSet。</span></span><br><span class="line">getBalanceCmd := flag.NewFlagSet(<span class="string">&quot;getbalance&quot;</span>, flag.ExitOnError)</span><br><span class="line"><span class="comment">//String用指定的名称、默认值、使用信息注册一个string类型flag。返回一个保存了该flag的值的指针。</span></span><br><span class="line">getBalanceAddress := getBalanceCmd.String(<span class="string">&quot;address&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="string">&quot;The address to get balance for&quot;</span>)</span><br><span class="line"><span class="comment">//通过switch os.Args[1] case --- 判断命令行以及参数是否错误</span></span><br><span class="line"><span class="comment">//通过传入*getBalanceAddress，以及nodeID进行方法调用</span></span><br><span class="line">cli.getBalance(*getBalanceAddress, nodeID)</span><br></pre></td></tr></table></figure>
+
+<h1 id="地址"><a href="#地址" class="headerlink" title="地址"></a>地址</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//账户</span></span><br><span class="line"><span class="keyword">type</span> Wallet <span class="keyword">struct</span> &#123;</span><br><span class="line">	PrivateKey ecdsa.PrivateKey</span><br><span class="line">	PublicKey  []<span class="type">byte</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//q</span></span><br><span class="line"><span class="keyword">type</span> Wallets <span class="keyword">struct</span> &#123;</span><br><span class="line">	Wallets <span class="keyword">map</span>[<span class="type">string</span>]*Wallet</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//创建一个账户</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewWallet</span><span class="params">()</span></span> *Wallet &#123;</span><br><span class="line">	private, public := newKeyPair()</span><br><span class="line">	wallet := Wallet&#123;private, public&#125;</span><br><span class="line">	<span class="keyword">return</span> &amp;wallet</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">newKeyPair</span><span class="params">()</span></span> (ecdsa.PrivateKey, []<span class="type">byte</span>) &#123;</span><br><span class="line">	<span class="comment">//返回一个实现了P-256的曲线</span></span><br><span class="line">    curve := elliptic.P256()</span><br><span class="line">    <span class="comment">//GenerateKey函数生成一对</span></span><br><span class="line">    private, _ := ecdsa.GenerateKey(curve, rand.Reader)</span><br><span class="line">    pubKey := <span class="built_in">append</span>(private.PublicKey.X.Bytes(), private.PublicKey.Y.Bytes()...)</span><br><span class="line">    <span class="keyword">return</span> *private, pubKey</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取钱包地址</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w Wallet)</span></span> GetAddress() []<span class="type">byte</span> &#123;</span><br><span class="line">	<span class="comment">//使用 RIPEMD160(SHA256(PubKey)) 哈希算法</span></span><br><span class="line">	pubKeyHash := HashPubKey(w.PublicKey)</span><br><span class="line">	<span class="comment">//给哈希加上地址生成算法版本的前缀</span></span><br><span class="line">	versionedPayload := <span class="built_in">append</span>([]<span class="type">byte</span>&#123;version_w&#125;, pubKeyHash...)</span><br><span class="line">	<span class="comment">//计算校验和</span></span><br><span class="line">	checksum := checksum(versionedPayload)</span><br><span class="line">	fullPayload := <span class="built_in">append</span>(versionedPayload, checksum...)</span><br><span class="line">	<span class="comment">//使用 Base58 对组合进行编码</span></span><br><span class="line">	address := Base58Encode(fullPayload)</span><br><span class="line">	<span class="keyword">return</span> address</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 对公钥取哈希</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">HashPubKey</span><span class="params">(pubKey []<span class="type">byte</span>)</span></span> []<span class="type">byte</span> &#123;</span><br><span class="line">	publicSHA256 := sha256.Sum256(pubKey)</span><br><span class="line">	RIPEMD160Hasher := ripemd160.New()</span><br><span class="line">	RIPEMD160Hasher.Write(publicSHA256[:])</span><br><span class="line">	publicRIPEMD160 := RIPEMD160Hasher.Sum(<span class="literal">nil</span>)</span><br><span class="line">	<span class="keyword">return</span> publicRIPEMD160</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 计算校验和(校验和是结果哈希的前四个字节)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">checksum</span><span class="params">(payload []<span class="type">byte</span>)</span></span> []<span class="type">byte</span> &#123;</span><br><span class="line">	firstSHA := sha256.Sum256(payload)</span><br><span class="line">	secondSHA := sha256.Sum256(firstSHA[:])</span><br><span class="line">	<span class="keyword">return</span> secondSHA[:addressChecksumLen]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//使用私钥对任意长度的hash值（必须是较大信息的hash结果）进行签名，返回签名结果(一对大整数)</span></span><br><span class="line"><span class="comment">//Reader是一个全局、共享的密码用强随机数生成器---私钥---交易副本</span></span><br><span class="line">r, s, err := ecdsa.Sign(rand.Reader, &amp;privKey, []<span class="type">byte</span>(dataToSign))</span><br><span class="line">signature := <span class="built_in">append</span>(r.Bytes(), s.Bytes()...)</span><br><span class="line">tx.Vin[inID].Signature = signature</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//使用公钥验证hash值和两个大整数r、s构成的签名，并返回签名是否合法。</span></span><br><span class="line">rawPubKey := ecdsa.PublicKey&#123;curve, &amp;x, &amp;y&#125;</span><br><span class="line"><span class="comment">//交易副本</span></span><br><span class="line">ecdsa.Verify(&amp;rawPubKey, []<span class="type">byte</span>(dataToVerify), &amp;r, &amp;s)==<span class="literal">true</span>?</span><br></pre></td></tr></table></figure>
+
+<h1 id="交易"><a href="#交易" class="headerlink" title="交易"></a>交易</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 交易</span></span><br><span class="line"><span class="keyword">type</span> Transaction <span class="keyword">struct</span> &#123;</span><br><span class="line">   ID   []<span class="type">byte</span>		<span class="comment">//交易ID</span></span><br><span class="line">   Vin  []TXInput	<span class="comment">//输入脚本数组</span></span><br><span class="line">   Vout []TXOutput	<span class="comment">//输出脚本数组</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> TXInput <span class="keyword">struct</span> &#123;</span><br><span class="line">	Txid      []<span class="type">byte</span>	<span class="comment">//一个交易输入引用了之前一笔交易的一个输出, ID表明是之前哪笔交易</span></span><br><span class="line">	Vout      <span class="type">int</span>		<span class="comment">//对应哪个输出</span></span><br><span class="line">	Signature []<span class="type">byte</span>	<span class="comment">//签名数据</span></span><br><span class="line">	PubKey    []<span class="type">byte</span>	<span class="comment">//公钥</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> TXOutput <span class="keyword">struct</span> &#123;</span><br><span class="line">	Value      <span class="type">int</span>      <span class="comment">//有多少币</span></span><br><span class="line">	PubKeyHash []<span class="type">byte</span>	<span class="comment">//锁定脚本</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建一笔新的交易</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewUTXOTransaction</span><span class="params">(wallet *Wallet, to <span class="type">string</span>, amount <span class="type">int</span>, UTXOSet *UTXOSet)</span></span> *Transaction &#123;</span><br><span class="line">	<span class="keyword">var</span> inputs []TXInput</span><br><span class="line">	<span class="keyword">var</span> outputs []TXOutput</span><br><span class="line">	<span class="comment">//获取from地址的公钥的hash</span></span><br><span class="line">	pubKeyHash := HashPubKey(wallet.PublicKey)</span><br><span class="line">	<span class="comment">//找到至少 amount 的 UTXO</span></span><br><span class="line">	acc, vaildOutputs := UTXOSet.FindSpendableOutputs(pubKeyHash, amount)</span><br><span class="line">	<span class="comment">//不足够支付</span></span><br><span class="line">	<span class="keyword">if</span> acc &lt; amount &#123;</span><br><span class="line">		log.Panic(<span class="string">&quot;ERROR:Not enough funds&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//足够支付(遍历含有from地址输出的交易)</span></span><br><span class="line">	<span class="keyword">for</span> txid, outs := <span class="keyword">range</span> vaildOutputs &#123;</span><br><span class="line">		txID, _ := hex.DecodeString(txid)</span><br><span class="line">		<span class="keyword">for</span> _, out := <span class="keyword">range</span> outs &#123;</span><br><span class="line">			<span class="comment">//存入到这笔交易的输入里</span></span><br><span class="line">			input := TXInput&#123;txID, out, <span class="literal">nil</span>, wallet.PublicKey&#125;</span><br><span class="line">			inputs = <span class="built_in">append</span>(inputs, input)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	from := fmt.Sprintf(<span class="string">&quot;%s&quot;</span>, wallet.GetAddress())</span><br><span class="line">	outputs = <span class="built_in">append</span>(outputs, *NewTXOutput(amount, to))</span><br><span class="line">    <span class="comment">//余额大于转账金额</span></span><br><span class="line">	<span class="keyword">if</span> acc &gt; amount &#123;</span><br><span class="line">		outputs = <span class="built_in">append</span>(outputs, *NewTXOutput(acc-amount, from))</span><br><span class="line">	&#125;</span><br><span class="line">	tx := Transaction&#123;<span class="literal">nil</span>, inputs, outputs&#125;</span><br><span class="line">	tx.ID = tx.Hash()</span><br><span class="line">	<span class="comment">//签名交易</span></span><br><span class="line">	UTXOSet.Blockchain.SignTransaction(&amp;tx, wallet.PrivateKey)</span><br><span class="line">	<span class="keyword">return</span> &amp;tx</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="UTXO"><a href="#UTXO" class="headerlink" title="UTXO"></a>UTXO</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 从 address 中找到至少 amount 的 UTXO</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u UTXOSet)</span></span> FindSpendableOutputs(pubkeyHash []<span class="type">byte</span>, amount <span class="type">int</span>) (<span class="type">int</span>, <span class="keyword">map</span>[<span class="type">string</span>][]<span class="type">int</span>) &#123;</span><br><span class="line">	unspentOutputs := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="type">string</span>][]<span class="type">int</span>)</span><br><span class="line">	accumulated := <span class="number">0</span></span><br><span class="line">	db := u.Blockchain.db</span><br><span class="line">	db.View(<span class="function"><span class="keyword">func</span><span class="params">(tx *bolt.Tx)</span></span> <span class="type">error</span> &#123;</span><br><span class="line">		b := tx.Bucket([]<span class="type">byte</span>(utxoBucket))</span><br><span class="line">		c := b.Cursor()</span><br><span class="line">		<span class="keyword">for</span> k, v := c.First(); k != <span class="literal">nil</span>; k, v = c.Next() &#123;</span><br><span class="line">			txID := hex.EncodeToString(k)</span><br><span class="line">			outs := DeserializeOutputs(v)</span><br><span class="line">			<span class="keyword">for</span> outIdx, out := <span class="keyword">range</span> outs.Outputs &#123;</span><br><span class="line">                <span class="comment">//如果该交易输出可以被解锁，即可被花费</span></span><br><span class="line">				<span class="keyword">if</span> out.IsLockedWithKey(pubkeyHash) &amp;&amp; accumulated &lt; amount &#123;</span><br><span class="line">					accumulated += out.Value</span><br><span class="line">					unspentOutputs[txID] = <span class="built_in">append</span>(unspentOutputs[txID], outIdx)</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;)</span><br><span class="line">	<span class="keyword">return</span> accumulated, unspentOutputs</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 查找并返回所有未使用的交易输出</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u UTXOSet)</span></span> FindUTXO(pubKeyHash []<span class="type">byte</span>) []TXOutput &#123;</span><br><span class="line">	<span class="keyword">var</span> UTXOs []TXOutput</span><br><span class="line">	db := u.Blockchain.db</span><br><span class="line">	db.View(<span class="function"><span class="keyword">func</span><span class="params">(tx *bolt.Tx)</span></span> <span class="type">error</span> &#123;</span><br><span class="line">		b := tx.Bucket([]<span class="type">byte</span>(utxoBucket))</span><br><span class="line">		c := b.Cursor()</span><br><span class="line">		<span class="keyword">for</span> k, v := c.First(); k != <span class="literal">nil</span>; k, v = c.Next() &#123;</span><br><span class="line">			outs := DeserializeOutputs(v)</span><br><span class="line">			<span class="keyword">for</span> _, out := <span class="keyword">range</span> outs.Outputs &#123;</span><br><span class="line">                <span class="comment">//如果该交易输出可以被解锁，即可被花费</span></span><br><span class="line">				<span class="keyword">if</span> out.IsLockedWithKey(pubKeyHash) &#123;</span><br><span class="line">					UTXOs = <span class="built_in">append</span>(UTXOs, out)</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;)</span><br><span class="line">	<span class="keyword">return</span> UTXOs</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//当有区块被挖出需要更新UTXO集</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u UTXOSet)</span></span> Update(block *Block) &#123;</span><br><span class="line">	db := u.Blockchain.db</span><br><span class="line">	db.Update(<span class="function"><span class="keyword">func</span><span class="params">(tx *bolt.Tx)</span></span> <span class="type">error</span> &#123;</span><br><span class="line">		b := tx.Bucket([]<span class="type">byte</span>(utxoBucket))</span><br><span class="line">		<span class="keyword">for</span> _, tx := <span class="keyword">range</span> block.Transactions &#123;</span><br><span class="line">			<span class="keyword">if</span> tx.IsCoinbase() == <span class="literal">false</span> &#123;</span><br><span class="line">				<span class="keyword">for</span> _, vin := <span class="keyword">range</span> tx.Vin &#123;</span><br><span class="line">					updateOuts := TXOutputs&#123;&#125;</span><br><span class="line">                    <span class="comment">//获取输入交易</span></span><br><span class="line">					outsBytes := b.Get(vin.Txid)</span><br><span class="line">                    <span class="comment">//找到输入交易的输出交易数组</span></span><br><span class="line">					outs := DeserializeOutputs(outsBytes)</span><br><span class="line">					<span class="keyword">for</span> outIdx, out := <span class="keyword">range</span> outs.Outputs &#123;</span><br><span class="line">						<span class="keyword">if</span> outIdx != vin.Vout &#123;</span><br><span class="line">							updateOuts.Outputs = <span class="built_in">append</span>(updateOuts.Outputs, out)</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line">                    <span class="comment">//移除已花费输出(覆盖)</span></span><br><span class="line">					<span class="keyword">if</span> <span class="built_in">len</span>(updateOuts.Outputs) == <span class="number">0</span> &#123;</span><br><span class="line">						b.Delete(vin.Txid)</span><br><span class="line">					&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">						b.Put(vin.Txid, updateOuts.Serialize())</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			newOutputs := TXOutputs&#123;&#125;</span><br><span class="line">			<span class="keyword">for</span> _, out := <span class="keyword">range</span> tx.Vout &#123;</span><br><span class="line">				newOutputs.Outputs = <span class="built_in">append</span>(newOutputs.Outputs, out)</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">//从新挖出来的交易中加入未花费输出</span></span><br><span class="line">			b.Put(tx.ID, newOutputs.Serialize())</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Merkle-树"><a href="#Merkle-树" class="headerlink" title="Merkle 树"></a>Merkle 树</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Merkle树</span></span><br><span class="line"><span class="keyword">type</span> MerkleTree <span class="keyword">struct</span> &#123;</span><br><span class="line">	RootNode *MerkleNode</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//树节点</span></span><br><span class="line"><span class="keyword">type</span> MerkleNode <span class="keyword">struct</span> &#123;</span><br><span class="line">	Left  *MerkleNode</span><br><span class="line">	Right *MerkleNode</span><br><span class="line">	Data  []<span class="type">byte</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//创建一个新的结点</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewMerkleNode</span><span class="params">(left, right *MerkleNode, data []<span class="type">byte</span>)</span></span> *MerkleNode &#123;</span><br><span class="line">	mNode := MerkleNode&#123;&#125;</span><br><span class="line">	<span class="keyword">if</span> left == <span class="literal">nil</span> &amp;&amp; right == <span class="literal">nil</span> &#123;</span><br><span class="line">		hash := sha256.Sum256(data)</span><br><span class="line">		mNode.Data = hash[:]</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		prevHashes := <span class="built_in">append</span>(left.Data, right.Data...)</span><br><span class="line">		hash := sha256.Sum256(prevHashes)</span><br><span class="line">		mNode.Data = hash[:]</span><br><span class="line">	&#125;</span><br><span class="line">	mNode.Left = left</span><br><span class="line">	mNode.Right = right</span><br><span class="line">	<span class="keyword">return</span> &amp;mNode</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewMerkleTree</span><span class="params">(data [][]<span class="type">byte</span>)</span></span> *MerkleTree &#123;</span><br><span class="line">	<span class="keyword">var</span> nodes []MerkleNode</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(data)%<span class="number">2</span> != <span class="number">0</span> &#123;</span><br><span class="line">		data = <span class="built_in">append</span>(data, data[<span class="built_in">len</span>(data)<span class="number">-1</span>])</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> _, datum := <span class="keyword">range</span> data &#123;</span><br><span class="line">		node := NewMerkleNode(<span class="literal">nil</span>, <span class="literal">nil</span>, datum)</span><br><span class="line">		nodes = <span class="built_in">append</span>(nodes, *node)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(data)/<span class="number">2</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">var</span> newLevel []MerkleNode</span><br><span class="line">		<span class="keyword">for</span> j := <span class="number">0</span>; j &lt; <span class="built_in">len</span>(nodes); j += <span class="number">2</span> &#123;</span><br><span class="line">			node := NewMerkleNode(&amp;nodes[j], &amp;nodes[j+<span class="number">1</span>], <span class="literal">nil</span>)</span><br><span class="line">			newLevel = <span class="built_in">append</span>(newLevel, *node)</span><br><span class="line">		&#125;</span><br><span class="line">		nodes = newLevel</span><br><span class="line">	&#125;</span><br><span class="line">	mTree := MerkleTree&#123;&amp;nodes[<span class="number">0</span>]&#125;</span><br><span class="line">	<span class="keyword">return</span> &amp;mTree</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> version <span class="keyword">struct</span> &#123;</span><br><span class="line">    Version    <span class="type">int</span></span><br><span class="line">    BestHeight <span class="type">int</span>		<span class="comment">//区块链中节点的高度</span></span><br><span class="line">    AddrFrom   <span class="type">string</span>	<span class="comment">//发送者的地址</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>version</code> 用于找到一个更长的区块链。当一个节点接收到 <code>version</code> 消息，它会检查本节点的区块链是否比 <code>BestHeight</code> 的值更大。<strong>如果不是，节点就会请求并下载缺失的块。</strong>为了接收消息，我们需要一个服务器：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> nodeAddress <span class="type">string</span></span><br><span class="line"><span class="comment">//对中心节点的地址进行硬编码</span></span><br><span class="line"><span class="keyword">var</span> knownNodes = []<span class="type">string</span>&#123;<span class="string">&quot;localhost:3000&quot;</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StartServer</span><span class="params">(nodeID, minerAddress <span class="type">string</span>)</span></span> &#123;</span><br><span class="line">    nodeAddress = fmt.Sprintf(<span class="string">&quot;localhost:%s&quot;</span>, nodeID)</span><br><span class="line">    miningAddress = minerAddress</span><br><span class="line">    ln, err := net.Listen(protocol, nodeAddress)</span><br><span class="line">    <span class="keyword">defer</span> ln.Close()</span><br><span class="line">    bc := NewBlockchain(nodeID)</span><br><span class="line">    <span class="keyword">if</span> nodeAddress != knownNodes[<span class="number">0</span>] &#123;</span><br><span class="line">        <span class="comment">//向中心节点发送 version 消息来查询是否自己的区块链已过时。</span></span><br><span class="line">        sendVersion(knownNodes[<span class="number">0</span>], bc)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        conn, err := ln.Accept()</span><br><span class="line">        <span class="keyword">go</span> handleConnection(conn, bc)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当一个节点接收到一个命令，它会运行 <code>bytesToCommand</code> 来提取命令名，并选择正确的处理器处理命令主体：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">handleConnection</span><span class="params">(conn net.Conn, bc *Blockchain)</span></span> &#123;</span><br><span class="line">    request, err := ioutil.ReadAll(conn)</span><br><span class="line">    command := bytesToCommand(request[:commandLength])</span><br><span class="line">    <span class="keyword">switch</span> command &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;version&quot;</span>:</span><br><span class="line">        handleVersion(request, bc)</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        fmt.Println(<span class="string">&quot;Unknown command!&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    conn.Close()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面是 <code>version</code> 命令处理器：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">handleVersion</span><span class="params">(request []<span class="type">byte</span>, bc *Blockchain)</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> buff bytes.Buffer</span><br><span class="line">    <span class="keyword">var</span> payload verzion</span><br><span class="line"></span><br><span class="line">    buff.Write(request[commandLength:])</span><br><span class="line">    dec := gob.NewDecoder(&amp;buff)</span><br><span class="line">    err := dec.Decode(&amp;payload)</span><br><span class="line"></span><br><span class="line">    myBestHeight := bc.GetBestHeight()</span><br><span class="line">    foreignerBestHeight := payload.BestHeight</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> myBestHeight &lt; foreignerBestHeight &#123;</span><br><span class="line">        sendGetBlocks(payload.AddrFrom)</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> myBestHeight &gt; foreignerBestHeight &#123;</span><br><span class="line">        sendVersion(payload.AddrFrom, bc)</span><br><span class="line">    &#125;</span><br><span class="line">    ....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先，我们需要对请求进行解码，提取有效信息。所有的处理器在这部分都类似，所以我们会下面的代码片段中略去这部分。</p>
+<p>然后节点将从消息中提取的 <code>BestHeight</code> 与自身进行比较。如果自身节点的区块链更长，它会回复 <code>version</code> 消息；否则，它会发送 <code>getblocks</code> 消息。</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/04/04/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E9%A1%B9%E7%9B%AE/%E6%AF%94%E7%89%B9%E5%B8%81%E7%AE%80%E6%98%93%E7%89%88%E6%96%B9%E6%B3%95/" title="比特币简易版方法">https://kongpengyq.com/2023/04/04/区块链/区块链项目/比特币简易版方法/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E9%A1%B9%E7%9B%AE/" rel="tag"># 区块链项目</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/04/03/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E9%A1%B9%E7%9B%AE/%E6%AF%94%E7%89%B9%E5%B8%81%E7%AE%80%E6%98%93%E7%89%88/" rel="prev" title="比特币简易版">
+      <i class="fa fa-chevron-left"></i> 比特币简易版
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/04/09/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E9%A1%B9%E7%9B%AE/%E9%93%BE%E6%8B%8D/" rel="next" title="链拍">
+      链拍 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E5%8E%9F%E5%9E%8B"><span class="nav-text">基本原型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E9%87%8F%E8%AF%81%E6%98%8E"><span class="nav-text">工作量证明</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8C%81%E4%B9%85%E5%8C%96%E5%92%8C%E5%91%BD%E4%BB%A4%E8%A1%8C%E6%8E%A5%E5%8F%A3"><span class="nav-text">持久化和命令行接口</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9C%B0%E5%9D%80"><span class="nav-text">地址</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%A4%E6%98%93"><span class="nav-text">交易</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#UTXO"><span class="nav-text">UTXO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Merkle-%E6%A0%91"><span class="nav-text">Merkle 树</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C"><span class="nav-text">网络</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

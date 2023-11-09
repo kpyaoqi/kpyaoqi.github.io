@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="init函数和main函数的异同init函数不能被其他函数调用，而是在main函数执行之前，自动被调用 ​    相同点：​        两个函数在定义时不能有任何的参数和返回值，且Go程序自动调用。​    不同点：​        init可以应用于任意包中，且可以重复定义多个。​        main函数只能用于main包中，且只能定义一个。 new与make的区别​    1.二者都是">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面试题">
+<meta property="og:url" content="https://kongpengyq.com/2022/01/31/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/%E9%9D%A2%E8%AF%95%E9%A2%98/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="init函数和main函数的异同init函数不能被其他函数调用，而是在main函数执行之前，自动被调用 ​    相同点：​        两个函数在定义时不能有任何的参数和返回值，且Go程序自动调用。​    不同点：​        init可以应用于任意包中，且可以重复定义多个。​        main函数只能用于main包中，且只能定义一个。 new与make的区别​    1.二者都是">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/image-20230409150132645.png">
+<meta property="article:published_time" content="2022-01-30T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:01:34.856Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="Go知识点">
+<meta property="article:tag" content="GO基础知识">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/image-20230409150132645.png">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/01/31/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/%E9%9D%A2%E8%AF%95%E9%A2%98/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>面试题 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/01/31/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/%E9%9D%A2%E8%AF%95%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          面试题
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-01-31 00:00:00" itemprop="dateCreated datePublished" datetime="2022-01-31T00:00:00+08:00">2022-01-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:01:34" itemprop="dateModified" datetime="2023-11-09T10:01:34+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" itemprop="url" rel="index">
+                    <span itemprop="name">GO基础知识</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="init函数和main函数的异同"><a href="#init函数和main函数的异同" class="headerlink" title="init函数和main函数的异同"></a>init函数和main函数的异同</h1><p><strong>init函数不能被其他函数调用，而是在main函数执行之前，自动被调用</strong></p>
+<p>​    相同点：<br>​        两个函数在定义时不能有任何的参数和返回值，且Go程序自动调用。<br>​    不同点：<br>​        init可以应用于任意包中，且可以重复定义多个。<br>​        main函数只能用于main包中，且只能定义一个。</p>
+<h1 id="new与make的区别"><a href="#new与make的区别" class="headerlink" title="new与make的区别"></a>new与make的区别</h1><p>​    1.二者都是用来做内存分配的。<br>​    2.<strong>make只用于slice、map以及channel的初始化，返回的还是这三个引用类型本身；</strong><br>​    3.而<strong>new用于类型的内存分配，并且内存对应的值为类型默认值，返回的是指向类型的指针</strong>。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> a *<span class="type">int</span></span><br><span class="line">    a = <span class="built_in">new</span>(<span class="type">int</span>)</span><br><span class="line">    *a = <span class="number">10</span></span><br><span class="line">    fmt.Println(*a)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">var</span> b <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span></span><br><span class="line">    b = <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>, <span class="number">10</span>)</span><br><span class="line">    b[<span class="string">&quot;测试&quot;</span>] = <span class="number">100</span></span><br><span class="line">    fmt.Println(b)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="匿名函数"><a href="#匿名函数" class="headerlink" title="匿名函数"></a>匿名函数</h1><p>匿名函数是指<strong>不需要定义函数名的一种函数</strong>实现方式，匿名函数的优越性在于可以<strong>直接使用函数内的变量，不必申明</strong>。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> getSqrt := <span class="function"><span class="keyword">func</span><span class="params">(a <span class="type">float64</span>)</span></span> <span class="type">float64</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> math.Sqrt(a)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Println(getSqrt(<span class="number">4</span>))</span><br><span class="line"><span class="comment">// 2</span></span><br></pre></td></tr></table></figure>
+
+<p>Golang匿名函数可赋值给变量，做为结构字段，或者在 channel 里传送。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">    fn := <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123; <span class="built_in">println</span>(<span class="string">&quot;Hello, World!&quot;</span>) &#125;</span><br><span class="line">    fn()</span><br><span class="line"></span><br><span class="line">    fns := [](<span class="function"><span class="keyword">func</span><span class="params">(x <span class="type">int</span>)</span></span> <span class="type">int</span>)&#123;</span><br><span class="line">        <span class="function"><span class="keyword">func</span><span class="params">(x <span class="type">int</span>)</span></span> <span class="type">int</span> &#123; <span class="keyword">return</span> x + <span class="number">1</span> &#125;,</span><br><span class="line">        <span class="function"><span class="keyword">func</span><span class="params">(x <span class="type">int</span>)</span></span> <span class="type">int</span> &#123; <span class="keyword">return</span> x + <span class="number">2</span> &#125;,</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">println</span>(fns[<span class="number">0</span>](<span class="number">100</span>))</span><br><span class="line"></span><br><span class="line">    d := <span class="keyword">struct</span> &#123;</span><br><span class="line">        fn <span class="function"><span class="keyword">func</span><span class="params">()</span></span> <span class="type">string</span></span><br><span class="line">    &#125;&#123;</span><br><span class="line">        fn: <span class="function"><span class="keyword">func</span><span class="params">()</span></span> <span class="type">string</span> &#123; <span class="keyword">return</span> <span class="string">&quot;Hello, World!&quot;</span> &#125;,</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">println</span>(d.fn())</span><br><span class="line"></span><br><span class="line">    fc := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> <span class="type">string</span>, <span class="number">2</span>)</span><br><span class="line">    fc &lt;- <span class="function"><span class="keyword">func</span><span class="params">()</span></span> <span class="type">string</span> &#123; <span class="keyword">return</span> <span class="string">&quot;Hello, World!&quot;</span> &#125;</span><br><span class="line">    <span class="built_in">println</span>((&lt;-fc)())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h1><p>Go语言中的闭包（Closure）是一种<strong>引用了自由变量的函数</strong>，<strong>自由变量是指在函数中使用的变量</strong>，但<strong>既不是函数参数也不是函数本地变量</strong>。闭包允许在一个函数内部包含一个自由变量的引用，这样就可以让这个自由变量的值在函数调用之间得以保留。</p>
+<p>当<strong>函数返回时，函数所引用的自由变量可以被继续访问，不被释放</strong>。这是因为<strong>在编译时，编译器将函数与其自由变量打包为一个封闭函数对象</strong>，<strong>该对象包含函数的代码以及其访问的自由变量的引用</strong>。<strong>当函数对象被返回或直接使用时，自由变量的引用会被保留，因此可以继续访问闭包引用的自由变量</strong>。</p>
+<h1 id="defer"><a href="#defer" class="headerlink" title="defer"></a>defer</h1><p>defer语句本质上是<strong>将语句推迟到函数返回之前</strong>执行，在函数退出时，defer推迟执行的语句会被按照<strong>后进先出</strong>的顺序执行，<strong>不管函数是否出错都会执行</strong>。因此，在使用defer时，<strong>需要考虑变量的作用域和生命周期，确保变量可以正确地传递到defer语句中</strong>。</p>
+<p>defer<strong>后面的语句在执行的时候，函数调用的参数会被保存起来，但是不执行。也就是复制了一份。</strong>但是并没有说struct这里的this指针如何处理，通过这个例子可以看出go语言并没有把这个明确写出来的this指针当作参数来看待。</p>
+<h4 id="用途：关闭文件句柄、锁资源释放、数据库连接释放"><a href="#用途：关闭文件句柄、锁资源释放、数据库连接释放" class="headerlink" title="用途：关闭文件句柄、锁资源释放、数据库连接释放"></a>用途：关闭文件句柄、锁资源释放、数据库连接释放</h4><h4 id="陷阱："><a href="#陷阱：" class="headerlink" title="陷阱："></a>陷阱：</h4><p>defer 与 return：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">foo</span><span class="params">()</span></span> (i <span class="type">int</span>) &#123;</span><br><span class="line"></span><br><span class="line">    i = <span class="number">0</span></span><br><span class="line">    <span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">        fmt.Println(i)</span><br><span class="line">    &#125;()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">2</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 输出2</span></span><br></pre></td></tr></table></figure>
+
+<p>defer nil 函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> run <span class="function"><span class="keyword">func</span><span class="params">()</span></span> = <span class="literal">nil</span></span><br><span class="line">    <span class="keyword">defer</span> run()</span><br><span class="line"><span class="comment">//  defer 函数会被执行且会因为值为 nil 而产生 panic 异常。然而值得注意的是，run() 的声明是没有问题，因为在test函数运行完成后它才会被调用</span></span><br></pre></td></tr></table></figure>
+
+<p>在错误的位置使用 defer：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">res, err := http.Get(<span class="string">&quot;http://www.google.com&quot;</span>)</span><br><span class="line">    <span class="keyword">defer</span> res.Body.Close()</span><br><span class="line"><span class="comment">// 因为在这里我们并没有检查我们的请求是否成功执行，当它失败的时候，我们访问了 Body 中的空变量 res ，因此会抛出异常</span></span><br><span class="line"><span class="comment">// 解决：</span></span><br><span class="line"><span class="keyword">if</span> res != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">defer</span> res.Body.Close()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="异常处理"><a href="#异常处理" class="headerlink" title="异常处理"></a>异常处理</h1><p>Golang 没有结构化异常，使用 panic 抛出错误，recover 捕获错误</p>
+<h4 id="注意："><a href="#注意：" class="headerlink" title="注意："></a>注意：</h4><p>1.利用recover处理panic指令，<strong>defer 必须放在 panic 之前定义</strong>，另外 recover <strong>只有在 defer 调用的函数中才有效</strong>。否则当panic时，  recover无法捕获到panic，无法防止panic扩散。<br>2.recover 处理异常后，逻辑并不会恢复到 panic 那个点去，函数跑到 defer 之后的那个点。<br>3.多个 defer 会形成 defer 栈，后定义的 defer 语句会被最先调用。</p>
+<blockquote>
+<p>延迟调用中引发的错误，可被后续延迟调用捕获，但仅最后一个错误可被捕获。</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">        fmt.Println(<span class="built_in">recover</span>())</span><br><span class="line">    &#125;()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;defer panic&quot;</span>)</span><br><span class="line">    &#125;()</span><br><span class="line"></span><br><span class="line">    <span class="built_in">panic</span>(<span class="string">&quot;test panic&quot;</span>)</span><br><span class="line"><span class="comment">// 输出defer panic</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="保护代码段"><a href="#保护代码段" class="headerlink" title="保护代码段"></a>保护代码段</h1><p>将代码块重构成匿名函数，如此可确保后续代码被执 。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">test</span><span class="params">(x, y <span class="type">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> z <span class="type">int</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">recover</span>() != <span class="literal">nil</span> &#123;</span><br><span class="line">                z = <span class="number">0</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;()</span><br><span class="line">        <span class="comment">// 出错</span></span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;test panic&quot;</span>)</span><br><span class="line">        z = x / y</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;()</span><br><span class="line">	<span class="comment">// 继续执行</span></span><br><span class="line">    fmt.Printf(<span class="string">&quot;x / y = %d\n&quot;</span>, z)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    test(<span class="number">2</span>, <span class="number">1</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Go实现类似-try-catch-的异常处理"><a href="#Go实现类似-try-catch-的异常处理" class="headerlink" title="Go实现类似 try catch 的异常处理"></a>Go实现类似 try catch 的异常处理</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Try</span><span class="params">(fun <span class="keyword">func</span>()</span></span>, handler <span class="function"><span class="keyword">func</span><span class="params">(<span class="keyword">interface</span>&#123;&#125;)</span></span>) &#123;</span><br><span class="line">    <span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> err := <span class="built_in">recover</span>(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">            handler(err)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;()</span><br><span class="line">    fun()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    Try(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;test panic&quot;</span>)</span><br><span class="line">    &#125;, <span class="function"><span class="keyword">func</span><span class="params">(err <span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">        fmt.Println(err)</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="普通函数与方法的区别"><a href="#普通函数与方法的区别" class="headerlink" title="普通函数与方法的区别"></a>普通函数与方法的区别</h1><p>1.对于普通函数，<strong>接收者为值类型时，不能将指针类型的数据直接传递，反之亦然。</strong></p>
+<p>2.对于方法（如struct的方法），<strong>接收者为值类型时，可以直接用指针类型的变量调用方法，反过来同样也可以</strong>。</p>
+<h1 id="Golang方法集-："><a href="#Golang方法集-：" class="headerlink" title="Golang方法集 ："></a>Golang方法集 ：</h1><p>每个类型都有与之关联的方法集，这会影响到接口实现规则</p>
+<p>​    • 类型 T 方法集包含全部 receiver T 方法。<br>​    • 类型 *T 方法集包含全部 receiver T + *T 方法。<br>​    • 如类型 S 包含匿名字段 T，则 S 和 *S 方法集包含 T 方法。<br>​    • 如类型 S 包含匿名字段 *T，则 S 和 *S 方法集包含 T + *T 方法。<br>​    • 不管嵌入 T 或 <em>T，</em>S 方法集总是包含 T + *T 方法。</p>
+<h1 id="接口（interface）"><a href="#接口（interface）" class="headerlink" title="接口（interface）"></a>接口（interface）</h1><p>为了保护你的Go语言职业生涯，请牢记接口（interface）是一种类型</p>
+<h1 id="进程线程协程"><a href="#进程线程协程" class="headerlink" title="进程线程协程"></a>进程线程协程</h1><p>进程是程序在操作系统中的一次执行过程，系统进行资源分配和调度的一个独立单位。<br>线程是进程的一个执行实体,是CPU调度和分派的基本单位,它是比进程更小的能独立运行的基本单位。<br>一个进程可以创建和撤销多个线程;同一个进程中的多个线程之间可以并发执行。</p>
+<p>协程：协程是一种用户态的轻量级线程，由程序自身控制调度，不需要操作系统的支持，协程之间可以通过协程间通信机制进行通信，协程的执行效率高，可以减少线程切换的开销。<br>线程：一个线程上可以跑多个协程，协程是轻量级的线程。</p>
+<h1 id="GPM"><a href="#GPM" class="headerlink" title="GPM"></a>GPM</h1><p>是Go语言运行时（runtime）层面的实现，是go语言自己实现的一套调度系统。区别于操作系统调度OS线程。</p>
+<ul>
+<li>1.G很好理解，就是个goroutine的，里面除了存放本goroutine信息外 还有与所在P的绑定等信息。</li>
+<li>2.P管理着一组goroutine队列，P里面会存储当前goroutine运行的上下文环境（函数指针，堆栈地址及地址边界），P会对自己管理的goroutine队列做一些调度（比如把占用CPU时间较长的goroutine暂停、运行后续的goroutine等等）当自己的队列消费完了就去全局队列里取，如果全局队列里也消费完了会去其他P的队列里抢任务。</li>
+<li>3.M（machine）是Go运行时（runtime）对操作系统内核线程的虚拟， M与内核线程一般是一一映射的关系， 一个groutine最终是要放到M上执行的；</li>
+</ul>
+<p>P与M一般也是一一对应的。他们关系是： P管理着一组G挂载在M上运行。当一个G长久阻塞在一个M上时，runtime会新建一个M，阻塞G所在的P会把其他的G 挂载在新建的M上。当旧的G阻塞完成或者认为其已经死掉时 回收旧的M。</p>
+<p>P的个数是通过runtime.GOMAXPROCS设定（最大256），Go1.5版本之后默认为物理线程数。 在并发量大的时候会增加一些P和M，但不会太多，切换太频繁的话得不偿失。</p>
+<p>单从线程调度讲，Go语言相比起其他语言的优势在于OS线程是由OS内核来调度的，goroutine则是由Go运行时（runtime）自己的调度器调度的，这个调度器使用一个称为m:n调度的技术（复用&#x2F;调度m个goroutine到n个OS线程）。 其一大特点是goroutine的调度是在用户态下完成的，  不涉及内核态与用户态之间的频繁切换，包括内存的分配与释放，都是在用户态维护着一块大的内存池，  不直接调用系统的malloc函数（除非内存池需要改变），成本比调度OS线程低很多。  另一方面充分利用了多核的硬件资源，近似的把若干goroutine均分在物理线程上，  再加上本身goroutine的超轻量，以上种种保证了go调度方面的性能。</p>
+<h1 id="runtime包"><a href="#runtime包" class="headerlink" title="runtime包"></a>runtime包</h1><p>runtime.Gosched():让出CPU时间片，重新等待安排任务</p>
+<p>runtime.Goexit():退出当前协程</p>
+<p>runtime.GOMAXPROCS(n):需要使用多少个OS线程来同时执行Go代码</p>
+<p><img src="/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/image-20230409150132645.png" alt="image-20230409150132645"></p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/01/31/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/%E9%9D%A2%E8%AF%95%E9%A2%98/" title="面试题">https://kongpengyq.com/2022/01/31/Go知识点/GO基础知识/面试题/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go%E7%9F%A5%E8%AF%86%E7%82%B9/" rel="tag"># Go知识点</a>
+              <a href="/tags/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" rel="tag"># GO基础知识</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/01/26/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/%E9%9A%8F%E4%BE%BF%E5%86%99%E5%86%99/" rel="prev" title="随便写写">
+      <i class="fa fa-chevron-left"></i> 随便写写
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/01/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GRPC/1-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/" rel="next" title="1-快速开始">
+      1-快速开始 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#init%E5%87%BD%E6%95%B0%E5%92%8Cmain%E5%87%BD%E6%95%B0%E7%9A%84%E5%BC%82%E5%90%8C"><span class="nav-text">init函数和main函数的异同</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#new%E4%B8%8Emake%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-text">new与make的区别</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8C%BF%E5%90%8D%E5%87%BD%E6%95%B0"><span class="nav-text">匿名函数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AD%E5%8C%85"><span class="nav-text">闭包</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#defer"><span class="nav-text">defer</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%94%A8%E9%80%94%EF%BC%9A%E5%85%B3%E9%97%AD%E6%96%87%E4%BB%B6%E5%8F%A5%E6%9F%84%E3%80%81%E9%94%81%E8%B5%84%E6%BA%90%E9%87%8A%E6%94%BE%E3%80%81%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E9%87%8A%E6%94%BE"><span class="nav-text">用途：关闭文件句柄、锁资源释放、数据库连接释放</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%99%B7%E9%98%B1%EF%BC%9A"><span class="nav-text">陷阱：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="nav-text">异常处理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F%EF%BC%9A"><span class="nav-text">注意：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BF%9D%E6%8A%A4%E4%BB%A3%E7%A0%81%E6%AE%B5"><span class="nav-text">保护代码段</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Go%E5%AE%9E%E7%8E%B0%E7%B1%BB%E4%BC%BC-try-catch-%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="nav-text">Go实现类似 try catch 的异常处理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%99%AE%E9%80%9A%E5%87%BD%E6%95%B0%E4%B8%8E%E6%96%B9%E6%B3%95%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-text">普通函数与方法的区别</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Golang%E6%96%B9%E6%B3%95%E9%9B%86-%EF%BC%9A"><span class="nav-text">Golang方法集 ：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8E%A5%E5%8F%A3%EF%BC%88interface%EF%BC%89"><span class="nav-text">接口（interface）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E7%BA%BF%E7%A8%8B%E5%8D%8F%E7%A8%8B"><span class="nav-text">进程线程协程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GPM"><span class="nav-text">GPM</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#runtime%E5%8C%85"><span class="nav-text">runtime包</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

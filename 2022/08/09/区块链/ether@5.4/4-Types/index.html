@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="BlockTagBlockTag 在区块链中指定了一个特定的区块位置  &quot;latest&quot; - 最新挖出的区块 &quot;earliest&quot; - 创世区块 &quot;pending&quot; - 目前正在挖的区块;不是所有的操作和后端都支持这个BlockTag属性 &quot;number&quot;- 区块高度 &quot;a negative number&amp;q">
+<meta property="og:type" content="article">
+<meta property="og:title" content="4-Types">
+<meta property="og:url" content="https://kongpengyq.com/2022/08/09/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/4-Types/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="BlockTagBlockTag 在区块链中指定了一个特定的区块位置  &quot;latest&quot; - 最新挖出的区块 &quot;earliest&quot; - 创世区块 &quot;pending&quot; - 目前正在挖的区块;不是所有的操作和后端都支持这个BlockTag属性 &quot;number&quot;- 区块高度 &quot;a negative number&amp;q">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-08-08T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.706Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="ether@5.4.js">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/08/09/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/4-Types/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>4-Types | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/08/09/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/4-Types/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          4-Types
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-08-09 00:00:00" itemprop="dateCreated datePublished" datetime="2022-08-09T00:00:00+08:00">2022-08-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ether-5-4-js/" itemprop="url" rel="index">
+                    <span itemprop="name">ether@5.4.js</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="BlockTag"><a href="#BlockTag" class="headerlink" title="BlockTag"></a>BlockTag</h1><p><strong>BlockTag</strong> 在区块链中指定了一个特定的区块位置</p>
+<ul>
+<li><strong><code>&quot;latest&quot;</code></strong> - 最新挖出的区块</li>
+<li><strong><code>&quot;earliest&quot;</code></strong> - 创世区块</li>
+<li><strong><code>&quot;pending&quot;</code></strong> - 目前正在挖的区块;不是所有的操作和后端都支持这个BlockTag属性</li>
+<li><strong><code>&quot;number&quot;</code></strong>- 区块高度</li>
+<li><strong><code>&quot;a negative number&quot;</code></strong> - 几个区块前的区块</li>
+<li><strong><code>&quot;hex string&quot;</code></strong> - 区块高度(十六进制表示)</li>
+</ul>
+<h1 id="Networkish"><a href="#Networkish" class="headerlink" title="Networkish"></a>Networkish</h1><p><strong>Networkish</strong>可以是以下任意一种:</p>
+<ul>
+<li><p>一个Network 对象</p>
+<p><em>network</em>.<strong>name</strong> ⇒ <em>string</em>，可读的网络名称，如<code>homestead</code>。如果网络的name未指定，将会是<code>&quot;unknown&quot;</code>。</p>
+<p><em>network</em>.<strong>chainId</strong> ⇒ <em>number</em>，网络的Chain ID。</p>
+<p><em>network</em>.<strong>ensAddress</strong> ⇒ *string&lt; 地址(Address) &gt;*，部署在这个网络上的ENS注册表的地址。</p>
+</li>
+<li><p>字符串形式的常见网络 (如<code>&quot;homestead&quot;</code>)</p>
+</li>
+<li><p>number类型的网络chain ID， 如果chain ID 是常见网络的一种,<code>name</code> 和 <code>ensAddress</code> 会自动填充, 否则 name 会是<code>&quot;unknown&quot;</code> 且不使用任何的 <code>ensAddress</code>。</p>
+</li>
+</ul>
+<h1 id="FeeData"><a href="#FeeData" class="headerlink" title="FeeData"></a>FeeData</h1><p><strong>FeeData</strong>对象根据最好且可用建议，去封装发送交易所需的费用数据。</p>
+<p>**<em>feeData</em>.gasPrice ⇒ *大数(BigNumber):***gasPrice用于那些不支持EIP-1559的遗留交易或网络。</p>
+<p><strong><em>feeData</em>.maxFeePerGas ⇒ <em>大数(BigNumber)</em>:</strong><code>maxFeePerGas</code>用于交易。这基于最近产出区块的<code>baseFee</code>。</p>
+<p>**<em>feeData</em>.maxPriorityFeePerGas ⇒ <em>大数(BigNumber)</em>:**用于交易的“最大优先的Gas”</p>
+<h1 id="Block"><a href="#Block" class="headerlink" title="Block"></a>Block</h1><p>**<em>block</em>.hash ⇒ <em>string&lt; DataHexString&lt; 32 &gt; &gt;</em>:**这个区块的哈希。</p>
+<p>**<em>block</em>.parentHash ⇒ <em>string&lt; DataHexString&lt; 32 &gt; &gt;</em>:**上个区块的哈希。</p>
+<p>**<em>block</em>.number ⇒ <em>number</em>:**当前区块的高度（数量）。</p>
+<p>**<em>block</em>.timestamp ⇒ numbe:**r当前区块的时间戳。</p>
+<p>**<em>block</em>.nonce ⇒ <em>string&lt; DataHexString &gt;<em>nonce:</em></em> 用在基于工作量证明（PoW）机制挖取区块</p>
+<p>**<em>block</em>.difficulty ⇒ *number:***该区块的矿工需要达到的难度指标。 开发人员通常对这个属性不感兴趣。</p>
+<p>**<em>block</em>.gasLimit ⇒ *大数(BigNumber):***这个区块允许使用的最大gas数量,该值可以由矿工投票决定要变大还是变小</p>
+<p>**<em>block</em>.gasUsed ⇒ *大数(BigNumber):***当前区块所有的交易已使用的gas总数量。</p>
+<p>**<em>block</em>.miner ⇒ *string:***当前区块的coinbase 地址，这个地址表示挖出这个区块的矿工想要接受这笔开采奖励的地址。</p>
+<p>**<em>block</em>.extraData ⇒ *string:***该数据表示的是当挖出一个区块时，这个矿工可以选择包含的额外数据。 </p>
+<p>**<em>block</em>.transactions ⇒ <em>Array&lt; string&lt; DataHexString&lt; 32 &gt; &gt; &gt;</em>:**一个当前区块包含的每一条交易哈希的列表。</p>
+<p>**<em>block</em>.transactions ⇒ *Array&lt; TransactionResponse &gt;:***当前区块包含的交易列表。</p>
+<h1 id="Events-and-Logs"><a href="#Events-and-Logs" class="headerlink" title="Events and Logs"></a>Events and Logs</h1><h2 id="5-1-EventFilter"><a href="#5-1-EventFilter" class="headerlink" title="5.1 EventFilter"></a><strong>5.1 EventFilter</strong></h2><p>**<em>filter</em>.address ⇒ <em>string&lt; 地址(Address) &gt;</em>:**想要筛选的地址， <code>null</code> 表示匹配任何用户的地址。</p>
+<p>**<em>filter</em>.topics ⇒ <em>Array&lt; string&lt; Data&lt; 32 &gt; &gt; | Array&lt; string&lt; Data&lt; 32 &gt; &gt; &gt; &gt;</em>:**要筛选的主题，<code>null</code>示匹配任何用户的主题。</p>
+<p>每一个 entry 表示一个<strong>AND</strong>匹配条件，entry 也可以是<code>null</code>来匹配所有的内容。 如果给定的 entry 是一个数组，那么这个 entry 是被视为 <strong>OR</strong>匹配条件来匹配entry里面的内容。 有关指定复杂过滤器的详细信息和示例，请参阅Filters。</p>
+<h2 id="5-2-Filter"><a href="#5-2-Filter" class="headerlink" title="5.2 Filter"></a>5.2 Filter</h2><p>**<em>filter</em>.fromBlock ⇒ <em>BlockTag</em>:**用于搜索匹配过滤条件的日志的起始区块(包含在内)。</p>
+<p>**<em>filter</em>.toBlock ⇒ <em>BlockTag</em>:**用于搜索匹配过滤条件的日志的结束区块(包含在内)。</p>
+<h2 id="5-3-FilterByBlockHash"><a href="#5-3-FilterByBlockHash" class="headerlink" title="5.3 FilterByBlockHash"></a>5.3 FilterByBlockHash</h2><p>**<em>filter</em>.blockHash ⇒ *string&lt; DataHexString&lt; 32 &gt; &gt;:***指定区块(按这个区块哈希值)搜索符合过滤条件的日志。</p>
+<h2 id="5-4-Log"><a href="#5-4-Log" class="headerlink" title="5.4 Log"></a>5.4 Log</h2><p>**<em>log</em>.blockNumber ⇒ *number:***包含该日志的交易的区块高度(区块数)。</p>
+<p>**<em>log</em>.blockHash ⇒ <em>string&lt; DataHexString&lt; 32 &gt; &gt;</em>:**包含该日志的交易的区块的哈希值。</p>
+<p>**<em>log</em>.removed ⇒ <em>boolean</em>:**在区块重组期间，如果一个交易是孤立的，它将被设置为true，表示Log entry已被删除; 在不久的将来，当使用包含该日志的交易被另一个区块挖出时，可能会再次触发此日志，但请记住，值可能会更改。</p>
+<p>**<em>log</em>.transactionLogIndex ⇒ <em>number</em>:**该日志在交易中的索引。</p>
+<p>**<em>log</em>.address ⇒ <em>string&lt; 地址(Address) &gt;</em>:**生成这条日志的合约地址。</p>
+<p>**<em>log</em>.data ⇒ <em>string&lt; DataHexString &gt;</em>:**日志的数据。</p>
+<p>**<em>log</em>.topics ⇒ <em>Array&lt; string&lt; DataHexString&lt; 32 &gt; &gt; &gt;</em>:**日志的主题(索引属性)列表。</p>
+<p>**<em>log</em>.transactionHash ⇒ <em>string&lt; DataHexString&lt; 32 &gt; &gt;</em>:**包含这条日志的交易的哈希值。</p>
+<p>**<em>log</em>.transactionIndex ⇒ <em>number</em>:**区块中包含这条日志的交易的索引。</p>
+<p><strong><em>log</em>.logIndex ⇒ <em>number</em>:<strong>在整个</strong>区块中</strong>所有的日志集合里，该条日志的索引。</p>
+<h1 id="Transactions"><a href="#Transactions" class="headerlink" title="Transactions"></a>Transactions</h1><h2 id="6-1-TransactionRequest"><a href="#6-1-TransactionRequest" class="headerlink" title="6.1 TransactionRequest"></a>6.1 TransactionRequest</h2><p>描述了一笔将要被发送到网络或以其他方式处理的交易，所有字段都是可选的，并且可以是一个能被解析为所需类型的promise。</p>
+<p>**<em>transactionRequest</em>.to ⇒ <em>string | Promise&lt; string &gt;</em>:**接受这笔交易的地址(or ENS name)。</p>
+<p>**<em>transactionRequest</em>.from ⇒ <em>string&lt; 地址(Address) &gt; | Promise&lt; string&lt; 地址(Address) &gt; &gt;</em>:**发送这笔交易的地址。</p>
+<p>**<em>transactionRequest</em>.nonce ⇒ *number | Promise&lt; number &gt;:***交易的 nonce 值。 <strong>发送</strong>这笔交易要设置这个值，是number类型的。</p>
+<p>**<em>transactionRequest</em>.data ⇒ <em>DataHexString | Promise&lt; DataHexString &gt;</em>:**交易的数据。</p>
+<p>**<em>transactionRequest</em>.value ⇒ <em>大数(BigNumber) | Promise&lt; 大数(BigNumber) &gt;</em>:**这笔交易要发送的数量(以wei为单位)。</p>
+<p>**<em>transactionRequest</em>.gasLimit ⇒ <em>大数(BigNumber) | Promise&lt; 大数(BigNumber) &gt;</em>:**这笔交易允许使用的最大gas值。</p>
+<p>如果未指定，ethers将使用<code>estimateGas</code>来确定要使用的gas值。对于无法预测的gas的交易，可能需要这样做显式地指定。</p>
+<p>**<em>transactionRequest</em>.gasPrice ⇒ <em>大数(BigNumber) | Promise&lt; 大数(BigNumber) &gt;</em>:**这笔交易将支付的每个gas的价格(以wei为单位)。</p>
+<p>这个属性不适用于这笔交易的<code>type</code>设置为<code>1</code> 或者 <code>2</code>的情形，也不适用于交易已指定了<code>maxFeePerGas</code> 或者 <code>maxPriorityFeePerGas</code>的情形。</p>
+<p>**<em>transactionRequest</em>.maxFeePerGas ⇒ *大数(BigNumber) | Promise&lt; 大数(BigNumber) &gt;:***这笔交易将支付EIP-1559基础费用的每个gas的价格的最高价格(以wei为单位)。</p>
+<p>大多数开发人员不应该指定该参数，而应该使用网络决定的默认值。 这个属性不适用于这笔交易的<code>type</code>设置为<code>0</code>的情形，也不适用于交易已指定了<code>gasPrice</code>的情形。</p>
+<p><strong><em>transactionRequest</em>.maxPriorityFeePerGas ⇒ <em>大数(BigNumber) | Promise&lt; 大数(BigNumber) &gt;</em>:<strong>这笔交易将支付EIP-1559优先费用的每个gas的价格的价格(以wei为单位)。 这包含在<code>maxFeePerGass</code>中，所以这</strong>不会影响</strong><code>maxFeePerGas</code>设置的总最大价格。</p>
+<p>大多数开发人员应该不指定该参数，而应该使用网络决定的默认值。 这个属性不适用于这笔交易的<code>type</code>设置为<code>0</code>的情形，也不适用于交易已指定了<code>gasPrice</code>的情形。</p>
+<p><strong><em>transactionRequest</em>.chainId ⇒ <em>number | Promise&lt; number &gt;</em>:<strong>已被授权交易的chain ID，由EIP-155指定。 如果chain ID为0将禁用EIP-155，交易将在任何网络上有效。这可能</strong>很危险</strong>，应该小心，因为它允许交易在可能不是你想指定的网络上复现。 在最新版本的Geth中，有意重现的交易在默认情况下是禁用的，需要配置才能启用。</p>
+<p><strong><em>transactionRequest</em>.type ⇒ <em>null | number</em>:</strong> 这笔交易envelope的EIP-2718类型，在网络上这个默认值是<code>null</code>。要强制使用没有envelope的lagacy交易，请使用type <code>0</code>。</p>
+<p>**<em>transactionRequest</em>.accessList ⇒ <em>AccessListish</em>:**要包含的AccessList;仅适用于EIP-2930和EIP-1559的交易。</p>
+<h2 id="6-2-TransactionResponse"><a href="#6-2-TransactionResponse" class="headerlink" title="6.2 TransactionResponse"></a>6.2 TransactionResponse</h2><p><strong>TransactionResponse</strong>包括交易的所有属性，以及等区块被挖出来后就很有用的几个属性。</p>
+<p>**<em>transaction</em>.blockNumber ⇒ <em>number</em>:**这笔交易所在区块被挖出来时的高度(区块数量)如果区块还没有被挖出，这个值为<code>null</code>。</p>
+<p>**<em>transaction</em>.blockHash ⇒ *string&lt; DataHexString&lt; 32 &gt; &gt;:***交易所在区块挖出来时的哈希值,如果区块还没有被挖出，这个值为<code>null</code>。</p>
+<p>**<em>transaction</em>.timestamp ⇒ <em>number</em>:**这笔交易所在区块被挖出来时的时间戳。如果区块还没有被挖出，这个值为<code>null</code>。</p>
+<p>**<em>transaction</em>.confirmations ⇒ *number:***当这笔交易所在的区块被挖出来时，所有已挖出的区块数量(包括初始块)。</p>
+<p>**<em>transaction</em>.raw ⇒ *string&lt; DataHexString &gt;:<em><strong>序列化交易。如果一些后端不重新填充它时可能是null。 如果你需要这个属性，可以使用this cookbook recipe从</strong>TransactionResponse</em>*对象中计算。</p>
+<p>**<em>transaction</em>.wait( [ <em>confirms</em> &#x3D; <em>1</em> ] ) ⇒ <em>Promise&lt; TransactionReceipt &gt;</em>:*<em>confirms</em>属性表示你愿意等待的挖出区块数量，一旦满足这个值将返回一个待解析的TransactionReceipt。 如果*confirms为0，并且交易还没有被挖出，则返回<code>null</code>。</p>
+<p>如果交易执行失败(即接收状态为<code>0</code>)，将会生成一个<strong>CALL_EXCEPTION</strong>，其属性如下:</p>
+<ul>
+<li><code>error.transaction</code> - 这笔交易</li>
+<li><code>error.transactionHash</code> - 这笔交易的哈希值<ul>
+<li><code>error.receipt</code> - the actual receipt, 状态是 <code>0</code></li>
+</ul>
+</li>
+</ul>
+<p>如果这笔交易被另一个交易替换，将会生成一个<strong>TRANSACTION_REPLACED</strong>，其属性如下:</p>
+<ul>
+<li><code>error.hash</code> - 被替换的交易的哈希值</li>
+<li><code>error.reason</code> - string类型的错误原因; 是 <code>&quot;repriced&quot;</code>或 <code>&quot;cancelled&quot;</code>或 <code>&quot;replaced&quot;</code>其中一个</li>
+<li><code>error.cancelled</code> - boolean类型; <code>&quot;repriced&quot;</code>表示不视为cancelled, 但<code>&quot;cancelled&quot;</code> 和<code>&quot;replaced&quot;</code>视为cancelled。</li>
+<li><code>error.replacement</code> - the replacement transaction (a <strong>TransactionResponse</strong>)</li>
+<li><code>error.receipt</code> - replacement transaction的收据 (a <strong>TransactionReceipt</strong>)</li>
+</ul>
+<p>当用户在客户端相同的帐户中发送一笔新的交易，这笔交易与之前一笔交易的<code>nonce</code>相同时，之前的那笔交易将被替换。 这通常是为了加快交易或取消交易，新交易可以给矿工更多的费用，让他们更喜欢新交易，而不是原来的交易。</p>
+<p>**<em>transactionRequest</em>.type ⇒ <em>number</em>:**这笔交易的EIP-2718类型。如果事务是没有envelope的legacy交易，则其类型为<code>0</code>。</p>
+<p><strong><em>transactionRequest</em>.accessList ⇒ <em>AccessList</em>:<strong>包含的</strong>AccessList</strong>，对于不支持访问列表的交易类型时该值为空。</p>
+<h2 id="6-3-TransactionReceipt"><a href="#6-3-TransactionReceipt" class="headerlink" title="6.3 TransactionReceipt"></a>6.3 TransactionReceipt</h2><p>**<em>receipt</em>.to ⇒ <em>string&lt; 地址(Address) &gt;</em>:**接受这笔交易的地址。如果交易是用于部署合约，则为<code>null</code>。</p>
+<p>**<em>receipt</em>.from ⇒ <em>string&lt; 地址(Address) &gt;</em>:**发起这笔交易的地址。</p>
+<p>**<em>receipt</em>.contractAddress ⇒ *string&lt; 地址(Address) &gt;:<em><strong>如果这笔交易是转去一个<code>null</code>的地址，它是表示一个</strong>init transaction</em>*用于部署合约。在这种情况下，这个属性就代表所创建的合约的地址。 要计算合约地址，getContractAddress的utility function还可以与TransactionResponse对象一起使用，该对象需要交易的nonce值和发送人的地址。</p>
+<p>**<em>receipt</em>.transactionIndex ⇒ <em>number</em>:**当前区块包含所有交易列表中，此交易的索引。</p>
+<p>**<em>receipt</em>.type ⇒ *number:***此交易的EIP-2718类型。如果事务是没有envelope的legacy事务，则其type 为<code>0</code>。</p>
+<p>**<em>receipt</em>.root ⇒ <em>string</em>:**收据的中间状态根</p>
+<p>只有在Byzantium Hard Fork之前包含在区块中的交易才有这个属性，因为它被<code>status</code>属性取代了。</p>
+<p>这些属性通常对开发者没什么用处。仅考虑单笔交易的防伪性的时候可以用于验证状态转换;如果没有它，则必须考虑整个区块。</p>
+<p>**<em>receipt</em>.gasUsed ⇒ <em>大数(BigNumber)</em>:**该交易实际使用的gas值。</p>
+<p>**<em>receipt</em>.logsBloom ⇒ *string&lt; DataHexString &gt;:***一个bloom-filter，包含此交易中所有日志中包含的全部地址和主题。</p>
+<p>**<em>receipt</em>.blockHash ⇒ *string&lt; DataHexString&lt; 32 &gt; &gt;:***包含该交易的区块的区块哈希值。</p>
+<p>**<em>receipt</em>.transactionHash ⇒ *string&lt; DataHexString&lt; 32 &gt; &gt;:***这笔交易的哈希值。</p>
+<p>**<em>receipt</em>.logs ⇒ *Array&lt; Log &gt;:***这笔交易触发的所有日志。</p>
+<p>**<em>receipt</em>.blockNumber ⇒ *number:***包含这笔交易的区块的高度（区块数量）。</p>
+<p>**<em>receipt</em>.confirmations ⇒ *number:***当这笔交易所在的区块被挖出来时，所有已挖出的区块数量(包括这笔刚挖出的区块)。</p>
+<p>**<em>receipt</em>.cumulativeGasUsed ⇒ 大数(BigNumber):**对包含该交易的块，这是截至(该交易的有序交易列表中每个交易使用的gas的总和</p>
+<p>**<em>receipt</em>.byzantium ⇒ <em>boolean</em>:**如果区块是在post-Byzantium Hard Fork区块，这个值是true。</p>
+<p>**<em>receipt</em>.status ⇒ *boolean:***如果交易成功，这个值为1；如果交易被reverted，这个值为为0。 只有post-Byzantium Hard Fork中包含的交易才有这个属性。</p>
+<h1 id="Access-Lists"><a href="#Access-Lists" class="headerlink" title="Access Lists"></a>Access Lists</h1><p>Access List是可选的，它包含一个地址列表和地址的存储槽，这些地址应该是<em>warmed</em>或pre-fetched的，以便在这个交易的执行中使用。 一个<em>warmed</em>值有一个额外的预先支付访问的成本，但在整个读取和写入代码的执行过程中会被降低。</p>
+<h2 id="7-1-AccessListish"><a href="#7-1-AccessListish" class="headerlink" title="7.1 AccessListish"></a>7.1 AccessListish</h2><p>AccessList的一个更宽松的描述，它将在内部使用accessListify进行转换。</p>
+<p>他可以是以下的任意一种:</p>
+<ul>
+<li>任意的AccessList</li>
+<li>一个包含两个元素的数组，第一个元素是地址，第二个是数组在storage中的key</li>
+<li>一个对象, 所以的key表示地址，相应的value表示数组在storage中的key</li>
+</ul>
+<p>当使用对象形式(上述最后一个选项)时，地址和存储槽将被排序。 如果需要access list的显式顺序，则必须使用方式。 大多数开发人员不需要明确的顺序。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Option 1:</span></span><br><span class="line"><span class="comment">// AccessList</span></span><br><span class="line"><span class="comment">// see below</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Option 2:</span></span><br><span class="line"><span class="comment">// Array&lt; [ Address, Array&lt;Bytes32&gt; ] &gt;</span></span><br><span class="line">accessList = [</span><br><span class="line">  [</span><br><span class="line">    <span class="string">&quot;0x0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e&quot;</span>,</span><br><span class="line">    [</span><br><span class="line">      <span class="string">&quot;0x0000000000000000000000000000000000000000000000000000000000000004&quot;</span>,</span><br><span class="line">      <span class="string">&quot;0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d&quot;</span></span><br><span class="line">    ]</span><br><span class="line">  ],</span><br><span class="line">  [</span><br><span class="line">    <span class="string">&quot;0x5FfC014343cd971B7eb70732021E26C35B744cc4&quot;</span>,</span><br><span class="line">    [</span><br><span class="line">        <span class="string">&quot;0x0000000000000000000000000000000000000000000000000000000000000001&quot;</span></span><br><span class="line">    ]</span><br><span class="line">  ]</span><br><span class="line">];</span><br><span class="line"></span><br><span class="line"><span class="comment">// Option 3:</span></span><br><span class="line"><span class="comment">// Record&lt;Address, Array&lt;Bytes32&gt;&gt;</span></span><br><span class="line">accessList = &#123;</span><br><span class="line">  <span class="string">&quot;0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;0x0000000000000000000000000000000000000000000000000000000000000004&quot;</span>,</span><br><span class="line">    <span class="string">&quot;0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d&quot;</span></span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&quot;0x5FfC014343cd971B7eb70732021E26C35B744cc4&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;0x0000000000000000000000000000000000000000000000000000000000000001&quot;</span></span><br><span class="line">  ]</span><br><span class="line">&#125;equivalent to the <span class="title class_">AccessList</span> example below</span><br><span class="line"></span><br><span class="line"><span class="comment">// Option 1:</span></span><br><span class="line"><span class="comment">// AccessList</span></span><br><span class="line"><span class="comment">// see below</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Option 2:</span></span><br><span class="line"><span class="comment">// Array&lt; [ Address, Array&lt;Bytes32&gt; ] &gt;</span></span><br><span class="line">accessList = [</span><br><span class="line">  [</span><br><span class="line">    <span class="string">&quot;0x0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e&quot;</span>,</span><br><span class="line">    [</span><br><span class="line">      <span class="string">&quot;0x0000000000000000000000000000000000000000000000000000000000000004&quot;</span>,</span><br><span class="line">      <span class="string">&quot;0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d&quot;</span></span><br><span class="line">    ]</span><br><span class="line">  ],</span><br><span class="line">  [</span><br><span class="line">    <span class="string">&quot;0x5FfC014343cd971B7eb70732021E26C35B744cc4&quot;</span>,</span><br><span class="line">    [</span><br><span class="line">        <span class="string">&quot;0x0000000000000000000000000000000000000000000000000000000000000001&quot;</span></span><br><span class="line">    ]</span><br><span class="line">  ]</span><br><span class="line">];</span><br><span class="line"></span><br><span class="line"><span class="comment">// Option 3:</span></span><br><span class="line"><span class="comment">// Record&lt;Address, Array&lt;Bytes32&gt;&gt;</span></span><br><span class="line">accessList = &#123;</span><br><span class="line">  <span class="string">&quot;0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;0x0000000000000000000000000000000000000000000000000000000000000004&quot;</span>,</span><br><span class="line">    <span class="string">&quot;0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d&quot;</span></span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&quot;0x5FfC014343cd971B7eb70732021E26C35B744cc4&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;0x0000000000000000000000000000000000000000000000000000000000000001&quot;</span></span><br><span class="line">  ]</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-2-AccessList"><a href="#7-2-AccessList" class="headerlink" title="7.2 AccessList"></a>7.2 AccessList</h2><p>一个EIP-2930交易允许一个可选的<strong>AccessList</strong>，它会导致交易<em>warm</em>（预缓存）另一个地址状态和指定的storage key。</p>
+<p>这会使得交易的内在成本变大，但在整个事务执行过程中给存储和状态访问带来了好处。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Array of objects with the form:</span></span><br><span class="line"><span class="comment">// &#123;</span></span><br><span class="line"><span class="comment">//   address: Address,</span></span><br><span class="line"><span class="comment">//   storageKey: Array&lt; DataHexString&lt; 32 &gt; &gt;</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br><span class="line"></span><br><span class="line">accessList = [</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">address</span>: <span class="string">&quot;0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e&quot;</span>,</span><br><span class="line">    <span class="attr">storageKeys</span>: [</span><br><span class="line">        <span class="string">&quot;0x0000000000000000000000000000000000000000000000000000000000000004&quot;</span>,</span><br><span class="line">        <span class="string">&quot;0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d&quot;</span></span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">address</span>: <span class="string">&quot;0x5FfC014343cd971B7eb70732021E26C35B744cc4&quot;</span>,</span><br><span class="line">    <span class="attr">storageKeys</span>: [</span><br><span class="line">        <span class="string">&quot;0x0000000000000000000000000000000000000000000000000000000000000001&quot;</span></span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/08/09/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/4-Types/" title="4-Types">https://kongpengyq.com/2022/08/09/区块链/ether@5.4/4-Types/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/ether-5-4-js/" rel="tag"># ether@5.4.js</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/08/08/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/3-Providers/" rel="prev" title="3-Providers">
+      <i class="fa fa-chevron-left"></i> 3-Providers
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/08/14/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/5-Singers/" rel="next" title="5-Singers">
+      5-Singers <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#BlockTag"><span class="nav-text">BlockTag</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Networkish"><span class="nav-text">Networkish</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#FeeData"><span class="nav-text">FeeData</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Block"><span class="nav-text">Block</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Events-and-Logs"><span class="nav-text">Events and Logs</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1-EventFilter"><span class="nav-text">5.1 EventFilter</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-2-Filter"><span class="nav-text">5.2 Filter</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-3-FilterByBlockHash"><span class="nav-text">5.3 FilterByBlockHash</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-4-Log"><span class="nav-text">5.4 Log</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Transactions"><span class="nav-text">Transactions</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#6-1-TransactionRequest"><span class="nav-text">6.1 TransactionRequest</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-2-TransactionResponse"><span class="nav-text">6.2 TransactionResponse</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-3-TransactionReceipt"><span class="nav-text">6.3 TransactionReceipt</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Access-Lists"><span class="nav-text">Access Lists</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#7-1-AccessListish"><span class="nav-text">7.1 AccessListish</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-2-AccessList"><span class="nav-text">7.2 AccessList</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

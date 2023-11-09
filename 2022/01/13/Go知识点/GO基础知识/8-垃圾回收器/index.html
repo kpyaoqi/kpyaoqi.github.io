@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="什么是垃圾回收我们在程序中定义一个变量，会在内存中开辟相应内存空间进行存储，当不需要此变量后，需要手动销毁此对象，并释放内存。而这种对不再使用的内存资源进行自动回收的功能即为垃圾回收（Garbage Collection，缩写为GC），是一种自动内存管理机制 如何识别垃圾引用计数算法(reference counting)引用计数通过在对象上增加自己被引用的次数，被其他对象引用时加1，引用自己的对">
+<meta property="og:type" content="article">
+<meta property="og:title" content="8-垃圾回收器">
+<meta property="og:url" content="https://kongpengyq.com/2022/01/13/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/8-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="什么是垃圾回收我们在程序中定义一个变量，会在内存中开辟相应内存空间进行存储，当不需要此变量后，需要手动销毁此对象，并释放内存。而这种对不再使用的内存资源进行自动回收的功能即为垃圾回收（Garbage Collection，缩写为GC），是一种自动内存管理机制 如何识别垃圾引用计数算法(reference counting)引用计数通过在对象上增加自己被引用的次数，被其他对象引用时加1，引用自己的对">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/3a41e75733c54c75b053ac26b3b526e8tplv-k3u1fbpfcp-zoom-in-crop-mark4536000-168662237133012.awebp">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/d42f9e9925ae473eb52ed795f8da5e35tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/26a3f4946dfe438893654a9dad0d0a53tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/432b58a1a30f4d91a5d810fcfddf9478tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/9fc05db886244859a02fa3ac92d1e57atplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/45d06eb5f99d49f385ac21e4027b4973tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/8bf86801841744ab97923af572b763f2tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/4fc07e2bf7a743d0902fac72ed174f80tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/0a5a6c1f177d41f393de2a6a8f860c13tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp">
+<meta property="article:published_time" content="2022-01-12T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:01:34.854Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="Go知识点">
+<meta property="article:tag" content="GO基础知识">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/3a41e75733c54c75b053ac26b3b526e8tplv-k3u1fbpfcp-zoom-in-crop-mark4536000-168662237133012.awebp">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/01/13/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/8-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>8-垃圾回收器 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/01/13/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/8-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          8-垃圾回收器
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-01-13 00:00:00" itemprop="dateCreated datePublished" datetime="2022-01-13T00:00:00+08:00">2022-01-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:01:34" itemprop="dateModified" datetime="2023-11-09T10:01:34+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" itemprop="url" rel="index">
+                    <span itemprop="name">GO基础知识</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="什么是垃圾回收"><a href="#什么是垃圾回收" class="headerlink" title="什么是垃圾回收"></a>什么是垃圾回收</h1><p><strong>我们在程序中定义一个变量，会在内存中开辟相应内存空间进行存储，当不需要此变量后，需要手动销毁此对象，并释放内存。而这种对不再使用的内存资源进行自动回收的功能即为垃圾回收（Garbage Collection，缩写为GC），是一种自动内存管理机制</strong></p>
+<h1 id="如何识别垃圾"><a href="#如何识别垃圾" class="headerlink" title="如何识别垃圾"></a>如何识别垃圾</h1><h2 id="引用计数算法-reference-counting"><a href="#引用计数算法-reference-counting" class="headerlink" title="引用计数算法(reference counting)"></a>引用计数算法(reference counting)</h2><p>引<strong>用计数通过在对象上增加自己被引用的次数，被其他对象引用时加1，引用自己的对象被回收时减1，引用数为0的对象即为可以被回收的对象，</strong>这种算法在内存比较紧张和实时性比较高的系统中使用比较广泛，如php，Python等。</p>
+<img src="/noteimg/Go知识点/GO基础知识/img/3a41e75733c54c75b053ac26b3b526e8tplv-k3u1fbpfcp-zoom-in-crop-mark4536000-168662237133012.awebp" alt="img" style="zoom:80%;" /> 
+
+<p>优点：方式简单，回收速度快。</p>
+<p>缺点：</p>
+<ol>
+<li>需要额外的空间存放计数。</li>
+<li>无法处理循环引用(如a.b&#x3D;b; b.a&#x3D;a)。</li>
+<li>频繁更新引用计数降低了性能。</li>
+</ol>
+<h2 id="追踪式回收算法-Tracing"><a href="#追踪式回收算法-Tracing" class="headerlink" title="追踪式回收算法(Tracing)"></a>追踪式回收算法(Tracing)</h2><p>追踪式算法(可达性分析)的核心思想是<strong>判断一个对象是否可达，如果这个对象一旦不可达就可以立刻被GC回收了</strong>，那么我们怎么判断一个对象是否可达呢？第一步从<strong>根节点开始找出所有的全局变量和当前函数栈里的变量，标记为可达</strong>。第二步，<strong>从已经标记的数据开始，进一步标记它们可访问的变量，</strong>以此类推，专业术语叫传递闭包。当追踪结束时，没有被打上标记的对象就被判定是不可触达。</p>
+<p><img src="/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/d42f9e9925ae473eb52ed795f8da5e35tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp" alt="img"></p>
+<p>优点：</p>
+<ol>
+<li>解决了循环引用的问题</li>
+<li>占用的空间少了</li>
+</ol>
+<p>和引用计数法相比，有以下缺点：</p>
+<ol>
+<li>无法立刻识别出垃圾对象，需要依赖GC线程</li>
+<li>算法在标记时必须暂停整个程序，即STW(stop the world)，否则其他线程有可能会修改对象的状态从而回收不该回收的对象</li>
+</ol>
+<h2 id="STW-是什么意思？"><a href="#STW-是什么意思？" class="headerlink" title="STW 是什么意思？"></a>STW 是什么意思？</h2><p><code>STW</code> 可以是 <code>Stop the World</code> 的缩写，也可以是 <code>Start the World</code> 的缩写。通常意义上指指代从 <code>Stop the World</code> 这一动作发生时到 <code>Start the World</code> 这一动作发生时这一段时间间隔，即万物静止。STW 在垃圾回收过程中为了保证实现的正确性、防止无止境的内存增长等问题而不可避免的需要停止赋值器进一步操作对象图的一段过程。</p>
+<p>在这个过程中整个用户代码被停止或者放缓执行， <code>STW</code> 越长，对用户代码造成的影响（例如延迟）就越大，早期 Go 对垃圾回收器的实现中 <code>STW</code> 长达几百毫秒，对时间敏感的实时通信等应用程序会造成巨大的影响。</p>
+<h1 id="如何清理垃圾"><a href="#如何清理垃圾" class="headerlink" title="如何清理垃圾"></a>如何清理垃圾</h1><h2 id="标记清除算法-Mark-Sweep"><a href="#标记清除算法-Mark-Sweep" class="headerlink" title="标记清除算法(Mark Sweep)"></a>标记清除算法(Mark Sweep)</h2><p>标记清除算法是最常见的垃圾收集算法，标记清除收集器是跟踪式垃圾收集器，其执行过程可以分成标记(Mark)和清除(Sweep)两个阶段：</p>
+<ol>
+<li>标记阶段：<strong>暂停应用程序的执行，从根对象触发查找并标记堆中所有存活的对象；</strong></li>
+<li>清除阶段：<strong>遍历堆中的全部对象，回收未被标记的垃圾对象并将回收的内存加入空闲链表，恢复应用程序的执行；</strong></li>
+</ol>
+<img src="/noteimg/Go知识点/GO基础知识/img/26a3f4946dfe438893654a9dad0d0a53tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp" alt="img" style="zoom: 50%;" /> 
+
+<p>优点：实现简单。</p>
+<p>缺点：</p>
+<ol>
+<li><strong>执行期间需要把整个程序完全暂停，不能异步的进行垃圾回收。</strong></li>
+<li>容易产生大量不连续的内存碎片，碎片太多可能会导致后续没有足够的连续内存分配给较大的对象，从而提前触发新的一次垃圾收集动作。</li>
+</ol>
+<h2 id="标记复制算法"><a href="#标记复制算法" class="headerlink" title="标记复制算法"></a>标记复制算法</h2><p>它把内存空间划分为两个相等的区域，每次只使用其中一个区域。在垃圾收集时，遍历当前使用的区域，<strong>把存活对象复制到另一个区域中，最后将当前使用的区域的可回收对象进行回收。</strong></p>
+<p>实现：</p>
+<p>首先这个算法会把对分成两块，一块是From、一块是To</p>
+<p>对象只会在From上生成，发生GC之后会找到所有的存活对象，然后将其复制到To区，然后整体回收From区。</p>
+<img src="/noteimg/Go知识点/GO基础知识/img/432b58a1a30f4d91a5d810fcfddf9478tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp" alt="img" style="zoom: 67%;" /> 
+
+<p>优点：</p>
+<ol>
+<li>不用进行大量垃圾对象的扫描：标记复制算法需要从<code>GC-root</code>对象出发，将可达的对象复制到另外一块内存后直接清理当前这块内存即可。</li>
+<li>解决了内存碎片问题，防止分配大空间对象是提前gc的问题。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>复制成本问题：在可达对象占用内存高的时候，复制成本会很高。</li>
+<li>内存利用率低：相当于可利用的内存仅有一半。</li>
+</ol>
+<h2 id="标记压缩算法"><a href="#标记压缩算法" class="headerlink" title="标记压缩算法"></a>标记压缩算法</h2><p>在标记可回收的对象后<strong>将所有存活的对象压缩到内存的一端</strong>，使他们紧凑地排列在一起，对边界以外的内存进行回收，回收后，已用和未用的内存都各自一边。</p>
+<img src="/noteimg/Go知识点/GO基础知识/img/9fc05db886244859a02fa3ac92d1e57atplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp" alt="img" style="zoom:67%;" /> 
+
+<p>优点：</p>
+<ol>
+<li>避免了内存碎片化的问题。</li>
+<li>适合老年代算法，老年代对象存活率高的情况下，标记整理算法由于不需要复制对象，效率更高。</li>
+</ol>
+<p>缺点：整理过程复杂：需要多次遍历内存，导致STW时间比标记清除算法高。</p>
+<h1 id="设计原理"><a href="#设计原理" class="headerlink" title="设计原理"></a>设计原理</h1><h2 id="三色标记算法"><a href="#三色标记算法" class="headerlink" title="三色标记算法"></a>三色标记算法</h2><p>为了解决原始标记清除算法带来的长时间STW, Go从v1.5版本实现了<strong>基于三色标记清除的并发垃圾收集器</strong>，在<strong>不暂停程序的情况下即可完成对象的可达性分析</strong>，三色标记算法将程序中的对象分成白色、黑色和灰色三类：</p>
+<ul>
+<li><strong>白色对象 - 潜在的垃圾，其内存可能会被垃圾收集器回收；</strong></li>
+<li><strong>灰色对象 - 活跃的对象，因为存在指向白色对象的外部指针，垃圾收集器会扫描这些对象的子对象；</strong></li>
+<li><strong>黑色对象 - 活跃的对象，包括不存在任何引用外部指针的对象以及从根对象可达的对象</strong></li>
+</ul>
+<p>三色标记法属于增量式GC算法，回收器<strong>首先将所有对象标记成白色</strong>，然后从gc root出发，<strong>逐步把所有可达的对象变成灰色再到黑色</strong>，最终所有的白色对象都是不可达对象。</p>
+<p>具体实现：</p>
+<ul>
+<li><strong>初始时所有对象都是白色的</strong></li>
+<li>从<code>gc root</code>对象出发，<strong>扫描所有可达对象标记为灰色，放入待处理队列</strong></li>
+<li><strong>从队列取出一个灰色对象并标记为黑色，将其引用对象标记为灰色</strong>，放入队列</li>
+<li><strong>重复上一步骤，直到灰色对象队列为空</strong></li>
+<li><strong>此时剩下的所有白色对象都是垃圾对象</strong></li>
+</ul>
+<img src="/noteimg/Go知识点/GO基础知识/img/45d06eb5f99d49f385ac21e4027b4973tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp" alt="img" style="zoom:50%;" /> 
+
+<p>优点：</p>
+<ul>
+<li>不需要STW</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>如果产生垃圾速度大于回收速度时，可能会导致程序中垃圾对象越来越多而无法及时收集</li>
+<li>线程切换和上下文转换的消耗会使得垃圾回收的总体成本上升，从而降低系统吞吐量</li>
+</ul>
+<p>三色标记法存在并发性问题，</p>
+<ul>
+<li><strong>可能会出现野指针(指向没有合法地址的指针)，从而造成严重的程序错误</strong></li>
+<li><strong>漏标，错误的回收非垃圾对象</strong></li>
+</ul>
+<h2 id="三色不变性"><a href="#三色不变性" class="headerlink" title="三色不变性"></a>三色不变性</h2><p>想要在并发或者增量的标记算法中保证正确性，我们需要达成以下两种三色不变性中的任意一种。</p>
+<ul>
+<li><p>强三色不变性——<strong>黑色对象不会指向白色对象，只会指向灰色对象或者黑色对象。</strong></p>
+<img src="/noteimg/Go知识点/GO基础知识/img/8bf86801841744ab97923af572b763f2tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp" alt="img" style="zoom: 50%;" /> 
+</li>
+<li><p>弱三色不变性——<strong>黑色对象指向的白色对象必须包含一条从灰色对象经由多个白色对象的可达路径</strong>。</p>
+</li>
+</ul>
+<img src="/noteimg/Go知识点/GO基础知识/img/4fc07e2bf7a743d0902fac72ed174f80tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp" alt="img" style="zoom:67%;" /> 
+
+<h2 id="屏障技术"><a href="#屏障技术" class="headerlink" title="屏障技术"></a>屏障技术</h2><p>垃圾收集中的屏障技术更像是一个钩子方法，<strong>它是在用户程序读取对象、创建新对象以及更新对象指针时执行的一段代码</strong>，根据操作类型的不同，我们可以将它们分成读屏障和写屏障两种，<strong>因为读屏障需要在读操作中加入代码片段，对用户程序的性能影响很大，所以往往都会采用写屏障保证三色不变性。</strong></p>
+<h3 id="插入写屏障"><a href="#插入写屏障" class="headerlink" title="插入写屏障"></a><strong>插入写屏障</strong></h3><p><strong>当一个对象引用另外一个对象时，将另外一个对象标记为灰色，以此满足强三色不变性，不会存在黑色对象引用白色对象。</strong></p>
+<h3 id="删除写屏障"><a href="#删除写屏障" class="headerlink" title="删除写屏障"></a>删除写屏障</h3><p><strong>在灰色对象删除对白色对象的引用时，将白色对象置为灰色，其实就是快照保存旧的引用关系，这叫STAB,以此满足弱三色不变性。</strong></p>
+<h3 id="混合写屏障"><a href="#混合写屏障" class="headerlink" title="混合写屏障"></a>混合写屏障</h3><p>v1.8版本之前，运行时会使用插入写屏障保证强三色不变性；</p>
+<p>在v1.8中，<strong>组合插入写屏障和删除写屏障构成了混合写屏障，保证弱三色不变性；</strong>该写屏障会<strong>将覆盖的对象标记成灰色(删除写屏障)并在当前栈没有扫描时将新对象也标记成灰色(插入写屏障)：</strong></p>
+<p><strong>写屏障会将被覆盖的指针和新指针都标记成灰色，而所有新建的对象都会被直接标记成黑色。</strong></p>
+<h1 id="执行周期"><a href="#执行周期" class="headerlink" title="执行周期"></a>执行周期</h1><p>Go语言的垃圾收集可以分成清除终止、标记、标记终止和清除四个不同阶段：</p>
+<img src="/noteimg/Go知识点/GO基础知识/img/0a5a6c1f177d41f393de2a6a8f860c13tplv-k3u1fbpfcp-zoom-in-crop-mark4536000.awebp" alt="img" style="zoom:50%;" /> 
+
+<p><strong>清理终止阶段</strong></p>
+<ol>
+<li>清扫终止阶段，为下一个阶段的并发标记做准备工作，启动写屏障</li>
+</ol>
+<p><strong>标记阶段</strong></p>
+<ol>
+<li>将状态切换至<code>_GCmark</code>、<strong>与赋值器并发执行，开启写屏障</strong>、用户程序协助(<code>Mutator Assists</code>)并将根对象入队；</li>
+<li>恢复执行程序，标记进程和用于协助的用户程序会开始并发标记内存中的对象，<strong>写屏障会将被覆盖的指针和新指针都标记成灰色，而所有新创建的对象都会被直接标记成黑色；</strong></li>
+<li><strong>开始扫描根对象，包括所有<code>Goroutine</code>的栈、全局对象以及不在堆中的运行时数据结构，扫描<code>Goroutine</code>栈期间会暂停当前处理器；</strong></li>
+<li><strong>依次处理灰色队列中的对象，将对象标记成黑色并将它们指向的对象标记成灰色；</strong></li>
+<li>使用分布式的终止算法检查剩余的工作，<strong>发现标记阶段完成后进入标记终止阶段；</strong></li>
+</ol>
+<p><strong>标记终止阶段</strong></p>
+<ol>
+<li><strong>保证一个周期内标记任务完成，停止写屏障</strong></li>
+<li>暂停程序、将状态切换至<code>_GCmarktermination </code>并关闭辅助标记的用户程序；</li>
+<li>清理处理器上的线程缓存；</li>
+</ol>
+<p><strong>清理阶段</strong></p>
+<ol>
+<li>将状态切换至<code>_GCoff</code> <strong>开始清理阶段、初始化清理状态并关闭写屏障；</strong></li>
+<li><strong>恢复用户程序，所有新创建的对象会标记成白色；</strong></li>
+<li><strong>后台并发清理所有的内存管理单元，当<code>Goroutine</code>申请新的内存管理单元时就会触发清理；</strong></li>
+</ol>
+<h1 id="GC触发时机"><a href="#GC触发时机" class="headerlink" title="GC触发时机"></a>GC触发时机</h1><p>当满足触发垃圾收集的基本条件：允许垃圾收集、程序没有崩溃并且没有处于垃圾循环；</p>
+<p>注：运行时会通过如下所示的<code>runtime.gcTrigger.test</code>方法决定是否需要触发垃圾收集，该方法会根据三种不同方式触发进行不同的检查。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t gcTrigger)</span></span> test() <span class="type">bool</span> &#123;</span><br><span class="line">	<span class="keyword">if</span> !memstats.enablegc || panicking != <span class="number">0</span> || gcphase != _GCoff &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">switch</span> t.kind &#123;</span><br><span class="line">	<span class="keyword">case</span> gcTriggerHeap:</span><br><span class="line">		<span class="keyword">return</span> memstats.heap_live &gt;= memstats.gc_trigger</span><br><span class="line">	<span class="keyword">case</span> gcTriggerTime:</span><br><span class="line">		<span class="keyword">if</span> gcpercent &lt; <span class="number">0</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">		&#125;</span><br><span class="line">		lastgc := <span class="type">int64</span>(atomic.Load64(&amp;memstats.last_gc_nanotime))</span><br><span class="line">		<span class="keyword">return</span> lastgc != <span class="number">0</span> &amp;&amp; t.now-lastgc &gt; forcegcperiod</span><br><span class="line">	<span class="keyword">case</span> gcTriggerCycle:</span><br><span class="line">		<span class="keyword">return</span> <span class="type">int32</span>(t.n-work.cycles) &gt; <span class="number">0</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>超过内存大小阙值，分配内存时</strong>，当前已分配内存与上一次<code>GC</code>结束时存活对象的内存达到某个比例时就触发<code>GC</code>。(默认配置会在堆内存达到上一次垃圾收集的2倍时，触发新一轮的垃圾收集，可以通过环境变量<code>GOGC</code>调整，在默认情况下他的值为100，即增长100%的堆内存才会触发<code>GC</code>)；比如一次回收完毕后，内存的使用量为5M，那么下次回收的机制则是内存分配达到10M的时候，也就是说，并不是内存分配越多，垃圾回收频率越高。</li>
+<li>如果一直达不到内存大小的阙值，<code>sysmon</code>检测出一段时间内（由<code>runtime.forcegcperiod</code>变量控制，<strong>默认为2分钟）没有触发过<code>GC</code>，就会触发新的GC。</strong></li>
+<li><strong>手动调用<code>runtime.GC()</code>强制触发<code>GC</code></strong></li>
+</ul>
+<h1 id="GC调优"><a href="#GC调优" class="headerlink" title="GC调优"></a>GC调优</h1><p>减少堆内存的分配是最好的优化方式。比如合理重复利用对象；避免<code>string</code>和<code>byte[]</code>之间的转化等，两者发生转换的时候，底层数据结构会进行复制，因此导致gc效率会变低，少量使用<code>+</code>连接<code>string</code>，Go里面<code>string</code>是最基础的类型，是一个只读类型，针对他的每一个操作都会创建一个新的<code>string</code>，如果是少量小文本拼接，用<code>“+”</code>就好，如果是大量小文本拼接，用<code>strings.Join</code>;如果是大量大文本拼接，用<code>bytes.Buffer</code>。</p>
+<p>优化努力的方向：</p>
+<ul>
+<li>控制内存分配的速度，限制 goroutine 的数量，从而提高赋值器对 CPU 的利用率。</li>
+<li>减少并复用内存，例如使用 sync.Pool 来复用需要频繁创建临时对象，例如提前分配足够的内存来降低多余的拷贝。</li>
+<li>需要时，增大 GOGC 的值，降低 GC 的运行频率。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/01/13/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/8-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/" title="8-垃圾回收器">https://kongpengyq.com/2022/01/13/Go知识点/GO基础知识/8-垃圾回收器/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go%E7%9F%A5%E8%AF%86%E7%82%B9/" rel="tag"># Go知识点</a>
+              <a href="/tags/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" rel="tag"># GO基础知识</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/01/07/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/7-%E8%B0%83%E5%BA%A6%E5%99%A8/" rel="prev" title="7-调度器">
+      <i class="fa fa-chevron-left"></i> 7-调度器
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/01/14/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/Go%E8%AF%AD%E8%A8%80%E9%9D%A2%E7%BB%8F/" rel="next" title="Go语言面经">
+      Go语言面经 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6"><span class="nav-text">什么是垃圾回收</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%AF%86%E5%88%AB%E5%9E%83%E5%9C%BE"><span class="nav-text">如何识别垃圾</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0%E7%AE%97%E6%B3%95-reference-counting"><span class="nav-text">引用计数算法(reference counting)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%BD%E8%B8%AA%E5%BC%8F%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95-Tracing"><span class="nav-text">追踪式回收算法(Tracing)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STW-%E6%98%AF%E4%BB%80%E4%B9%88%E6%84%8F%E6%80%9D%EF%BC%9F"><span class="nav-text">STW 是什么意思？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E6%B8%85%E7%90%86%E5%9E%83%E5%9C%BE"><span class="nav-text">如何清理垃圾</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0%E6%B8%85%E9%99%A4%E7%AE%97%E6%B3%95-Mark-Sweep"><span class="nav-text">标记清除算法(Mark Sweep)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0%E5%A4%8D%E5%88%B6%E7%AE%97%E6%B3%95"><span class="nav-text">标记复制算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95"><span class="nav-text">标记压缩算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86"><span class="nav-text">设计原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E7%AE%97%E6%B3%95"><span class="nav-text">三色标记算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E8%89%B2%E4%B8%8D%E5%8F%98%E6%80%A7"><span class="nav-text">三色不变性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B1%8F%E9%9A%9C%E6%8A%80%E6%9C%AF"><span class="nav-text">屏障技术</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%92%E5%85%A5%E5%86%99%E5%B1%8F%E9%9A%9C"><span class="nav-text">插入写屏障</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E5%86%99%E5%B1%8F%E9%9A%9C"><span class="nav-text">删除写屏障</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%B7%E5%90%88%E5%86%99%E5%B1%8F%E9%9A%9C"><span class="nav-text">混合写屏障</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E5%91%A8%E6%9C%9F"><span class="nav-text">执行周期</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GC%E8%A7%A6%E5%8F%91%E6%97%B6%E6%9C%BA"><span class="nav-text">GC触发时机</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GC%E8%B0%83%E4%BC%98"><span class="nav-text">GC调优</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="状态管理一: StateDB Ethereum State 管理模块中最重要的几个数据结构：StateDB, Trie，StateTrie，以及 StackTrie。我们将通过分析Ethereum中的主workflow的方式来深入理解这三个数据结构的使用场景，以及设计上的不同。 首先，StateDB是这三个数据结构中最高层的封装，它是直接提供了与StateObject (Account，Contr">
+<meta property="og:type" content="article">
+<meta property="og:title" content="02-状态管理">
+<meta property="og:url" content="https://kongpengyq.com/2022/10/21/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/02-%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="状态管理一: StateDB Ethereum State 管理模块中最重要的几个数据结构：StateDB, Trie，StateTrie，以及 StackTrie。我们将通过分析Ethereum中的主workflow的方式来深入理解这三个数据结构的使用场景，以及设计上的不同。 首先，StateDB是这三个数据结构中最高层的封装，它是直接提供了与StateObject (Account，Contr">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-10-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.740Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="以太坊源码">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/10/21/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/02-%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>02-状态管理 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/10/21/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/02-%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          02-状态管理
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-10-21 00:00:00" itemprop="dateCreated datePublished" datetime="2022-10-21T00:00:00+08:00">2022-10-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/" itemprop="url" rel="index">
+                    <span itemprop="name">以太坊源码</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="状态管理一-StateDB"><a href="#状态管理一-StateDB" class="headerlink" title="状态管理一: StateDB"></a>状态管理一: StateDB</h1><p> Ethereum State 管理模块中最重要的几个数据结构：<strong>StateDB, Trie，StateTrie，以及 StackTrie</strong>。我们将通过分析Ethereum中的主workflow的方式来深入理解这三个数据结构的使用场景，以及设计上的不同。</p>
+<p>首先，<strong>StateDB是这三个数据结构中最高层的封装</strong>，它是<strong>直接提供了与StateObject (Account，Contract)相关的 CURD 的接口</strong>给其他的模块，比如：</p>
+<ul>
+<li>Mining 模块，执行新 Blockchain 中的交易形成新的 world state。</li>
+<li>Block 同步模块，执行新 Blockchain 中的交易形成新的 world state，与header中的 state root 进行比较验证。</li>
+<li>EVM 中的两个与 Contract 中的持久化存储相关的两个 opcode, sStore, sSload.</li>
+</ul>
+<h2 id="StateDB：状态数据库"><a href="#StateDB：状态数据库" class="headerlink" title="StateDB：状态数据库"></a>StateDB：状态数据库</h2><p>我们可以在 genesis block 创建的相关代码中，找到直接相关的例子。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">statedb.Commit(<span class="literal">false</span>)</span><br><span class="line">statedb.Database().TrieDB().Commit(root,<span class="literal">nil</span>)</span><br></pre></td></tr></table></figure>
+
+<p>具体 World State 的更新顺序是:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">flowchart LR</span><br><span class="line">StateDB --&gt; Memory_Trie_Database --&gt; LevelDB</span><br></pre></td></tr></table></figure>
+
+<p>StateDB 调用 <code>Commit</code> 的时候并没有同时触发 <code>TrieDB</code> 的 Commit 。</p>
+<p>在Block被插入到 Blockchain 的这个Workflow中，<strong>stateDB的commit首先在<code>writeBlockWithState</code>函数中被调用了</strong>。之后<code>writeBlockWithState</code>函数会判断 <code>GC</code> 的状态来决定在本次调用中，<strong>是否需要向 <code>Disk Database</code> 写入数据</strong>。</p>
+<h3 id="From-Memory-to-Disk：存储到硬盘"><a href="#From-Memory-to-Disk：存储到硬盘" class="headerlink" title="From Memory to Disk：存储到硬盘"></a>From Memory to Disk：存储到硬盘</h3><p>当新的Block被添加到Blockchain时，State 的数据并不一会立即被写入到 Disk Database 中。在<code>writeBlockWithState</code>函数中，函数会判断 <code>gc</code> 条件，<strong>只有满足一定的条件</strong>，才<strong>会在此刻调用 TrieDB 中的 <code>Cap</code> 或者 <code>Commit</code> 函数将数据写入Disk Database中</strong>。</p>
+<h1 id="状态管理二-World-State-Trie-and-Storage-Trie"><a href="#状态管理二-World-State-Trie-and-Storage-Trie" class="headerlink" title="状态管理二: World State Trie and Storage Trie"></a>状态管理二: World State Trie and Storage Trie</h1><h2 id="Trie-概述"><a href="#Trie-概述" class="headerlink" title="Trie 概述"></a>Trie 概述</h2><p><strong>Trie 结构是 Ethereum 中用于管理数据的基本数据结构</strong>，它被广泛的运用在Ethereum 里的多个模块中，包括管理全局的 <strong>World State Trie</strong>，管理 <strong>Contract中持久化存储的Storage Trie</strong>，以及每个 Block 中的<strong>与交易相关的 Transaction Trie 和 Receipt Trie。</strong></p>
+<p>在以太坊的体系中，广义上的 <strong>Trie 的指的是 Merkel Patricia Trie(MPT)<strong>这种数据结构。在实际的实现中，根据业务功能的不同，在 go-ethereum 中</strong>一共实现了三种不同的MPT的instance</strong>，分别是，<code>Trie</code>，<code>State Trie</code>(<code>Secure Trie</code>) 以及<code>Stack Trie</code>.</p>
+<p>这些Trie在具体实现上的不同点在于，<strong>Transaction Trie本质上并没有使用Trie来管理Transaction的数据</strong>，而是<strong>依赖于MPT的根来快速验证</strong>，具体可以参考<strong>core&#x2F;types&#x2F;hashing.go&#x2F;DeriveSha()函数</strong>来了解Transaction Trie 的<strong>root是如何产生的</strong>，这里的Trie使用的是Stack Trie。</p>
+<p>从调用关系上看 <code>Trie</code> 是最底层的核心结构，它<strong>用于之间负责 StateObject 数据的保存</strong>，以及提<strong>供相应的 CURD 函数</strong>。它的定义在trie&#x2F;trie.go文件中。</p>
+<p><strong>State Trie 结构本质上是对 Trie 的一层封装</strong>。它具体的CURD操作的实现都是通过<code>Trie</code>中定义的函数来执行的。它的定义在<code>trie/secure_trie.go</code>文件中。这个 Trie 也就是我们常说的World State Trie，它是<strong>唯一的一个全局 Trie 结构</strong>。与 Trie 不同的是，<strong>Secure Trie要求新加入的Key-Value pair中的Key 的数据都是Sha过的。</strong>这是为了防止恶意的构造Key来增加MPT的高度。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> StateTrie <span class="keyword">struct</span> &#123;</span><br><span class="line"> trie             Trie</span><br><span class="line"> preimages        *preimageStore</span><br><span class="line"> hashKeyBuf       [common.HashLength]<span class="type">byte</span></span><br><span class="line"> secKeyCache      <span class="keyword">map</span>[<span class="type">string</span>][]<span class="type">byte</span></span><br><span class="line"> secKeyCacheOwner *StateTrie <span class="comment">// 指向self的指针，在不匹配时替换键缓存</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>不管是Secure Trie还是Trie，他们的创建的前提是: 更下层的db的实例已经创建成功了，否则就会报错</strong>。</p>
+<p>值得注意的是一个<strong>关键函数Prove(证明构造merkle关键证据。结果包含所有编码节点的路径在关键的值。价值本身也包含在最后一个节点,可以通过验证证明检索)的实现</strong>，并不在这两个Trie的定义文件中，而是位于<code>trie/proof.go</code>文件中。</p>
+<h2 id="Trie-运用"><a href="#Trie-运用" class="headerlink" title="Trie 运用"></a>Trie 运用</h2><h3 id="Read-Operation：读写行动"><a href="#Read-Operation：读写行动" class="headerlink" title="Read Operation：读写行动"></a>Read Operation：读写行动</h3><h3 id="Insert：插入"><a href="#Insert：插入" class="headerlink" title="Insert：插入"></a>Insert：插入</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *Trie)</span></span> insert(n node, prefix, key []<span class="type">byte</span>, value node) (<span class="type">bool</span>, node, <span class="type">error</span>) &#123;</span><br><span class="line">	......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Update：更新"><a href="#Update：更新" class="headerlink" title="Update：更新"></a>Update：更新</h3><h3 id="Delete：删除"><a href="#Delete：删除" class="headerlink" title="Delete：删除"></a>Delete：删除</h3><h3 id="Finalize-And-Commit-to-Disk：存储到硬盘"><a href="#Finalize-And-Commit-to-Disk：存储到硬盘" class="headerlink" title="Finalize And Commit to Disk：存储到硬盘"></a>Finalize And Commit to Disk：存储到硬盘</h3><ul>
+<li>在leveldb中保存的是Trie中的节点。</li>
+<li>&lt;hash, node.rlprawdata&gt;</li>
+</ul>
+<p>在Geth中，Trie并不是实时更新的，而是依赖于Committer和Database两个额外的辅助单位。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">flowchart LR</span><br><span class="line">Trie.Commit --&gt; Committer.Commit --&gt; trie/Database.insert</span><br></pre></td></tr></table></figure>
+
+<p>我们可以看到Trie的Commit并不会真的对Disk Database的值进行修改。</p>
+<p>Trie真正更新到Disk Database的，是依赖于<code>trie/Database.Commit</code>函数的调用。我们可以在诸多函数中找到这个函数的调用比如。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GenerateChain</span><span class="params">(config *params.ChainConfig, parent *types.Block, engine consensus.Engine, db ethdb.Database, n <span class="type">int</span>, gen <span class="keyword">func</span>(<span class="type">int</span>, *BlockGen)</span></span>) ([]*types.Block, []types.Receipts) &#123;</span><br><span class="line">  ...</span><br><span class="line">   <span class="comment">// Write state changes to db</span></span><br><span class="line">   root, err := statedb.Commit(config.IsEIP158(b.header.Number))</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">    <span class="built_in">panic</span>(fmt.Sprintf(<span class="string">&quot;state write error: %v&quot;</span>, err))</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">if</span> err := statedb.Database().TrieDB().Commit(root, <span class="literal">false</span>); err != <span class="literal">nil</span> &#123;</span><br><span class="line">    <span class="built_in">panic</span>(fmt.Sprintf(<span class="string">&quot;trie write error: %v&quot;</span>, err))</span><br><span class="line">   &#125;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="StackTrie"><a href="#StackTrie" class="headerlink" title="StackTrie"></a>StackTrie</h2><p>StackTrie虽然也是MPT结构，但是它与另外的两个Trie最大的不同在于，其<strong>主要作用不是用于存储数据</strong>，而是<strong>用于给一组数据生成证明。</strong>比如，在Block中的Transaction Hash以及Receipt Hash都是基于StackTrie生成的。这里我们使用一个更直观的例子。这个部分的代码位于<em>core&#x2F;block_validator.go</em>中。在block_validator中定义了一系列验证用的函数, 比如<code>ValidateBody</code>和 <code>ValidateState</code>函数。我们选取了这两个函数的其中一部分，如下所示。为了验证Block的合法性，ValidateBody和ValidateState函数分别在本地基于Block中提供的数据来构造Transaction和Receipt的哈希来与Header中的TxHash与ReceiptHash。我们可以发现，<strong>函数<code>types.DeriveSha</code>需要一个<code>TrieHasher</code>类型的参数</strong>。但是在具体调用的时候，<strong>却传入了了一个<code>trie.NewStackTrie</code>类型的变量</strong>。这是因为StackTrie实现了TrieHasher接口所需要的三个函数，所以这种调用是合法的。我们可以在<em>core&#x2F;types&#x2F;hashing.go</em>中找到TrieHasher的定义。这里**<code>DeriveSha</code>不断的向StackTrie中添加数据，并最终返回StackTrie的Root哈希值**。</p>
+<p>同时，我们可以发现，在<strong>调用DeriveSha函数</strong>的时候，我们<strong>每次都会new一个新的StackTrie</strong>作为参数。这也反映出了，<strong>StackTrie的主要作用就是生成验证用的Proof，而不是存储数据。</strong></p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(v *BlockValidator)</span></span> ValidateBody(block *types.Block) <span class="type">error</span> &#123;</span><br><span class="line"> ...</span><br><span class="line"> <span class="keyword">if</span> hash := types.DeriveSha(block.Transactions(), trie.NewStackTrie(<span class="literal">nil</span>)); hash != header.TxHash &#123;</span><br><span class="line">  <span class="keyword">return</span> fmt.Errorf(<span class="string">&quot;transaction root hash mismatch: have %x, want %x&quot;</span>, hash, header.TxHash)</span><br><span class="line"> &#125;</span><br><span class="line"> ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(v *BlockValidator)</span></span> ValidateState(block *types.Block, statedb *state.StateDB, receipts types.Receipts, usedGas <span class="type">uint64</span>) <span class="type">error</span> &#123;</span><br><span class="line"> ...</span><br><span class="line"> <span class="comment">// Tre receipt Trie&#x27;s root (R = (Tr [[H1, R1], ... [Hn, Rn]]))</span></span><br><span class="line"> receiptSha := types.DeriveSha(receipts, trie.NewStackTrie(<span class="literal">nil</span>))</span><br><span class="line"> <span class="keyword">if</span> receiptSha != header.ReceiptHash &#123;</span><br><span class="line">  <span class="keyword">return</span> fmt.Errorf(<span class="string">&quot;invalid receipt root hash (remote: %x local: %x)&quot;</span>, header.ReceiptHash, receiptSha)</span><br><span class="line"> &#125;</span><br><span class="line"> ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="State-Trie的更新是什么时候发生的？"><a href="#State-Trie的更新是什么时候发生的？" class="headerlink" title="State Trie的更新是什么时候发生的？"></a>State Trie的更新是什么时候发生的？</h2><p><strong>State Trie的更新</strong>，通常是<strong>指的是基于State Trie中节点值的变化从而重新计算State Trie的Root的Hash值的过程</strong>。目前这一过程是<strong>通过调用StateDB中的<code>IntermediateRoot</code>函数来完成的。</strong></p>
+<p>  我们从三个粒度层面来看待State Trie更新的问题。</p>
+<ul>
+<li>Block 层：<br><strong>在一个新的Block Insert到Blockchain的过程中，State Trie可能会发生多次的更新</strong>。比如，在每次Transaction被执行之后，**<code>IntermediateRoot</code>函数都会被调用<strong>。同时，</strong>更新后的 State Trie的Root值，会被写入到Transaction对应的Receipt中<strong>。请注意，</strong>在调用<code>IntermediateRoot</code>函数时，更新后的值在此时并没有被立刻写入到Disk Database中<strong>。此时的State Trie Root只是基于内存中的数据计算出来的。</strong>真正的Trie数据写盘，需要等到<code>trieDB.Commit</code>函数的执行。**</li>
+<li>Transaction 层：<br>如上面提到的，在每次Transaction执行完成后，系统都会调用一次StateDB的<code>IntermediateRoot</code>函数，来更新State Trie。并且会将更新后的Trie的Root Hash写入到该Transaction对应的Receipt中。这里提一下关于<code>IntermediateRoot</code>函数细节。在<code>IntermediateRoot</code>函数调用时，会<strong>首先更新被修改的Contract的Storage Trie的Root。</strong></li>
+<li>Instruction 层：<br>执行Contract的Instruction，并不会直接的引发State Trie的更新。比如，我们知道，<strong>EVM指令<code>OpSstore</code>会修改Contract中的持久化存储</strong>。这个<strong>指令调用了StateDB中的<code>SetState</code>函数</strong>，并最终<strong>调用了对应的StateObject中的<code>setState</code>函数</strong>。StateObject中的<code>setState</code> 函数并没有直接对Contract的Storage Trie进行更新，而是<strong>将修改的存储对象保存在了StateObject中的<em>dirtyStorage</em> 中</strong>(<em>dirtyStorage</em>是用于缓存Storage Slot数据的Key-Value Map). <strong>Storage Trie的更新是由更上层的函数调用所触发的，比如<code>IntermediateRoot</code>函数，以及<code>StateDB.Commit</code>函数。</strong></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/10/21/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/02-%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86/" title="02-状态管理">https://kongpengyq.com/2022/10/21/区块链/以太坊源码/02-状态管理/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/" rel="tag"># 以太坊源码</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/10/17/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/01-Accounts%E8%B4%A6%E6%88%B7/" rel="prev" title="01-Accounts账户">
+      <i class="fa fa-chevron-left"></i> 01-Accounts账户
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/10/27/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/03-Transaction%E4%BA%A4%E6%98%93/" rel="next" title="03-Transaction交易">
+      03-Transaction交易 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%80-StateDB"><span class="nav-text">状态管理一: StateDB</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#StateDB%EF%BC%9A%E7%8A%B6%E6%80%81%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-text">StateDB：状态数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#From-Memory-to-Disk%EF%BC%9A%E5%AD%98%E5%82%A8%E5%88%B0%E7%A1%AC%E7%9B%98"><span class="nav-text">From Memory to Disk：存储到硬盘</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86%E4%BA%8C-World-State-Trie-and-Storage-Trie"><span class="nav-text">状态管理二: World State Trie and Storage Trie</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Trie-%E6%A6%82%E8%BF%B0"><span class="nav-text">Trie 概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Trie-%E8%BF%90%E7%94%A8"><span class="nav-text">Trie 运用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Read-Operation%EF%BC%9A%E8%AF%BB%E5%86%99%E8%A1%8C%E5%8A%A8"><span class="nav-text">Read Operation：读写行动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Insert%EF%BC%9A%E6%8F%92%E5%85%A5"><span class="nav-text">Insert：插入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Update%EF%BC%9A%E6%9B%B4%E6%96%B0"><span class="nav-text">Update：更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Delete%EF%BC%9A%E5%88%A0%E9%99%A4"><span class="nav-text">Delete：删除</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Finalize-And-Commit-to-Disk%EF%BC%9A%E5%AD%98%E5%82%A8%E5%88%B0%E7%A1%AC%E7%9B%98"><span class="nav-text">Finalize And Commit to Disk：存储到硬盘</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#StackTrie"><span class="nav-text">StackTrie</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#State-Trie%E7%9A%84%E6%9B%B4%E6%96%B0%E6%98%AF%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E5%8F%91%E7%94%9F%E7%9A%84%EF%BC%9F"><span class="nav-text">State Trie的更新是什么时候发生的？</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

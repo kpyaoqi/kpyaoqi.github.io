@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="初识1.receive 和 fallback 共存的调用123456789101112&#x2F;**    调用时发送了ETH            |判断 msg.data 是否为空          &#x2F;     \        是       否是否存在 receive   fallbak()      &#x2F;   \    存在   不存在    &#x2F;        \receive()   fallb">
+<meta property="og:type" content="article">
+<meta property="og:title" content="solidity总结">
+<meta property="og:url" content="https://kongpengyq.com/2022/07/28/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/solidity%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="初识1.receive 和 fallback 共存的调用123456789101112&#x2F;**    调用时发送了ETH            |判断 msg.data 是否为空          &#x2F;     \        是       否是否存在 receive   fallbak()      &#x2F;   \    存在   不存在    &#x2F;        \receive()   fallb">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-27T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.698Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="Solidity0.8.17">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/07/28/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/solidity%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>solidity总结 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/07/28/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/solidity%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          solidity总结
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-28 00:00:00" itemprop="dateCreated datePublished" datetime="2022-07-28T00:00:00+08:00">2022-07-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Solidity0-8-17/" itemprop="url" rel="index">
+                    <span itemprop="name">Solidity0.8.17</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="初识"><a href="#初识" class="headerlink" title="初识"></a>初识</h1><h3 id="1-receive-和-fallback-共存的调用"><a href="#1-receive-和-fallback-共存的调用" class="headerlink" title="1.receive 和 fallback 共存的调用"></a>1.receive 和 fallback 共存的调用</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line">    调用时发送了ETH</span><br><span class="line">            |</span><br><span class="line">判断 msg.data 是否为空</span><br><span class="line">          /     \</span><br><span class="line">        是       否</span><br><span class="line">是否存在 receive   fallbak()</span><br><span class="line">      /   \</span><br><span class="line">    存在   不存在</span><br><span class="line">    /        \</span><br><span class="line">receive()   fallbak()</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="数据"><a href="#数据" class="headerlink" title="数据"></a>数据</h1><h3 id="2-即便一个合约的代码中没有显式地调用-selfdestruct，它仍然有可能通过-delegatecall-或-callcode-执行自毁操作。"><a href="#2-即便一个合约的代码中没有显式地调用-selfdestruct，它仍然有可能通过-delegatecall-或-callcode-执行自毁操作。" class="headerlink" title="2.即便一个合约的代码中没有显式地调用 selfdestruct，它仍然有可能通过 delegatecall 或 callcode 执行自毁操作。"></a>2.即便一个合约的代码中没有显式地调用 <code>selfdestruct</code>，它仍然有可能通过 <code>delegatecall</code> 或 <code>callcode</code> 执行自毁操作。</h3><hr>
+<h3 id="3-合约进行selfdestruct后，还可以调用状态变量和函数么？"><a href="#3-合约进行selfdestruct后，还可以调用状态变量和函数么？" class="headerlink" title="3.合约进行selfdestruct后，还可以调用状态变量和函数么？"></a>3.合约进行<code>selfdestruct</code>后，还可以调用状态变量和函数么？</h3><blockquote>
+<p>可以调用，但是返回默认值。如果想调用，也可以在存档节点里指定未删除的高度进行调用。</p>
+</blockquote>
+<hr>
+<h3 id="4-三种-call-的总结-call-delegatecall-staticcall"><a href="#4-三种-call-的总结-call-delegatecall-staticcall" class="headerlink" title="4.三种 call 的总结(call&#x2F;delegatecall&#x2F;staticcall)"></a>4.三种 call 的总结(call&#x2F;delegatecall&#x2F;staticcall)</h3><p>为了与不知道 ABI 的合约进行交互，Solidity 提供了函数 <code>call</code>&#x2F;<code>delegatecall</code>&#x2F;<code>staticcall</code> 直接控制编码。它们都带有一个 <code>bytes memory</code> 参数和返回执行<strong>成功状态</strong>（bool）和<strong>数据</strong>（bytes memory）。</p>
+<p>函数 <code>abi.encode</code>，<code>abi.encodePacked</code>，<code>abi.encodeWithSelector</code> 和 <code>abi.encodeWithSignature</code> 可用于编码结构化数据。</p>
+<p><strong>它们可以接受任意类型，任意数量的参数</strong>。这些参数会被打包到以 32 字节为单位的连续区域中存放。其中一个<strong>例外是当第一个参数被编码成正好 4 个字节的情况</strong>。 在这种情况下，这个参数后边不会填充后续参数编码，以允许使用函数签名。</p>
+<p>下面具体的介绍三种 call。</p>
+<h4 id="call"><a href="#call" class="headerlink" title="call()"></a>call()</h4><p>用给定的有效载荷（payload）发出低级 <code>CALL</code> 调用，并<strong>返回交易成功状态和返回数据</strong>（调用合约的方法并转账）, 格式如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;address&gt;.call(bytes memory) returns (bool, bytes memory)</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><p>低级CALL调用：不需要 payable address, 普通地址即可</p>
+<ol>
+<li>注意: 调用 <code>call</code> 的时候，地址可以不具备 payable 属性</li>
+</ol>
+</li>
+<li><p>返回两个参数，一个 <code>bool</code> 值代表成功或者失败，另外一个是可能存在的 <code>data</code></p>
+</li>
+<li><p>发送所有可用 gas，也可以自己调节 gas。</p>
+<ol>
+<li>如果 <code>fallback</code> 和 <code>receive</code> 内的代码相对复杂也可以，但是如果是恶意代码，需要考虑消耗的 gas 是否值得执行。</li>
+<li><code>_ads.call&#123;value: msg.value,gas:2300&#125;(data)</code></li>
+</ol>
+</li>
+<li><p>当合约调用合约时，不知道对方源码和 ABI 时候，可以使用 call 调用对方合约</p>
+</li>
+<li><p>推荐使用 call 转账 ETH，但是不推荐使用 call 来调用其他合约。</p>
+<ol>
+<li>原因是: call 调用的时候，将合约控制权交给对方，如果碰到恶意代码，或者不安全的代码就很容易凉凉。</li>
+</ol>
+</li>
+<li><p>当调用不存在的合约方法时候，会触发对方合约内的fallback或receive</p>
+<ol>
+<li>我们的合约也可以在 <code>fallback</code> &#x2F; <code>receive</code> 这两个方法内抛出事件，查看是否有人对其做了什么操作。</li>
+</ol>
+</li>
+<li><p>三种方法都提供 <code>gas</code> 选项，而 <code>value</code> 选项仅 <code>call</code> 支持 。三种 call 里只有 <code>call</code> 可以进行 ETH 转账，其他两种不可以进行转账。</p>
+</li>
+</ol>
+<p><strong>例子 （重要）：调用其他合约方法</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract Test1 &#123;</span><br><span class="line">    string public name;</span><br><span class="line">    uint256 public age;</span><br><span class="line">    address public owner;</span><br><span class="line"></span><br><span class="line">    function setNameAndAge(string memory name_, uint256 age_)</span><br><span class="line">        external</span><br><span class="line">        payable</span><br><span class="line">        returns (string memory __name, uint256 __age)</span><br><span class="line">    &#123;</span><br><span class="line">        name = name_;</span><br><span class="line">        age = age_;</span><br><span class="line">        owner = msg.sender;</span><br><span class="line">        return (name_, age_);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">contract CallTest &#123;</span><br><span class="line">    // 需要一个网页，动态的解析 _bys</span><br><span class="line">    bytes public bys;</span><br><span class="line"></span><br><span class="line">    function call_Test1_setNameAndAge(</span><br><span class="line">        address ads_,</span><br><span class="line">        string memory name_,</span><br><span class="line">        uint256 age_</span><br><span class="line">    ) external payable &#123;</span><br><span class="line">        bytes memory data = abi.encodeWithSignature(</span><br><span class="line">            &quot;setNameAndAge(string,uint256)&quot;,</span><br><span class="line">            name_,</span><br><span class="line">            age_</span><br><span class="line">        );</span><br><span class="line">        (bool success, bytes memory _bys) = ads_.call&#123;value: msg.value&#125;(data);</span><br><span class="line">        require(success, &quot;Call Failed&quot;);</span><br><span class="line">        bys = _bys;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>简单说下这个例子的原理</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line">    普通调用:用户A 调用 callB 合约, 发送 100 wei ; </span><br><span class="line">    callB 调用 Test1, 发送 50 wei此时在 Test1 合约内部</span><br><span class="line">        msg.sender = B</span><br><span class="line">        msg.value = 50</span><br><span class="line">        Test1 内部如果有状态变量修改，则会被修改</span><br><span class="line">        发送到 Test1 内的ETH主币也会被留在Test1内</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+
+<h4 id="delegatecall-委托调用"><a href="#delegatecall-委托调用" class="headerlink" title="delegatecall() 委托调用"></a>delegatecall() 委托调用</h4><p>发出低级函数 <code>DELEGATECALL</code>，失败时返回 false，发送所有可用 gas，也可以自己调节 gas。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;address&gt;.delegatecall(bytes memory) returns (bool, bytes memory)</span><br></pre></td></tr></table></figure>
+
+<p><code>delegatecall</code> 使用方法和 <code>call</code> 完全一样。区别在于，<code>delegatecall</code> 只调用给定地址的代码（函数），其他状态属性如（存储，余额 …）都来自当前合约。<code>delegatecall</code> 的目的是使用另一个合约中的库代码。</p>
+<p>委托调用是：<strong>委托对方调用自己数据的</strong>。类似授权转账，比如我部署一个 Bank 合约， 授权 ContractA 使用 Bank 地址内的资金，ContractA 只拥有控制权，但是没有拥有权。</p>
+<ul>
+<li>委托调用后，所有变量修改都是发生在委托合约内部，并不会保存在被委托合约中。<ul>
+<li>利用这个特性，可以通过更换被委托合约，来升级委托合约。</li>
+</ul>
+</li>
+<li>委托调用合约内部，需要和被委托合约的内部参数完全一样，否则容易导致数据混乱<ul>
+<li>可以通过顺序来避免这个问题，但是推荐完全一样</li>
+</ul>
+</li>
+</ul>
+<p><strong>例子 1（重要）</strong></p>
+<p>代码如下:</p>
+<ul>
+<li><code>DelegateCall</code> 是委托合约</li>
+<li><code>TestVersion1</code> 是第 1 次被委托合约</li>
+<li><code>TestVersion2</code> 是第 2 次被委托合约</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">// 合约版本 V.1</span><br><span class="line">contract TestVersion1 &#123;</span><br><span class="line">    address public sender;</span><br><span class="line">    uint256 public value;</span><br><span class="line">    uint256 public num;</span><br><span class="line"></span><br><span class="line">    function set(uint256 num_) external payable &#123;</span><br><span class="line">        sender = msg.sender;</span><br><span class="line">        value = msg.value;</span><br><span class="line">        num = num_;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 合约版本 V.2</span><br><span class="line">contract TestVersion2 &#123;</span><br><span class="line">    address public sender;</span><br><span class="line">    uint256 public value;</span><br><span class="line">    uint256 public num;</span><br><span class="line"></span><br><span class="line">    function set(uint256 num_) external payable &#123;</span><br><span class="line">        sender = msg.sender;</span><br><span class="line">        value = msg.value;</span><br><span class="line">        num = num_ * 2;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 委托调用测试</span><br><span class="line">contract DelegateCall &#123;</span><br><span class="line">    address public sender;</span><br><span class="line">    uint256 public value;</span><br><span class="line">    uint256 public num;</span><br><span class="line"></span><br><span class="line">    function set(address _ads, uint256 num_) external payable &#123;</span><br><span class="line">        sender = msg.sender;</span><br><span class="line">        value = msg.value;</span><br><span class="line">        num = num_;</span><br><span class="line">        // 第1种 encode</span><br><span class="line">        // 不需知道合约名字，函数完全自定义</span><br><span class="line">        bytes memory data1 = abi.encodeWithSignature(&quot;set(uint256)&quot;, num_);</span><br><span class="line">        // 第2种 encode</span><br><span class="line">        // 需要合约名字，可以避免函数和参数写错</span><br><span class="line">        bytes memory data2 = abi.encodeWithSelector(TestVersion1.set.selector, num_);</span><br><span class="line"></span><br><span class="line">        (bool success, bytes memory _data) = _ads.delegatecall(data2);</span><br><span class="line"></span><br><span class="line">        require(success, &quot;DelegateCall set failed&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>简单说下这个例子的原理</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line">    委托调用</span><br><span class="line">    用户A 调用 DelegateCall 合约, 发送 100 wei ; DelegateCall 委托调用 Test1</span><br><span class="line">    此时在 Test1 合约内部</span><br><span class="line">        msg.sender = A</span><br><span class="line">        msg.value = 100</span><br><span class="line">        Test1 内部如果有状态变量修改，也不会被修改，会在DelegateCallB 内改变</span><br><span class="line">        发送到 Test1 内的ETH主币，会被留在 DelegateCallB 内，不会在Test1 内</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+
+<h4 id="staticcall-静态调用"><a href="#staticcall-静态调用" class="headerlink" title="staticcall() 静态调用"></a>staticcall() 静态调用</h4><p>用给定的有效载荷（payload）发出低级 <code>STATICCALL</code> 调用，并<strong>返回交易成功状态和返回数据</strong>（调用合约的方法并转账）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;address&gt;.staticcall(bytes memory) returns (bool, bytes memory)</span><br></pre></td></tr></table></figure>
+
+<p>它与 call 基本相同，发送所有可用 gas，也可以自己调节 gas，<strong>但如果被调用的函数以任何方式修改状态变量，都将回退</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">// 被调用的合约</span><br><span class="line">contract Hello1 &#123;</span><br><span class="line">    function echo() external pure returns (string memory) &#123;</span><br><span class="line">        return &quot;Hello World!&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">contract Hello2 &#123;</span><br><span class="line">    uint8 public a;</span><br><span class="line">    function echo() external returns (string memory) &#123;</span><br><span class="line">        a = 1;</span><br><span class="line">        return &quot;Hello World!&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 调用者合约</span><br><span class="line">contract SoldityTest &#123;</span><br><span class="line">    function callHello(address ads_) external view returns (string memory) &#123;</span><br><span class="line">        // 编码被调用者的方法签名</span><br><span class="line">        bytes4 methodId = bytes4(keccak256(&quot;echo()&quot;));</span><br><span class="line"></span><br><span class="line">        // 调用合约</span><br><span class="line">        (bool success, bytes memory data) = ads_.staticcall(</span><br><span class="line">            abi.encodeWithSelector(methodId)</span><br><span class="line">        );</span><br><span class="line">        if (success) &#123;</span><br><span class="line">            return abi.decode(data, (string));</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            return &quot;error&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><code>call</code> ， <code>delegatecall</code> 和 <code>staticcall</code> 是非常低级的函数，应该把它们当作最后一招来使用，破坏了 Solidity 的类型安全性。</li>
+<li>三种方法都提供 <code>gas</code> 选项，而 <code>value</code> 选项仅 <code>call</code> 支持 。三种 call 里只有 <code>call</code> 可以进行 ETH 转账，其他两种不可以进行转账</li>
+<li>如果在通过低级函数 <code>delegatecall</code> 发起调用时需要访问存储中的变量，那么这两个合约的存储布局需要一致，以便被调用的合约代码可以正确地通过变量名访问合约的存储变量。 这不是指在库函数调用（高级的调用方式）时所传递的存储变量指针需要满足那样情况。</li>
+</ol>
+<hr>
+<h3 id="5-调用合约时，不知道对方源码和-ABI-时候，可以使用-call-调用对方合约"><a href="#5-调用合约时，不知道对方源码和-ABI-时候，可以使用-call-调用对方合约" class="headerlink" title="5.调用合约时，不知道对方源码和 ABI 时候，可以使用 call 调用对方合约"></a>5.调用合约时，不知道对方源码和 ABI 时候，可以使用 call 调用对方合约</h3><hr>
+<h3 id="6-transfer-send-call-三种转账的总结"><a href="#6-transfer-send-call-三种转账的总结" class="headerlink" title="6.transfer &#x2F; send &#x2F; call 三种转账的总结"></a>6.transfer &#x2F; send &#x2F; call 三种转账的总结</h3><p>低级CALL调用<strong>不需要<code>payable address</code></strong>,ransfer 和 send <strong>只能是 <code>payable address</code></strong></p>
+<p>transfer()失败时抛出异常,send()失败时仅会返回false,不会终止执行（合约地址转账）</p>
+<p>call的 gas 可以动态调整,transfer 和 send 只能是固定制 <code>2300</code></p>
+<p>call除了可以转账外，可以还可以调用不知道 ABI 的方法，还可以调用的时候转账</p>
+<ul>
+<li>当调用不存在的合约方法时候，会触发对方合约内的 <code>fallback</code> 或者 <code>receive</code>。</li>
+<li>如果使用 <code>_to.call&#123;value: 100&#125;(data)</code>，那么<code>data</code>中被调用的方法必须添加 <code>payable</code> 修饰符，否则转账失败！</li>
+<li>因为可以调用方法，所以 call 有两个参数，除了一个 <code>bool</code> 值代表成功或者失败，另外一个是可能存在的 <code>data</code>，比如创建合约时候得到部署的地址，调用函数时候得到的函数放回值</li>
+</ul>
+<hr>
+<h3 id="7-所有的引用类型，都有数据位置这个额外的注解来指定存储在哪里，所以一定要掌握好"><a href="#7-所有的引用类型，都有数据位置这个额外的注解来指定存储在哪里，所以一定要掌握好" class="headerlink" title="7.所有的引用类型，都有数据位置这个额外的注解来指定存储在哪里，所以一定要掌握好"></a>7.所有的引用类型，都有数据位置这个额外的注解来指定存储在哪里，所以一定要掌握好</h3><h3 id="7-比较字符串和字节"><a href="#7-比较字符串和字节" class="headerlink" title="7.比较字符串和字节"></a><strong>7.比较字符串和字节</strong></h3><ul>
+<li><code>keccak256(abi.encodePacked(s1)) == keccak256(abi.encodePacked(s2))</code></li>
+<li><code>keccak256(bytes(s1)) == keccak256(bytes(s2))</code>:更省 gas</li>
+</ul>
+<hr>
+<h3 id="8-堆栈是由-EVM-Ethereum-虚拟机-维护的非持久性数据。EVM-使用堆栈数据位置在执行期间加载变量。堆栈位置最多有-1024-个级别的限制。"><a href="#8-堆栈是由-EVM-Ethereum-虚拟机-维护的非持久性数据。EVM-使用堆栈数据位置在执行期间加载变量。堆栈位置最多有-1024-个级别的限制。" class="headerlink" title="8.堆栈是由 EVM (Ethereum 虚拟机)维护的非持久性数据。EVM 使用堆栈数据位置在执行期间加载变量。堆栈位置最多有 1024 个级别的限制。"></a>8.堆栈是由 EVM (Ethereum 虚拟机)维护的非持久性数据。EVM 使用堆栈数据位置在执行期间加载变量。堆栈位置最多有 1024 个级别的限制。</h3><hr>
+<h3 id="9-数据位置总结"><a href="#9-数据位置总结" class="headerlink" title="9.数据位置总结"></a>9.数据位置总结</h3><ul>
+<li>storage: 存储区: 状态变量总是储存在<strong>存储区</strong>上</li>
+<li>memory: 内存区: 局部变量使用，只在内存中生效。<ul>
+<li>值类型的局部变量，存储在<strong>内存</strong>中。</li>
+<li><strong>引用类型局部变量，需要显式地指定数据位置</strong>。</li>
+<li>函数的输入参数如果是数组或者 string，必须是 <code>memory</code> 或 <code>calldata</code></li>
+<li>内存中的数组必须是定长数组（不能使用 push 赋值），动态数组只能储存在状态变量中。</li>
+</ul>
+</li>
+<li>calldata<ul>
+<li>和 memory 类似，但是 calldata 只能用在函数的输入参数中。</li>
+<li>相比使用 memory ,合约输入参数如果使用 calldata, 可以节约 gas</li>
+</ul>
+</li>
+</ul>
+<p>按照函数参数:</p>
+<ul>
+<li>内部函数参数: (包括返回参数)都存储在<strong>memory（内存）</strong>中。</li>
+<li>外部函数参数: (不包括返回参数)存储在 <code>calldata</code> 中</li>
+</ul>
+<hr>
+<h3 id="10-为什么映射不能像哈希表一样遍历？"><a href="#10-为什么映射不能像哈希表一样遍历？" class="headerlink" title="10.为什么映射不能像哈希表一样遍历？"></a>10.为什么映射不能像哈希表一样遍历？</h3><p>映射与哈希表不同的地方：<strong>在映射中,并不存储 key，而是存储它的 <code>keccak256</code> 哈希值，从而便于查询实际的值</strong>。正因为如此，映射是没有长度的，也没有 <code>key 的集合</code>或 <code>value 的集合</code>的概念。映射只能是存储的数据位置，因此只允许作为状态变量或作为函数内的存储引用 或 作为库函数的参数。</p>
+<hr>
+<h3 id="11-遍历所有-Mapping-内的数据，（Mapping-配合-array-）"><a href="#11-遍历所有-Mapping-内的数据，（Mapping-配合-array-）" class="headerlink" title="11.遍历所有 Mapping 内的数据，（Mapping 配合 array ）"></a>11.遍历所有 Mapping 内的数据，（Mapping 配合 array ）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    mapping(address =&gt; uint256) public balances;</span><br><span class="line">    // 用于检查:地址是否已经存在于 balancesKey</span><br><span class="line">    mapping(address =&gt; bool) public balancesInserted;</span><br><span class="line">    address[] public balancesKey; // 所有地址</span><br><span class="line"></span><br><span class="line">    // 设置</span><br><span class="line">    function set(address ads_,uint256 amount_) external&#123;</span><br><span class="line">        balances[ads_] = amount_;</span><br><span class="line">        // 1.检查</span><br><span class="line">        if(!balancesInserted[ads_])&#123;</span><br><span class="line">            // 2.修改检查条件</span><br><span class="line">            balancesInserted[ads_] = true;</span><br><span class="line">            // 3.正在的操作</span><br><span class="line">            balancesKey.push(ads_);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    // 获取</span><br><span class="line">    function get(uint256 index_) external view returns(uint256)&#123;</span><br><span class="line">        require(index_&lt;balancesKey.length,&quot;index_ error&quot;);</span><br><span class="line">        return balances[balancesKey[index_]];</span><br><span class="line">    &#125;</span><br><span class="line">    // 获取所有</span><br><span class="line">    function totalAddress() external view returns(uint256)&#123;</span><br><span class="line">        return balancesKey.length;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 获取第一个值</span><br><span class="line">    function first() external view returns(uint256)&#123;</span><br><span class="line">        return balances[balancesKey[0]];</span><br><span class="line">    &#125;</span><br><span class="line">    // 最后一个值</span><br><span class="line">    function latest() external view returns(uint256)&#123;</span><br><span class="line">        return balances[balancesKey[balancesKey.length-1]];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>更完善的实现: <a target="_blank" rel="noopener" href="https://github.com/ethereum/dapp-bin/blob/master/library/iterable_mapping.sol">https://github.com/ethereum/dapp-bin/blob/master/library/iterable_mapping.sol</a></li>
+<li>更新的实现: <a target="_blank" rel="noopener" href="https://learnblockchain.cn/docs/solidity/types.html#iterable-mappings">https://learnblockchain.cn/docs/solidity/types.html#iterable-mappings</a></li>
+</ul>
+<hr>
+<h3 id="12-聊一聊-checked-和-unchecked"><a href="#12-聊一聊-checked-和-unchecked" class="headerlink" title="12.聊一聊 checked 和 unchecked"></a>12.聊一聊 <code>checked</code> 和 <code>unchecked</code></h3><p>0.8.0 开始，算术运算有两种计算模式：一种是<code>checked</code>（检查）模式，另一种是 <code>unchecked</code>（不检查）模式。 默认情况下，算术运算在 <code>checked</code> 模式下，即都会进行溢出检查，如果结果落在取值范围之外，调用会通过 失败异常 回退。 你也可以通过 <code>unchecked&#123; ... &#125;</code> 切换到 “unchecked”模式，更多可参考 <code>unchecked</code> .</p>
+<hr>
+<h1 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h1><h3 id="13-constant常量-和-immutable-不可变量总结"><a href="#13-constant常量-和-immutable-不可变量总结" class="headerlink" title="13.constant常量 和 immutable 不可变量总结"></a>13.constant常量 和 immutable 不可变量总结</h3><h4 id="值的确定时机不同"><a href="#值的确定时机不同" class="headerlink" title="值的确定时机不同"></a>值的确定时机不同</h4><p>状态变量声明为 constant (常量)或者 immutable （不可变量），在这两种情况下，合约一旦部署之后，变量将不在修改。</p>
+<ul>
+<li>对于 constant 常量, 他的值在编译器确定.</li>
+<li>对于 immutable, 它的值在部署时确定。</li>
+</ul>
+<h4 id="gas-不同"><a href="#gas-不同" class="headerlink" title="gas 不同"></a>gas 不同</h4><p>与常规状态变量相比，常量和不可变量的 gas 成本要低得多。</p>
+<ul>
+<li>对于常量，赋值给它的表达式将复制到所有访问该常量的位置，并且每次都会对其进行重新求值。这样可以进行本地优化。</li>
+<li>不可变变量在构造时进行一次求值，并将其值复制到代码中访问它们的所有位置。 对于这些值，将保留 32 个字节，即使它们适合较少的字节也是如此。很多时候常量的 gas 更低。</li>
+</ul>
+<p>如果可以使用常量的时候，推荐使用常量。</p>
+<h4 id="支持的数据不同"><a href="#支持的数据不同" class="headerlink" title="支持的数据不同"></a>支持的数据不同</h4><p>不是所有类型的状态变量都支持用 <code>constant</code> 或 <code>immutable</code> 来修饰</p>
+<ul>
+<li>当前<code>constant</code>仅支持值类型和引用类型中的 string 和 bytes</li>
+<li><code>immutable</code>仅支持值类型</li>
+</ul>
+<hr>
+<h3 id="14-private-external-internal-public"><a href="#14-private-external-internal-public" class="headerlink" title="14.private &#x2F; external &#x2F; internal &#x2F; public"></a>14.<code>private</code> &#x2F; <code>external</code> &#x2F; <code>internal</code> &#x2F; <code>public</code></h3><ul>
+<li>函数有四可见型，分别是 <code>private</code> &#x2F; <code>external</code> &#x2F; <code>internal</code> &#x2F; <code>public</code></li>
+<li>状态变量可以有三种可见型，分别是 <code>private</code> &#x2F; <code>internal</code> &#x2F; <code>public</code></li>
+</ul>
+<ol>
+<li><strong>private</strong>: 私有，仅在当前合约中可以访问，在继承的合约内不可访问</li>
+<li><strong>internal(默认)</strong>: 能在它们所定义的合约和派生合同中访问,它们不能被外部访问,需要注意的是不能加前缀 this，前缀 this 是表示通过外部方式访问</li>
+<li><strong>external:</strong> 不能声明在状态变量上，只能标识在函数上,只能从智能合约外部调用。 如果要从智能合约中调用它，则必须使用this</li>
+<li><strong>public</strong>: 公开可视(合约内部，被继承的，外部都可以调用)</li>
+</ol>
+<hr>
+<h3 id="15-变量作用域的规则"><a href="#15-变量作用域的规则" class="headerlink" title="15.变量作用域的规则"></a>15.变量作用域的规则</h3><ul>
+<li>变量将会从它们被声明之后可见，直到一对 <code>&#123;&#125;</code> 块的结束。</li>
+<li>对于参数形式的变量（例如：函数参数、修饰器参数、catch 参数等等）在其后接着的代码块内有效。<ul>
+<li>这些代码块是函数的实现，catch 语句块等。</li>
+<li>有一个例外，在 for 循环语句中初始化的变量，其可见性仅维持到 <code>for</code> 循环的结束。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h1 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h1><h3 id="16-extcodesize-操作码来检查要调用的合约是否确实存在"><a href="#16-extcodesize-操作码来检查要调用的合约是否确实存在" class="headerlink" title="16.extcodesize 操作码来检查要调用的合约是否确实存在?"></a>16.extcodesize 操作码来检查要调用的合约是否确实存在?</h3><p>由于 EVM 认为可以调用不存在的合约的调用，因此在 Solidity 语言层面里会使用 extcodesize 操作码来检查要调用的合约是否确实存在（包含代码），如果不存在该合约，则抛出异常。如果返回数据在调用后被解码，则跳过这个检查，因此 ABI 解码器将捕捉到不存在的合约的情况。请注意，这个检查在 <strong>低级 call</strong> 时不被执行，这些调用是对地址而不是合约实例进行操作。</p>
+<hr>
+<h3 id="17-mutability状态可变性-Pure、view、payable"><a href="#17-mutability状态可变性-Pure、view、payable" class="headerlink" title="17.mutability状态可变性(Pure、view、payable)"></a>17.mutability状态可变性(Pure、view、payable)</h3><ol>
+<li><p><strong>pure: 既不读取也不修改状态变量,这种函数被称为纯函数</strong></p>
+<ul>
+<li>读取状态变量。<ul>
+<li>这也意味着读取 <code>immutable</code> 变量也不是一个 <code>pure</code> 操作。</li>
+</ul>
+</li>
+<li>访问 <code>address(this).balance</code> 或 <code>&lt;address&gt;.balance</code></li>
+<li>访问 <code>block</code>，<code>tx</code>， <code>msg</code> 中任意成员 （除 <code>msg.sig</code> 和 <code>msg.data</code> 之外）。</li>
+<li>调用任何未标记为 <code>pure</code> 的函数。</li>
+<li>使用包含特定操作码的内联汇编。<ul>
+<li><code>TODO:</code> 这个不了解，需要用例子加深印象。</li>
+</ul>
+</li>
+<li>使用操作码 <code>STATICCALL</code> , 这并不保证状态未被读取, 但至少不被修改。</li>
+</ul>
+</li>
+<li><p><strong>view: 读取状态变量，但是不修改状态变量,这种函数被称为视图函数</strong></p>
+<ul>
+<li><p>修改状态变量。</p>
+</li>
+<li><p>触发事件。</p>
+</li>
+<li><p>创建其它合约。</p>
+</li>
+<li><p>使用 <code>selfdestruct</code>。</p>
+</li>
+<li><p>通过调用发送以太币。</p>
+</li>
+<li><p>调用任何没有标记为 view 或者 pure 的函数。</p>
+</li>
+<li><p>使用底层调用</p>
+<ul>
+<li>(TODO:这里是 call 操作么？)</li>
+</ul>
+</li>
+<li><p>使用包含某些操作码的内联程序集。</p>
+</li>
+<li><p>状态变量的 Getter 方法默认是 view 函数。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>payable：用 payable 声明的函数可以接受发送给合约的以太币.</strong></p>
+<ul>
+<li>如果未指定，该函数将自动拒绝所有发送给它的以太币</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="18-函数的构造函数有什么特点？"><a href="#18-函数的构造函数有什么特点？" class="headerlink" title="18.函数的构造函数有什么特点？"></a>18.函数的构造函数有什么特点？</h3><p>它仅能在智能合约部署的时候调用一次，创建之后就不能再次被调用。</p>
+<p>构造函数是可选的，只允许有一个构造函数，这意味着不支持重载。（普通函数支持重载）</p>
+<p>在合约创建的过程中，它的代码还是空的，所以直到构造函数执行结束，我们都不应该在其中调用合约自己的函数。(可以直接写函数名调用，但是不推荐调用，不可以通过 this 来调用函数，因为此时真实的合约实例还没有被创建。)</p>
+<hr>
+<h1 id="运算操作符"><a href="#运算操作符" class="headerlink" title="运算操作符"></a>运算操作符</h1><h3 id="19-A-B-如果-A-为-false，B-就不执行了-A-B-如果-A-为-true，B-就不执行了合理的使用短路操作，可以省一些-gas-费。"><a href="#19-A-B-如果-A-为-false，B-就不执行了-A-B-如果-A-为-true，B-就不执行了合理的使用短路操作，可以省一些-gas-费。" class="headerlink" title="19. A &amp;&amp; B,如果 A 为 false，B 就不执行了,A || B,如果 A 为 true，B 就不执行了合理的使用短路操作，可以省一些 gas 费。"></a>19. <code>A &amp;&amp; B</code>,如果 A 为 false，B 就不执行了,<code>A || B</code>,如果 A 为 true，B 就不执行了合理的使用短路操作，可以省一些 gas 费。</h3><hr>
+<h3 id="20-三元运算符"><a href="#20-三元运算符" class="headerlink" title="20.三元运算符"></a>20.三元运算符</h3><p>三元运算符的结果类型是由两个操作数的类型决定的，方法与上面一样，如果需要的话，首先转换为它们的最小可容纳类型。</p>
+<p>因此， <code>255 + (true ? 1 : 0)</code> 将由于算术溢出而被回退。 原因是 <code>(true ? 1 : 0)</code> 是 uint8 类型，这迫使加法也要在 <code>uint8</code> 中执行。 而 <code>256</code> 超出了这个类型所允许的范围。</p>
+<p>另一个结果是，像 <code>1.5 + 1.5</code> 这样的表达式是有效的，但 <code>1.5 + (true ? 1.5 : 2.5)</code> 则无效。 这是因为前者是以无限精度来进行有理表达式运算，只有它的最终结果值才是重要的。 后者涉及到将小数有理数转换为整数，这在目前是不允许的。</p>
+<hr>
+<h1 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h1><h3 id="21-require、assert、revert对比"><a href="#21-require、assert、revert对比" class="headerlink" title="21.require、assert、revert对比"></a>21.require、assert、revert对比</h3><p><code>require(false)</code> 会退还所有剩余的 gas，同时可以返回一个自定义的报错信息。</p>
+<p><code>assert(false)</code> 会消耗掉所有剩余的 gas，并恢复所有的操作。</p>
+<p> <code>revert()</code> 会触发一个没有任何错误数据的回退</p>
+<p>以下三个语句的功能完全相同：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// revert</span><br><span class="line">if(msg.sender != owner) &#123;</span><br><span class="line">   revert error();</span><br><span class="line"> &#125;</span><br><span class="line"> </span><br><span class="line">// require</span><br><span class="line">require(msg.sender == owner,&quot;error&quot;);</span><br><span class="line"></span><br><span class="line">// assert</span><br><span class="line">assert(msg.sender == owner);</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="22-自定义error"><a href="#22-自定义error" class="headerlink" title="22.自定义error"></a>22.自定义error</h3><p><strong><code>error</code> 只能通过 <code>revert</code> 触发</strong></p>
+<p>错误产生的数据，会通过 revert 操作传递给调用者，可以交由链外组件处理或在 try&#x2F;catch 语句 中捕获它。</p>
+<p>注意，只有外部调用的错误才能被捕获。发生在内部调用或同一函数内的 revert 不能被捕获。</p>
+<hr>
+<h3 id="23-try-catch"><a href="#23-try-catch" class="headerlink" title="23.try catch"></a>23.try catch</h3><p>Solidity 如果遇到异常错误，是通过回退状态的方式来进行处理。发生异常时，会撤消当前调用和所有子调用改变的状态变量，同时给调用者返回一个错误标识。</p>
+<p>调用者调用某个函数方法，要么成功修改了所有状态变量，要么遇到异常不修改任何状态变量，不存在成功修改部分变量的情况，</p>
+<p>Solidity 提供了 <strong>require</strong> 、<strong>assert</strong> 和 <strong>revert</strong> 来处理异常。同时可以使用 <code>error</code> 关键字来实现错误。</p>
+<p>跟用错误字符串相比， error 更便宜并且允许你编码额外的数据，还可以用 <code>NatSpec</code> 为用户去描述错误。</p>
+<p>Solidity 使用状态恢复异常来处理错误。这种异常将撤消对当前调用（及其所有子调用）中的状态所做的所有更改，并且还向调用者标记错误。</p>
+<p>如果异常在子调用发生，那么异常会自动冒泡到顶层（例如：异常会重新抛出），除非他们在 <code>try/catch</code> 语句中捕获了错误。 但是如果是在 <code>send</code> 和 低级 <code>call</code>, <code>delegatecall</code> 和 <code>staticcall</code> 的调用里发生异常时， 他们会返回 <code>false</code> （第一个返回值） 而不是冒泡异常。</p>
+<p>警告注意：根据 EVM 的设计，如果被调用的地址不存在，低级别函数 <code>call</code>, <code>delegatecall</code> 和 <code>staticcall</code> 第一个返回值同样是 <code>true</code>。 如果需要，请在调用之前检查账号的存在性。</p>
+<p>异常可以包含错误数据，以 error 示例 的形式传回给调用者。 内置的错误 <code>Error(string)</code> 和 <code>Panic(uint256)</code> 被作为特殊函数使用，下面将解释。 <code>Error</code> 用于 “常规” 错误条件，而 <code>Panic</code> 用于在（无 bug）代码中不应该出现的错误。</p>
+<p>函数 assert 和 require 可用于检查条件并在条件不满足时抛出异常。</p>
+<hr>
+<h1 id="事件"><a href="#事件" class="headerlink" title="事件"></a>事件</h1><h3 id="24-带-indexed-参数名的-event"><a href="#24-带-indexed-参数名的-event" class="headerlink" title="24. 带 indexed 参数名的 event"></a>24. 带 indexed 参数名的 event</h3><p>这种事件也被称为<strong>索引事件</strong></p>
+<p>语法:<code>event EventName(TypeName indexed varibleName....);</code></p>
+<p>事件中 indexed 标记过的参数，可以在链外进行搜索查询:</p>
+<p>主要用在链下服务，可以通过 RPC 获取，比如 web3 的以下方法:</p>
+<ul>
+<li><pre><code class="js">myContract.once //订阅一个事件并在第一次事件触发或错误发生后立即取消订阅
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- ```solidity</span><br><span class="line">  myContract.events.MyEvent //订阅指定的合约事件</span><br></pre></td></tr></table></figure>
+</code></pre>
+</li>
+<li><pre><code class="solidity">myContract.getPastEvents //读取合约历史事件
+</code></pre>
+</li>
+</ul>
+<p>一个事件中 indexed 标记过的参数最多有 3 个。</p>
+<hr>
+<h1 id="合约继承"><a href="#合约继承" class="headerlink" title="合约继承"></a>合约继承</h1><h3 id="25-注意："><a href="#25-注意：" class="headerlink" title="25.注意："></a>25.注意：</h3><ul>
+<li>父合约必须写在子合约的前面，否则会报错</li>
+<li>子类可以访问父类的权限修饰符只有：<code>public/internal</code>，不能是 <code>external/private</code></li>
+<li>多重继承中不允许出现相同的<strong>函数名</strong>、<strong>事件名</strong>、<strong>修改器名</strong>以及<strong>状态变量名</strong>等</li>
+</ul>
+<h3 id="26-virtual-override-abstract"><a href="#26-virtual-override-abstract" class="headerlink" title="26.virtual, override , abstract"></a>26.<code>virtual</code>, <code>override</code> , <code>abstract</code></h3><p>父合约标记为 <code>virtual</code>函数可以在继承合约里重写(overridden)以更改他们的行为。重写的函数需要使用关键字 <code>override</code> 修饰。</p>
+<p>基础合约中可以包含没有实现代码的函数，也就是纯虚函数，那么基础合约必须声明为 <code>abstract</code>。</p>
+<h1 id="接口Interface"><a href="#接口Interface" class="headerlink" title="接口Interface"></a>接口Interface</h1><h3 id="27-限制"><a href="#27-限制" class="headerlink" title="27.限制"></a>27.限制</h3><ul>
+<li><p>无法实现任何功能，没有函数体。</p>
+</li>
+<li><p>无法定义构造函数。</p>
+</li>
+<li><p>无法定义状态变量。</p>
+</li>
+<li><p>无法定义结构（<code>struct</code>）（<code>0.5.0</code> 版本开始接口里可以支持声明 <code>enum</code> 类型）。</p>
+</li>
+<li><p>不可以声明修改器。</p>
+</li>
+<li><p>所有声明的函数必须是external的，尽管在合约里可以是 public</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/07/28/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/solidity%E6%80%BB%E7%BB%93/" title="solidity总结">https://kongpengyq.com/2022/07/28/区块链/Solidity0.8/solidity总结/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/Solidity0-8-17/" rel="tag"># Solidity0.8.17</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/27/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/20-%E5%90%88%E7%BA%A6%E7%BC%96%E7%A0%81%E8%A7%84%E8%8C%83/" rel="prev" title="20-合约编码规范">
+      <i class="fa fa-chevron-left"></i> 20-合约编码规范
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/08/02/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/1-%E5%BC%80%E5%A7%8B/" rel="next" title="1-开始">
+      1-开始 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%9D%E8%AF%86"><span class="nav-text">初识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-receive-%E5%92%8C-fallback-%E5%85%B1%E5%AD%98%E7%9A%84%E8%B0%83%E7%94%A8"><span class="nav-text">1.receive 和 fallback 共存的调用</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE"><span class="nav-text">数据</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%8D%B3%E4%BE%BF%E4%B8%80%E4%B8%AA%E5%90%88%E7%BA%A6%E7%9A%84%E4%BB%A3%E7%A0%81%E4%B8%AD%E6%B2%A1%E6%9C%89%E6%98%BE%E5%BC%8F%E5%9C%B0%E8%B0%83%E7%94%A8-selfdestruct%EF%BC%8C%E5%AE%83%E4%BB%8D%E7%84%B6%E6%9C%89%E5%8F%AF%E8%83%BD%E9%80%9A%E8%BF%87-delegatecall-%E6%88%96-callcode-%E6%89%A7%E8%A1%8C%E8%87%AA%E6%AF%81%E6%93%8D%E4%BD%9C%E3%80%82"><span class="nav-text">2.即便一个合约的代码中没有显式地调用 selfdestruct，它仍然有可能通过 delegatecall 或 callcode 执行自毁操作。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%90%88%E7%BA%A6%E8%BF%9B%E8%A1%8Cselfdestruct%E5%90%8E%EF%BC%8C%E8%BF%98%E5%8F%AF%E4%BB%A5%E8%B0%83%E7%94%A8%E7%8A%B6%E6%80%81%E5%8F%98%E9%87%8F%E5%92%8C%E5%87%BD%E6%95%B0%E4%B9%88%EF%BC%9F"><span class="nav-text">3.合约进行selfdestruct后，还可以调用状态变量和函数么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E4%B8%89%E7%A7%8D-call-%E7%9A%84%E6%80%BB%E7%BB%93-call-delegatecall-staticcall"><span class="nav-text">4.三种 call 的总结(call&#x2F;delegatecall&#x2F;staticcall)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#call"><span class="nav-text">call()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#delegatecall-%E5%A7%94%E6%89%98%E8%B0%83%E7%94%A8"><span class="nav-text">delegatecall() 委托调用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#staticcall-%E9%9D%99%E6%80%81%E8%B0%83%E7%94%A8"><span class="nav-text">staticcall() 静态调用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E8%B0%83%E7%94%A8%E5%90%88%E7%BA%A6%E6%97%B6%EF%BC%8C%E4%B8%8D%E7%9F%A5%E9%81%93%E5%AF%B9%E6%96%B9%E6%BA%90%E7%A0%81%E5%92%8C-ABI-%E6%97%B6%E5%80%99%EF%BC%8C%E5%8F%AF%E4%BB%A5%E4%BD%BF%E7%94%A8-call-%E8%B0%83%E7%94%A8%E5%AF%B9%E6%96%B9%E5%90%88%E7%BA%A6"><span class="nav-text">5.调用合约时，不知道对方源码和 ABI 时候，可以使用 call 调用对方合约</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-transfer-send-call-%E4%B8%89%E7%A7%8D%E8%BD%AC%E8%B4%A6%E7%9A%84%E6%80%BB%E7%BB%93"><span class="nav-text">6.transfer &#x2F; send &#x2F; call 三种转账的总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-%E6%89%80%E6%9C%89%E7%9A%84%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B%EF%BC%8C%E9%83%BD%E6%9C%89%E6%95%B0%E6%8D%AE%E4%BD%8D%E7%BD%AE%E8%BF%99%E4%B8%AA%E9%A2%9D%E5%A4%96%E7%9A%84%E6%B3%A8%E8%A7%A3%E6%9D%A5%E6%8C%87%E5%AE%9A%E5%AD%98%E5%82%A8%E5%9C%A8%E5%93%AA%E9%87%8C%EF%BC%8C%E6%89%80%E4%BB%A5%E4%B8%80%E5%AE%9A%E8%A6%81%E6%8E%8C%E6%8F%A1%E5%A5%BD"><span class="nav-text">7.所有的引用类型，都有数据位置这个额外的注解来指定存储在哪里，所以一定要掌握好</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-%E6%AF%94%E8%BE%83%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%92%8C%E5%AD%97%E8%8A%82"><span class="nav-text">7.比较字符串和字节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-%E5%A0%86%E6%A0%88%E6%98%AF%E7%94%B1-EVM-Ethereum-%E8%99%9A%E6%8B%9F%E6%9C%BA-%E7%BB%B4%E6%8A%A4%E7%9A%84%E9%9D%9E%E6%8C%81%E4%B9%85%E6%80%A7%E6%95%B0%E6%8D%AE%E3%80%82EVM-%E4%BD%BF%E7%94%A8%E5%A0%86%E6%A0%88%E6%95%B0%E6%8D%AE%E4%BD%8D%E7%BD%AE%E5%9C%A8%E6%89%A7%E8%A1%8C%E6%9C%9F%E9%97%B4%E5%8A%A0%E8%BD%BD%E5%8F%98%E9%87%8F%E3%80%82%E5%A0%86%E6%A0%88%E4%BD%8D%E7%BD%AE%E6%9C%80%E5%A4%9A%E6%9C%89-1024-%E4%B8%AA%E7%BA%A7%E5%88%AB%E7%9A%84%E9%99%90%E5%88%B6%E3%80%82"><span class="nav-text">8.堆栈是由 EVM (Ethereum 虚拟机)维护的非持久性数据。EVM 使用堆栈数据位置在执行期间加载变量。堆栈位置最多有 1024 个级别的限制。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-%E6%95%B0%E6%8D%AE%E4%BD%8D%E7%BD%AE%E6%80%BB%E7%BB%93"><span class="nav-text">9.数据位置总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%A0%E5%B0%84%E4%B8%8D%E8%83%BD%E5%83%8F%E5%93%88%E5%B8%8C%E8%A1%A8%E4%B8%80%E6%A0%B7%E9%81%8D%E5%8E%86%EF%BC%9F"><span class="nav-text">10.为什么映射不能像哈希表一样遍历？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-%E9%81%8D%E5%8E%86%E6%89%80%E6%9C%89-Mapping-%E5%86%85%E7%9A%84%E6%95%B0%E6%8D%AE%EF%BC%8C%EF%BC%88Mapping-%E9%85%8D%E5%90%88-array-%EF%BC%89"><span class="nav-text">11.遍历所有 Mapping 内的数据，（Mapping 配合 array ）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-%E8%81%8A%E4%B8%80%E8%81%8A-checked-%E5%92%8C-unchecked"><span class="nav-text">12.聊一聊 checked 和 unchecked</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%98%E9%87%8F"><span class="nav-text">变量</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#13-constant%E5%B8%B8%E9%87%8F-%E5%92%8C-immutable-%E4%B8%8D%E5%8F%AF%E5%8F%98%E9%87%8F%E6%80%BB%E7%BB%93"><span class="nav-text">13.constant常量 和 immutable 不可变量总结</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%80%BC%E7%9A%84%E7%A1%AE%E5%AE%9A%E6%97%B6%E6%9C%BA%E4%B8%8D%E5%90%8C"><span class="nav-text">值的确定时机不同</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#gas-%E4%B8%8D%E5%90%8C"><span class="nav-text">gas 不同</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%94%AF%E6%8C%81%E7%9A%84%E6%95%B0%E6%8D%AE%E4%B8%8D%E5%90%8C"><span class="nav-text">支持的数据不同</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-private-external-internal-public"><span class="nav-text">14.private &#x2F; external &#x2F; internal &#x2F; public</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-%E5%8F%98%E9%87%8F%E4%BD%9C%E7%94%A8%E5%9F%9F%E7%9A%84%E8%A7%84%E5%88%99"><span class="nav-text">15.变量作用域的规则</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%87%BD%E6%95%B0"><span class="nav-text">函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#16-extcodesize-%E6%93%8D%E4%BD%9C%E7%A0%81%E6%9D%A5%E6%A3%80%E6%9F%A5%E8%A6%81%E8%B0%83%E7%94%A8%E7%9A%84%E5%90%88%E7%BA%A6%E6%98%AF%E5%90%A6%E7%A1%AE%E5%AE%9E%E5%AD%98%E5%9C%A8"><span class="nav-text">16.extcodesize 操作码来检查要调用的合约是否确实存在?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#17-mutability%E7%8A%B6%E6%80%81%E5%8F%AF%E5%8F%98%E6%80%A7-Pure%E3%80%81view%E3%80%81payable"><span class="nav-text">17.mutability状态可变性(Pure、view、payable)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#18-%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E6%9C%89%E4%BB%80%E4%B9%88%E7%89%B9%E7%82%B9%EF%BC%9F"><span class="nav-text">18.函数的构造函数有什么特点？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%90%E7%AE%97%E6%93%8D%E4%BD%9C%E7%AC%A6"><span class="nav-text">运算操作符</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#19-A-B-%E5%A6%82%E6%9E%9C-A-%E4%B8%BA-false%EF%BC%8CB-%E5%B0%B1%E4%B8%8D%E6%89%A7%E8%A1%8C%E4%BA%86-A-B-%E5%A6%82%E6%9E%9C-A-%E4%B8%BA-true%EF%BC%8CB-%E5%B0%B1%E4%B8%8D%E6%89%A7%E8%A1%8C%E4%BA%86%E5%90%88%E7%90%86%E7%9A%84%E4%BD%BF%E7%94%A8%E7%9F%AD%E8%B7%AF%E6%93%8D%E4%BD%9C%EF%BC%8C%E5%8F%AF%E4%BB%A5%E7%9C%81%E4%B8%80%E4%BA%9B-gas-%E8%B4%B9%E3%80%82"><span class="nav-text">19. A &amp;&amp; B,如果 A 为 false，B 就不执行了,A || B,如果 A 为 true，B 就不执行了合理的使用短路操作，可以省一些 gas 费。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#20-%E4%B8%89%E5%85%83%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="nav-text">20.三元运算符</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86"><span class="nav-text">错误处理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-require%E3%80%81assert%E3%80%81revert%E5%AF%B9%E6%AF%94"><span class="nav-text">21.require、assert、revert对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-%E8%87%AA%E5%AE%9A%E4%B9%89error"><span class="nav-text">22.自定义error</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#23-try-catch"><span class="nav-text">23.try catch</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6"><span class="nav-text">事件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#24-%E5%B8%A6-indexed-%E5%8F%82%E6%95%B0%E5%90%8D%E7%9A%84-event"><span class="nav-text">24. 带 indexed 参数名的 event</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%88%E7%BA%A6%E7%BB%A7%E6%89%BF"><span class="nav-text">合约继承</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#25-%E6%B3%A8%E6%84%8F%EF%BC%9A"><span class="nav-text">25.注意：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#26-virtual-override-abstract"><span class="nav-text">26.virtual, override , abstract</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8E%A5%E5%8F%A3Interface"><span class="nav-text">接口Interface</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#27-%E9%99%90%E5%88%B6"><span class="nav-text">27.限制</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

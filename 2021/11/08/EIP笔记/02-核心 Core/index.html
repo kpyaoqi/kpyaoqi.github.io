@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Core 核心最终的   数字 标题 内容    2 Homestead 硬分叉变化 增加了创建合约的Gas成本(create不受影响)、调整难度算法   5 “RETURN”和“CALL”的 Gas 使用情况 只对CALL返回时实际写入的内存收取gas费用   7 DELEGATECALL 添加一个新的操作码DELEGATECALL   100 将难度调整更改为目标平均区块时间（包括叔块） 调整">
+<meta property="og:type" content="article">
+<meta property="og:title" content="02-核心 Core">
+<meta property="og:url" content="https://kongpengyq.com/2021/11/08/EIP%E7%AC%94%E8%AE%B0/02-%E6%A0%B8%E5%BF%83%20Core/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="Core 核心最终的   数字 标题 内容    2 Homestead 硬分叉变化 增加了创建合约的Gas成本(create不受影响)、调整难度算法   5 “RETURN”和“CALL”的 Gas 使用情况 只对CALL返回时实际写入的内存收取gas费用   7 DELEGATECALL 添加一个新的操作码DELEGATECALL   100 将难度调整更改为目标平均区块时间（包括叔块） 调整">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-11-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.577Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="EIP笔记">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2021/11/08/EIP%E7%AC%94%E8%AE%B0/02-%E6%A0%B8%E5%BF%83%20Core/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>02-核心 Core | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2021/11/08/EIP%E7%AC%94%E8%AE%B0/02-%E6%A0%B8%E5%BF%83%20Core/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          02-核心 Core
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-11-08 00:00:00" itemprop="dateCreated datePublished" datetime="2021-11-08T00:00:00+08:00">2021-11-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/EIP%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">EIP笔记</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Core-核心"><a href="#Core-核心" class="headerlink" title="Core 核心"></a>Core 核心</h1><h2 id="最终的"><a href="#最终的" class="headerlink" title="最终的"></a>最终的</h2><table>
+<thead>
+<tr>
+<th>数字</th>
+<th>标题</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2">2</a></td>
+<td>Homestead 硬分叉变化</td>
+<td>增加了创建合约的Gas成本(create不受影响)、调整难度算法</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5">5</a></td>
+<td>“RETURN”和“CALL”的 Gas 使用情况</td>
+<td>只对CALL返回时实际写入的内存收取gas费用</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7">7</a></td>
+<td>DELEGATECALL</td>
+<td>添加一个新的操作码<code>DELEGATECALL</code></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-100">100</a></td>
+<td>将难度调整更改为目标平均区块时间（包括叔块）</td>
+<td>调整难度算法</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-140">140</a></td>
+<td>REVERT指令</td>
+<td>增加了REVERT指令</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-141">141</a></td>
+<td>指定无效的EVM指令</td>
+<td>无效指令可以用作中止执行的明显原因(从未使用)</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-145">145</a></td>
+<td>EVM 中的按位移位指令</td>
+<td>提供本机按位移位，其成本与其他算术运算相当</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-150">150</a></td>
+<td>IO 密集型操作的 Gas 成本变化</td>
+<td>修改了一些指令的Gas成本</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-152">152</a></td>
+<td>添加 BLAKE2 压缩函数 <code>F</code> 预编译</td>
+<td>引入了一个新的预编译合约，该合约实现了BLAKE2加密哈希算法中使用的压缩功能<code>F</code></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-155">155</a></td>
+<td>简单的重放攻击保护</td>
+<td>当出于签名目的计算交易的散列时，您<strong>应该</strong>散列九个 rlp 编码元素，而不是仅散列六个 rlp 编码元素</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-158">158</a></td>
+<td>状态清算</td>
+<td>消除了大量空帐户，缩小负担</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-160">160</a></td>
+<td>EXP成本增加</td>
+<td>EXP 的 Gas 成本从指数中每字节 10 + 10 增加到指数中每字节 10 + 50</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-161">161</a></td>
+<td>状态特里树清理（不变性保留替代方案）</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-170">170</a></td>
+<td>合约代码大小限制</td>
+<td>如果合约创建初始化返回长度<strong>超过</strong> <code>MAX_CODE_SIZE</code>字节的数据，合约创建将失败并出现耗尽气体错误</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-196">196</a></td>
+<td>椭圆曲线上的加法和标量乘法的预编译合约 alt_bn128</td>
+<td>为了在区块 Gas 限制内执行 zkSNARK 验证，需要用于椭圆曲线操作的预编译合约</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-197">197</a></td>
+<td>用于椭圆曲线上最佳 ate 配对检查的预编译合约 alt_bn128</td>
+<td>为了在区块 Gas 限制内执行 zkSNARK 验证，需要用于椭圆曲线配对操作的预编译合约。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-198">198</a></td>
+<td>大整数模幂</td>
+<td>允许在 EVM 内部进行高效的 RSA 验证，以及其他形式的基于数论的密码学。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-211">211</a></td>
+<td>新操作码：RETURNDATASIZE 和 RETURNDATACOPY</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-214">214</a></td>
+<td>新操作码 STATICCALL</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-225">225</a></td>
+<td>Clique 权威证明共识协议</td>
+<td>Clique 是一种权威证明共识协议。它模仿了以太坊主网的设计，因此可以以最小的努力将其添加到任何客户端</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-649">649</a></td>
+<td>大都会难度炸弹延迟和区块奖励减少</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-658">658</a></td>
+<td>在收据中嵌入交易状态代码</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-684">684</a></td>
+<td>发生碰撞时恢复创建</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1014">1014</a></td>
+<td>瘦CREATE2</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1052">1052</a></td>
+<td>EXTCODEHASH 操作码</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1108">1108</a></td>
+<td>减少 alt_bn128 预编译 Gas 成本</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1234">1234</a></td>
+<td>君士坦丁堡难度炸弹延迟和区块奖励调整</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1283">1283</a></td>
+<td>SSTORE 的净燃气计量，无需脏地图</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1344">1344</a></td>
+<td>ChainID操作码</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1559">1559</a></td>
+<td>ETH 1.0 链的费用市场变化</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1884">1884</a></td>
+<td>依赖特里结构大小的操作码的重新定价</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2028">2028</a></td>
+<td>交易数据gas成本降低</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2200">2200</a></td>
+<td>净燃气计量的结构化定义</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2384">2384</a></td>
+<td>缪尔冰川难度炸弹延迟</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2565">2565</a></td>
+<td>ModExp 天然气成本</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2681">2681</a></td>
+<td>将帐户随机数限制为 2^64-1</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2718">2718</a></td>
+<td>打字交易信封</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2929">2929</a></td>
+<td>状态访问操作码的 Gas 成本增加</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2930">2930</a></td>
+<td>可选访问列表</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3198">3198</a></td>
+<td>基本费操作码</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3529">3529</a></td>
+<td>减少退款</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3541">3541</a></td>
+<td>拒绝以 0xEF 字节开头的新合约代码</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3554">3554</a></td>
+<td>难度炸弹延迟至 2021  12 月</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3607">3607</a></td>
+<td>使用已部署的代码拒绝来自发件人的交易</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3651">3651</a></td>
+<td>温暖的COINBASE</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3675">3675</a></td>
+<td>将共识升级为权益证明</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3855">3855</a></td>
+<td>PUSH0指令</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3860">3860</a></td>
+<td>限制和计量初始化代码</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4345">4345</a></td>
+<td>难度炸弹延迟至 2022  6 月</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4399">4399</a></td>
+<td>用 PREVRANDAO 替换 DIFFICULTY 操作码</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4895">4895</a></td>
+<td>信标链将提款作为操作</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5133">5133</a></td>
+<td>将难度炸弹推迟到 2022  9 月中旬</td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="最后一次call"><a href="#最后一次call" class="headerlink" title="最后一次call"></a>最后一次call</h2><table>
+<thead>
+<tr>
+<th>数字</th>
+<th>审核结束</th>
+<th>标题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1153">1153</a></td>
+<td>2022-12-08</td>
+<td>瞬时存储操作码</td>
+</tr>
+</tbody></table>
+<h2 id="审查"><a href="#审查" class="headerlink" title="审查"></a>审查</h2><table>
+<thead>
+<tr>
+<th>数字</th>
+<th>标题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-663">663</a></td>
+<td>无限的 SWAP 和 DUP 指令</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2294">2294</a></td>
+<td>显式绑定到 Chain ID 大小</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3074">3074</a></td>
+<td>AUTH 和 AUTHCALL 操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3540">3540</a></td>
+<td>EOF - EVM 对象格式 v1</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3670">3670</a></td>
+<td>EOF - 代码验证</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4200">4200</a></td>
+<td>EOF - 静态相对跳转</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4750">4750</a></td>
+<td>EOF——函数</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4758">4758</a></td>
+<td>停用自毁功能</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4844">4844</a></td>
+<td>分片 Blob 交易</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5450">5450</a></td>
+<td>EOF - 堆栈验证</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5656">5656</a></td>
+<td>MCOPY——内存复制指令</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5920">5920</a></td>
+<td>支付操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6188">6188</a></td>
+<td>随机数上限</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6189">6189</a></td>
+<td>别名合约</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6190">6190</a></td>
+<td>Verkle 兼容的自毁</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7044">7044</a></td>
+<td>永久有效的签名自愿退出</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7045">7045</a></td>
+<td>增加最大证明包含槽</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7212">7212</a></td>
+<td>预编译 secp256r1 曲线支持</td>
+</tr>
+</tbody></table>
+<h2 id="草稿"><a href="#草稿" class="headerlink" title="草稿"></a>草稿</h2><table>
+<thead>
+<tr>
+<th>数字</th>
+<th>标题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1418">1418</a></td>
+<td>区块链存储租金支付</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3102">3102</a></td>
+<td>二元特里结构</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3455">3455</a></td>
+<td>SUDO 操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4788">4788</a></td>
+<td>EVM 中的信标块根</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5000">5000</a></td>
+<td>MULDIV指令</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5027">5027</a></td>
+<td>取消合约代码大小限制</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5081">5081</a></td>
+<td>过期火车动作</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5806">5806</a></td>
+<td>委托交易</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5988">5988</a></td>
+<td>添加Poseidon哈希函数预编译</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6046">6046</a></td>
+<td>将 SELFDESTRUCT 替换为 DEACTIVATE</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6110">6110</a></td>
+<td>在链上提供验证者存款</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6206">6206</a></td>
+<td>EOF-JUMPF指令</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6404">6404</a></td>
+<td>SSZ 交易根</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6465">6465</a></td>
+<td>SSZ提款根</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6466">6466</a></td>
+<td>SSZ 收据根</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6475">6475</a></td>
+<td>SSZ 可选</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6493">6493</a></td>
+<td>SSZ交易签名方案</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6780">6780</a></td>
+<td>仅在同一事务中自毁</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6810">6810</a></td>
+<td>事后级联恢复</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6811">6811</a></td>
+<td>前往月球——10 分钟街区</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6888">6888</a></td>
+<td>EVM 中的数学检查</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6913">6913</a></td>
+<td>设置代码指令</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6968">6968</a></td>
+<td>基于 EVM 的 L2 上的合同担保收入</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6988">6988</a></td>
+<td>当选的区块提议者尚未被削减</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7002">7002</a></td>
+<td>执行层可触发退出</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7069">7069</a></td>
+<td>修改了 CALL 指令</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7266">7266</a></td>
+<td>删除 BLAKE2 压缩预编译</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7377">7377</a></td>
+<td>移民交易</td>
+</tr>
+</tbody></table>
+<h2 id="停滞不前"><a href="#停滞不前" class="headerlink" title="停滞不前"></a>停滞不前</h2><table>
+<thead>
+<tr>
+<th>数字</th>
+<th>标题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-86">86</a></td>
+<td>交易来源和签名的抽象</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-101">101</a></td>
+<td>宁静货币和加密抽象</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-210">210</a></td>
+<td>区块哈希重构</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-615">615</a></td>
+<td>EVM 的子例程和静态跳转</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-616">616</a></td>
+<td>EVM 的 SIMD 操作</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-665">665</a></td>
+<td>添加Ed25519签名验证的预编译合约</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-689">689</a></td>
+<td>合约地址冲突导致异常停顿</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-698">698</a></td>
+<td>操作码 0x46 区块奖励</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-858">858</a></td>
+<td>减少区块奖励并延迟难度炸弹</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-969">969</a></td>
+<td>修改 ethash 以使现有的专用硬件实现失效</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1010">1010</a></td>
+<td>0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B 和 0x15E55EF43efA8348dDaeAa455F16C43B64917e3c 之间的一致性</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1011">1011</a></td>
+<td>混合 Casper FFG</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1015">1015</a></td>
+<td>可配置的链上发行</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1051">1051</a></td>
+<td>EVM 的溢出检查</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1057">1057</a></td>
+<td>ProgPoW，一种程序化的工作量证明</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1087">1087</a></td>
+<td>SSTORE 运营的净燃气计量</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1109">1109</a></td>
+<td>PRECOMPILEDCALL 操作码（删除预编译合约的 CALL 成本）</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1227">1227</a></td>
+<td>拆除难度炸弹并重置区块奖励</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1276">1276</a></td>
+<td>消除难度炸弹并调整君士坦丁堡转移的区块奖励</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1285">1285</a></td>
+<td>增加 CALL 操作码中的 Gcallstipend 气体</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1295">1295</a></td>
+<td>修改以太坊PoW激励结构并延迟难度炸弹</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1352">1352</a></td>
+<td>指定预编译&#x2F;系统合约的限制地址范围</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1380">1380</a></td>
+<td>降低自我调用的 Gas 成本</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1482">1482</a></td>
+<td>定义最大区块时间戳漂移</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1485">1485</a></td>
+<td>TEthashV1</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1681">1681</a></td>
+<td>临时重放保护</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1702">1702</a></td>
+<td>通用帐户版本控制方案</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1829">1829</a></td>
+<td>椭圆曲线线性组合的预编译</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1895">1895</a></td>
+<td>支持椭圆曲线循环</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1930">1930</a></td>
+<td>具有严格气体语义的 CALL。如果没有足够的可用气体，请恢复。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1959">1959</a></td>
+<td>用于检查 chainID 是否是 chainID 历史记录的一部分的新操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1962">1962</a></td>
+<td>EC 算术和与运行时定义的配对</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1965">1965</a></td>
+<td>检查 chainID 在特定区块号上是否有效的方法</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1985">1985</a></td>
+<td>某些 EVM 参数的合理限制</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2014">2014</a></td>
+<td>扩展状态预言机</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2026">2026</a></td>
+<td>状态租金 H - 账户固定预付款</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2027">2027</a></td>
+<td>State Ren C - 净合同规模核算</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2029">2029</a></td>
+<td>State Rent A - 国家柜台合同</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2031">2031</a></td>
+<td>国租B - 净交易柜台</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2035">2035</a></td>
+<td>无状态客户端 - 重新定价 SLOAD 和 SSTORE 以支付区块证明</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2045">2045</a></td>
+<td>EVM 操作码的粒子气体成本</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2046">2046</a></td>
+<td>减少预编译静态调用的 Gas 成本</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2242">2242</a></td>
+<td>交易后数据</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2327">2327</a></td>
+<td>BEGINDATA 操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2330">2330</a></td>
+<td>EXTSLOAD 操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2474">2474</a></td>
+<td>Coinbase 电话</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2488">2488</a></td>
+<td>弃用 CALLCODE 操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2515">2515</a></td>
+<td>实施难度冻结</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2537">2537</a></td>
+<td>BLS12-381 曲线操作的预编译</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2539">2539</a></td>
+<td>BLS12-377 曲线运算</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2542">2542</a></td>
+<td>新操作码 TXGASLIMIT 和 CALLGASLIMIT</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2583">2583</a></td>
+<td>对帐户 trie 未命中的惩罚</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2584">2584</a></td>
+<td>具有覆盖树的 Trie 格式转换</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2593">2593</a></td>
+<td>ETH 1.0 链的自动扶梯费用市场变化</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2666">2666</a></td>
+<td>预编译和 Keccak256 函数的重新定价</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2803">2803</a></td>
+<td>丰富的交易</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2926">2926</a></td>
+<td>基于块的代码默克尔化</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2935">2935</a></td>
+<td>在状态中保存历史区块哈希</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2936">2936</a></td>
+<td>用于自毁合约的 EXTCLEAR 操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2937">2937</a></td>
+<td>SET_INDESTRUCTIBLE 操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2938">2938</a></td>
+<td>账户抽象</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2970">2970</a></td>
+<td>IS_STATIC 操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2997">2997</a></td>
+<td>IMPERSONATECALL 操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3026">3026</a></td>
+<td>BW6-761曲线运算</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3068">3068</a></td>
+<td>BN256 HashToCurve 算法的预编译</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3143">3143</a></td>
+<td>将区块奖励增加至 5 ETH</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3220">3220</a></td>
+<td>跨链标识符规范</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3238">3238</a></td>
+<td>难度炸弹延迟至 2022 二季度</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3267">3267</a></td>
+<td>将以太坊费用支付给未来工资</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3298">3298</a></td>
+<td>取消退款</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3300">3300</a></td>
+<td>逐步取消退款</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3322">3322</a></td>
+<td>账户储气操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3336">3336</a></td>
+<td>EVM 的分页内存分配</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3337">3337</a></td>
+<td>内存加载和存储操作的帧指针支持</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3368">3368</a></td>
+<td>将区块奖励增加至 3 ETH，计划 2 衰减至 1 ETH</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3372">3372</a></td>
+<td>ethash 的 5 个 FNV 素数</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3403">3403</a></td>
+<td>部分取消退款</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3416">3416</a></td>
+<td>天然气溢价中位数</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3436">3436</a></td>
+<td>扩展派块选择规则</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3508">3508</a></td>
+<td>交易数据操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3520">3520</a></td>
+<td>交易目标操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3521">3521</a></td>
+<td>降低访问列表成本</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3534">3534</a></td>
+<td>受限链上下文类型交易</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3584">3584</a></td>
+<td>阻止访问列表</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3690">3690</a></td>
+<td>EOF - JUMPDEST 表</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3756">3756</a></td>
+<td>气体限制上限</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3788">3788</a></td>
+<td>严格执行chainId</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3978">3978</a></td>
+<td>恢复时 Gas 退款</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4396">4396</a></td>
+<td>时间感知的基本费用计算</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4488">4488</a></td>
+<td>通过总调用数据限制，交易调用数据 Gas 成本降低</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4520">4520</a></td>
+<td>以 EB 和 EC 为前缀的多字节操作码。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4573">4573</a></td>
+<td>EVM 的程序</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4747">4747</a></td>
+<td>简化 EIP-161</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4760">4760</a></td>
+<td>自毁炸弹</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4762">4762</a></td>
+<td>无状态 Gas 成本变化</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4803">4803</a></td>
+<td>将交易 Gas 限制为最大 2^63-1</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4863">4863</a></td>
+<td>信标链推送提现</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5003">5003</a></td>
+<td>使用 AUTHUSURP 将代码插入 EOA</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5022">5022</a></td>
+<td>将 SSTORE 的价格从零提高到非零至 40k Gas</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5065">5065</a></td>
+<td>以太币转账说明</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5283">5283</a></td>
+<td>用于重入保护的信号量</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5478">5478</a></td>
+<td>CREATE2COPY 操作码</td>
+</tr>
+</tbody></table>
+<h2 id="取消"><a href="#取消" class="headerlink" title="取消"></a>取消</h2><table>
+<thead>
+<tr>
+<th>数字</th>
+<th>标题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3">3</a></td>
+<td>添加 CALLDEPTH 操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-908">908</a></td>
+<td>奖励客户建立可持续的网络</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-999">999</a></td>
+<td>恢复合约代码0x863DF6BFa4469f3ead0bE8f9F2AAE51c91A907b4</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1240">1240</a></td>
+<td>移除难度炸弹</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1355">1355</a></td>
+<td>以太坊1a</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1682">1682</a></td>
+<td>仓储租金</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1706">1706</a></td>
+<td>禁用 SSTORE，gasleft 低于call津贴</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1890">1890</a></td>
+<td>对可持续生态系统资金的承诺</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2025">2025</a></td>
+<td>资助 Eth1.x 的区块奖励提案</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2315">2315</a></td>
+<td>EVM 的简单子例程</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2677">2677</a></td>
+<td>限制“initcode”的大小</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2711">2711</a></td>
+<td>赞助、到期和批量交易。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2733">2733</a></td>
+<td>交易套餐</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2780">2780</a></td>
+<td>减少内在交易气体</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2972">2972</a></td>
+<td>打包的旧交易</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3332">3332</a></td>
+<td>MEDGAASPRICE 操作码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3338">3338</a></td>
+<td>将帐户随机数限制为 2^52</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3374">3374</a></td>
+<td>可预测的工作量证明（POW）日落</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3382">3382</a></td>
+<td>硬编码的区块 Gas 限制</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3779">3779</a></td>
+<td>EVM 更安全的控制流程</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2021/11/08/EIP%E7%AC%94%E8%AE%B0/02-%E6%A0%B8%E5%BF%83%20Core/" title="02-核心 Core">https://kongpengyq.com/2021/11/08/EIP笔记/02-核心 Core/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/EIP%E7%AC%94%E8%AE%B0/" rel="tag"># EIP笔记</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/07/EIP%E7%AC%94%E8%AE%B0/01-%E7%8A%B6%E6%80%81/" rel="prev" title="01-状态">
+      <i class="fa fa-chevron-left"></i> 01-状态
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/11/14/EIP%E7%AC%94%E8%AE%B0/03-%E7%BD%91%E7%BB%9C%20Networking/" rel="next" title="03-网络 Networking">
+      03-网络 Networking <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Core-%E6%A0%B8%E5%BF%83"><span class="nav-text">Core 核心</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%80%E7%BB%88%E7%9A%84"><span class="nav-text">最终的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%80%E5%90%8E%E4%B8%80%E6%AC%A1call"><span class="nav-text">最后一次call</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A1%E6%9F%A5"><span class="nav-text">审查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8D%89%E7%A8%BF"><span class="nav-text">草稿</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%81%9C%E6%BB%9E%E4%B8%8D%E5%89%8D"><span class="nav-text">停滞不前</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%96%E6%B6%88"><span class="nav-text">取消</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

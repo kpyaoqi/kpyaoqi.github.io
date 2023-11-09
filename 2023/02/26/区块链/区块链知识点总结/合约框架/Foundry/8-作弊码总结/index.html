@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Environment  环境 warp(uint256)：设置block.timestamp  roll(uint256)：设置block.number  fee(uint256)：设置block.basefee  difficult(uint256)：设置block.difficulty  chainId(uint256)：设置block.chainId  store(address acco">
+<meta property="og:type" content="article">
+<meta property="og:title" content="8-作弊码总结">
+<meta property="og:url" content="https://kongpengyq.com/2023/02/26/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/8-%E4%BD%9C%E5%BC%8A%E7%A0%81%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="Environment  环境 warp(uint256)：设置block.timestamp  roll(uint256)：设置block.number  fee(uint256)：设置block.basefee  difficult(uint256)：设置block.difficulty  chainId(uint256)：设置block.chainId  store(address acco">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-02-25T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.804Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链知识点总结">
+<meta property="article:tag" content="合约框架">
+<meta property="article:tag" content="Foundry">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/02/26/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/8-%E4%BD%9C%E5%BC%8A%E7%A0%81%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>8-作弊码总结 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/02/26/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/8-%E4%BD%9C%E5%BC%8A%E7%A0%81%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          8-作弊码总结
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-02-26 00:00:00" itemprop="dateCreated datePublished" datetime="2023-02-26T00:00:00+08:00">2023-02-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Foundry/" itemprop="url" rel="index">
+                    <span itemprop="name">Foundry</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Environment-环境"><a href="#Environment-环境" class="headerlink" title="Environment  环境"></a>Environment  环境</h1><ol>
+<li><p><strong>warp</strong>(uint256)：设置block.timestamp</p>
+</li>
+<li><p><strong>roll</strong>(uint256)：设置block.number</p>
+</li>
+<li><p><strong>fee</strong>(uint256)：设置block.basefee</p>
+</li>
+<li><p><strong>difficult</strong>(uint256)：设置block.difficulty</p>
+</li>
+<li><p><strong>chainId</strong>(uint256)：设置block.chainId</p>
+</li>
+<li><p><strong>store</strong>(address account, bytes32 slot, bytes32 value)：将 value 值存储在账户 account 的存储槽 slot 中</p>
+</li>
+<li><p><strong>load</strong>(address account, bytes32 slot) returns (bytes32)：从帐户上的存储槽位加载值</p>
+</li>
+<li><p><strong>etch</strong>(address who, bytes calldata code)：设置要编码的地址的字节码。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bytes memory code = address(awesomeContract).code;</span><br><span class="line">address targetAddr = address(1);</span><br><span class="line">vm.etch(targetAddr, code);</span><br><span class="line">log_bytes(address(targetAddr).code); // 0x6080604052348015610010...</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>deal</strong>(address who, uint256 newBalance)：将地址余额设置为<code>newBalance</code></p>
+</li>
+<li><p><strong>prank</strong>(address)：将msg.sender设置为下次调用的指定地址,“下一个call”也包括静态调用，但不包括对作弊码地址的调用。<br><strong>prank</strong>(address sender, address origin)：如果使用了prank的替代签名，那么在下一次调用时也要设置tx.origin。</p>
+</li>
+<li><p><strong>startPrank</strong>：参数与prank一样，对于所有后续调用有效，直到 stopPrank 出现</p>
+</li>
+<li><p><strong>stopPrank</strong>：停止startPrank</p>
+</li>
+<li><p><strong>record</strong>：告诉VM开始记录所有存储读取和写入，要访问读取和写入，请使用access。</p>
+</li>
+<li><p><strong>accesses</strong>：获取某个地址上已被读取或写入的所有存储槽，需先调用record()</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">/// contract NumsContract &#123;</span><br><span class="line">///     uint256 public num1 = 100; // slot 0</span><br><span class="line">///     uint256 public num2 = 200; // slot 1</span><br><span class="line">/// &#125;</span><br><span class="line"></span><br><span class="line">vm.record();</span><br><span class="line">numsContract.num2();</span><br><span class="line">(bytes32[] memory reads, bytes32[] memory writes) = vm.accesses(</span><br><span class="line">  address(numsContract)</span><br><span class="line">);</span><br><span class="line">emit log_uint(uint256(reads[0])); // 1</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>recoedLogs</strong>：通知VM开始记录所有发出的事件，要访问它们，请使用getRecordedLogs。</p>
+</li>
+<li><p><strong>getRecordLogs</strong>：获取recordLogs记录的已发出事件，这个函数在被调用时将消耗记录的日志。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">/// event LogCompleted(</span><br><span class="line">///   uint256 indexed topic1,</span><br><span class="line">///   bytes data</span><br><span class="line">/// );</span><br><span class="line"></span><br><span class="line">vm.recordLogs();</span><br><span class="line"></span><br><span class="line">emit LogCompleted(10, &quot;operation completed&quot;);</span><br><span class="line"></span><br><span class="line">Vm.Log[] memory entries = vm.getRecordedLogs();</span><br><span class="line"></span><br><span class="line">assertEq(entries.length, 1);</span><br><span class="line">assertEq(entries[0].topics[0], keccak256(&quot;LogCompleted(uint256,bytes)&quot;));</span><br><span class="line">assertEq(entries[0].topics[1], bytes32(uint256(10)));</span><br><span class="line">assertEq(abi.decode(entries[0].data, (string)), &quot;operation completed&quot;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>setNonce</strong>(address account, uint64 nonce)：设置给定Account的nonce，新的nonce必须大于帐户的当前nonce。</p>
+</li>
+<li><p><strong>getNonce</strong>(address account) returns (uint64)：获取给定Account的nonce</p>
+</li>
+<li><p><strong>mockCall</strong>(address where, bytes calldata data, bytes calldata retdata)：模拟对一个地址的所有调用，如果调用数据严格或松散地匹配数据，则返回retdata。<br>当一个呼叫被发出时，首先检查呼叫数据是否与数据完全匹配。如果不是，则检查调用数据以查看是否有部分匹配，匹配从调用数据的第一个字节开始。<br>如果找到匹配，则调用返回retdata。</p>
+<p>mockCall(address where,uint256 value,bytes calldata data,bytes calldata retdata)：使用第二个签名，我们可以使用特定的msg.value来模拟调用。如果有歧义，则Calldata match优先于msg.value。</p>
+</li>
+<li><p><strong>clearMockedCalls</strong>：清除所有模拟call。</p>
+</li>
+<li><p><strong>coinbase</strong>(address)：设置block.coinbase</p>
+</li>
+<li><p><strong>broadcast</strong>( )、<strong>broadcast</strong>(address who)、<strong>broadcast</strong>(uint256 privateKey)：使用调用测试合约的地址或作为发送者提供的地址&#x2F;私钥，让下一个调用（仅在此调用深度）创建一个稍后可以在链上签名和发送的交易。</p>
+</li>
+<li><p><strong>startBroadcast</strong>：参数与broadcast一样，使用调用测试合约的地址或作为发送者提供的地址&#x2F;私钥，让所有后续调用（仅在此调用深度）创建稍后可以在链上签名和发送的交易。</p>
+</li>
+<li><p><strong>stopBroadcast</strong>：停止收集交易以供以后的链上广播。</p>
+</li>
+<li><p><strong>pauseGasMetering</strong>：暂停气体计量（即<code>gasleft()</code>不随着操作的执行而减少），通过关闭不必要的代码以及长时间运行的脚本（否则会耗尽 Gas）的 Gas 计量，这对于更好地了解 Gas 成本非常有用。</p>
+</li>
+<li><p><strong>resumeGasMetering</strong>：恢复燃气计量（即<code>gasleft()</code>随着操作的执行而减少）。天然气使用量将恢复到暂停时的相同量。</p>
+</li>
+</ol>
+<h1 id="Assertions-断言"><a href="#Assertions-断言" class="headerlink" title="Assertions 断言"></a>Assertions 断言</h1><ol>
+<li><p><strong>expectRevert</strong>( )、<strong>expectRevert</strong>(bytes4 msg)、<strong>expectRevert</strong>(bytes calldata msg)：如果下一个调用没有返回预期的消息msg，那么expectRevert将返回，在调用expectRevert之后，在恢复调用之前对其他作弊码的调用将被忽略，有3个签名：</p>
+<ul>
+<li><strong>不带参数</strong>：断言下一次call reverts，无论消息如何。</li>
+<li>**With<code>bytes4</code>**：断言下一次call reverts为指定的 bytes4。</li>
+<li>**With<code>bytes</code>**：断言下一次call reverts为指定的bytes。</li>
+</ul>
+</li>
+<li><p><strong>expectEmit</strong>(bool checkTopic1,bool checkTopic2,bool checkTopic3,bool checkData)：断言主题匹配而不检查发射器地址</p>
+<p><strong>expectEmit</strong>(bool checkTopic1,bool checkTopic2,bool checkTopic3,bool checkData,address emitter)：断言主题匹配并且发出地址匹配</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">event Transfer(address indexed from, address indexed to, uint256 amount);</span><br><span class="line"></span><br><span class="line">function testERC20EmitsTransfer() public &#123;</span><br><span class="line">    vm.expectEmit(true, true, false, true, address(myToken));</span><br><span class="line">    emit MyToken.Transfer(address(this), address(1), 10);</span><br><span class="line">    // 执行调用</span><br><span class="line">    myToken.transfer(address(1), 10);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>expectCall</strong>(address where, bytes calldata data)、<strong>expectCall</strong>(address where, uint256 value,bytes calldata data)：期望至少有一个对指定地址的调用，其中调用数据严格或松散匹配数据，第二个还可以检查调用是否使用预期的msg.value进行。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Contract target = new Contract();</span><br><span class="line">vm.expectCall(address(target),1,abi.encodeWithSelector(target.pay.selector, 2));</span><br><span class="line">target.pay&#123;value: 1&#125;(2);</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h1 id="Fuzzer-模糊"><a href="#Fuzzer-模糊" class="headerlink" title="Fuzzer 模糊"></a>Fuzzer 模糊</h1><ol>
+<li><p><strong>assume</strong>(bool)：false，模糊器将丢弃当前的模糊输入并开始新的模糊运行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">function testSomething(uint256 a) public &#123;</span><br><span class="line">    vm.assume(a != 1);</span><br><span class="line">    require(a != 1);</span><br><span class="line">    // [PASS]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h1 id="Forking-分叉"><a href="#Forking-分叉" class="headerlink" title="Forking 分叉"></a>Forking 分叉</h1><ol>
+<li><p><strong>createFork</strong>(string calldata urlOrAlias)、<strong>createFork</strong>(string calldata urlOrAlias，uint256 block)、<strong>createFork</strong>(string calldata urlOrAlias，bytes32 transaction) returns (uint256)：从给定端点创建新的分叉，并返回该分叉的标识符，如果将块号作为参数传递，则分叉将从该块开始，否则它将从最新的块开始  <em>latest</em> ，如果提供了交易哈希，它将把分叉滚动到交易被挖掘的区块，并重播所有以前执行的交易。 </p>
+</li>
+<li><p><strong>selectFork</strong>(uint256 forkId)：接受由createFork创建的fork标识符，并将相应的fork状态设置为活动状态。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uint256 forkId = vm.createFork(MAINNET_RPC_URL, 1_337_000);</span><br><span class="line">vm.selectFork(forkId);</span><br><span class="line"></span><br><span class="line">assertEq(block.number, 1_337_000);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>createSelectFork</strong>(string calldata urlOrAlias)、<strong>createSelectFork</strong>(string calldata urlOrAlias，uint256 block) returns (uint256)：<br>createFork + selectFork</p>
+</li>
+<li><p><strong>activeFork</strong>() returns (uint256)：返回当前活动分叉的标识符，如果当前没有分叉处于活动状态，则还原。 </p>
+</li>
+<li><p><strong>rollFork</strong>(uint256 blockNumber)、<strong>rollFork</strong>(bytes32 transaction)、<strong>rollFork</strong>(uint256 forkId, uint256 blockNumber)、<strong>rollFork</strong>(uint256 forkId, bytes32 transaction)：更新分叉，如果没传forkId表示更新当前活动分叉</p>
+</li>
+<li><p><strong>makePersistent</strong>(address)、<strong>makePersistent</strong>(address，address)、<strong>makePersistent</strong>(address，address，address)、<strong>makePersistent</strong>(address[] calldata)：将指定帐户标记为持久帐户，每个叉子createFork有自己独立的存储，只有测试合约账户和调用者在分叉之间是持久的</p>
+</li>
+<li><p><strong>revokePersistent</strong>(address)、<strong>revokePersistent</strong>(address[] calldata)：将指定帐户撤销标记为持久帐户</p>
+</li>
+<li><p><strong>isPersistent</strong>(address) returns (bool)：判断指定帐户标记是否为持久帐户</p>
+</li>
+<li><p><strong>allowCheatcodes</strong>(address)：在分叉模式下，显式授予给定地址作弊码访问权限</p>
+</li>
+<li><p><strong>transact</strong>(bytes32 txHash)、<strong>transact</strong>(uint256 forkId, bytes32 txHash)：在分叉模式下，获取交易并在当前状态下执行交易</p>
+</li>
+</ol>
+<h1 id="External-外部"><a href="#External-外部" class="headerlink" title="External 外部"></a>External 外部</h1><ol>
+<li><p><strong>ffi</strong>(string[] calldata) returns (bytes memory)：如果启用了ffi，则可以调用任意命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">string[] memory inputs = new string[](3);</span><br><span class="line">inputs[0] = &quot;echo&quot;;</span><br><span class="line">inputs[1] = &quot;-n&quot;;</span><br><span class="line">inputs[2] = &quot;gm&quot;;</span><br><span class="line"></span><br><span class="line">bytes memory res = vm.ffi(inputs);</span><br><span class="line">assertEq(string(res), &quot;gm&quot;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>projectRoot</strong>() returns (string memory)：返回当前项目的根目录</p>
+</li>
+<li><p><strong>getCode</strong>(string calldata) returns (bytes memory)：返回给定合约路径的创建字节码。调用数据参数可以是以下形式  <code>ContractFile.sol</code> （如果文件名和合约名称相同），  <code>ContractFile.sol:ContractName</code>或相对于项目根目录的项目路径。 </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">MyContract myContract = new MyContract(arg1, arg2);</span><br><span class="line">bytes memory args = abi.encode(arg1, arg2);</span><br><span class="line">bytes memory bytecode = abi.encodePacked(vm.getCode(&quot;MyContract.sol:MyContract&quot;), args);</span><br><span class="line">address anotherAddress;</span><br><span class="line">assembly &#123;</span><br><span class="line">    anotherAddress := create(0, add(bytecode, 0x20), mload(bytecode))</span><br><span class="line">&#125;</span><br><span class="line">assertEq0(address(myContract).code, anotherAddress.code); // [PASS]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>getDeployedCode</strong>(string calldata) returns (bytes memory)：只返回部署的字节码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">contract Override &#123;</span><br><span class="line">    event Payload(address sender, address target, bytes data);</span><br><span class="line">    function emitPayload(address target, bytes calldata message) external payable returns (uint256) &#123;</span><br><span class="line">        emit Payload(msg.sender, target, message);</span><br><span class="line">        return 0;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">bytes memory code = vm.getDeployedCode(&quot;Override.sol:Override&quot;);</span><br><span class="line">address overrideAddress = address(64);</span><br><span class="line">vm.etch(overrideAddress, code);</span><br><span class="line">assertEq(overrideAddress.code,code)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>setEnv</strong>(string calldata key, string calldata value)：设置环境变量 <code>key=value</code></p>
+</li>
+<li><p><strong>envOr</strong>：读取任何类型的环境变量的无失败方法：如果请求的环境键不存在，<code>envOr()</code>将返回默认值而不是revert（也适用于数组）,<br>返回的类型由传递的参数<code>defaultValue</code>类型决定，delimiter为分割符</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">function envOr(string calldata key, bool defaultValue) external returns (bool value);</span><br><span class="line">function envOr(string calldata key, uint256 defaultValue) external returns (uint256 value);</span><br><span class="line">function envOr(string calldata key, int256 defaultValue) external returns (int256 value);</span><br><span class="line">function envOr(string calldata key, address defaultValue) external returns (address value);</span><br><span class="line">function envOr(string calldata key, bytes32 defaultValue) external returns (bytes32 value);</span><br><span class="line">function envOr(string calldata key, string calldata defaultValue) external returns (string memory value);</span><br><span class="line">function envOr(string calldata key, bytes calldata defaultValue) external returns (bytes memory value);</span><br><span class="line"></span><br><span class="line">function envOr(string calldata key, string calldata delimiter, bool[] calldata defaultValue) external returns (bool[] memory value);</span><br><span class="line">function envOr(string calldata key, string calldata delimiter, uint256[] calldata defaultValue) external returns (uint256[] memory value);</span><br><span class="line">function envOr(string calldata key, string calldata delimiter, int256[] calldata defaultValue) external returns (int256[] memory value);</span><br><span class="line">function envOr(string calldata key, string calldata delimiter, address[] calldata defaultValue) external returns (address[] memory value);</span><br><span class="line">function envOr(string calldata key, string calldata delimiter, bytes32[] calldata defaultValue) external returns (bytes32[] memory value);</span><br><span class="line">function envOr(string calldata key, string calldata delimiter, string[] calldata defaultValue) external returns (string[] memory value);</span><br><span class="line">function envOr(string calldata key, string calldata delimiter, bytes[] calldata defaultValue) external returns (bytes[] memory value);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>envBool</strong>(string calldata key) returns (bool value)、<strong>envBool</strong>(string calldata key, string calldata delimiter) returns (bool[] memory values);：将环境变量读取为 <code>bool</code>或者 <code>bool[]</code></p>
+</li>
+<li><p><strong>envUint</strong>：将环境变量读取为 <code>uint256</code>或者 <code>uint256[]</code>. </p>
+</li>
+<li><p><strong>envInt</strong>：将环境变量读取为 <code>int256</code>或者 <code>int256[]</code></p>
+</li>
+<li><p><strong>envAddress</strong>：将环境变量读取为 <code>address</code>或者 <code>address[]</code></p>
+</li>
+<li><p><strong>envBytes32</strong>：将环境变量读取为 <code>bytes32</code>或者 <code>address[]</code>. </p>
+</li>
+<li><p><strong>envString</strong>：将环境变量读取为 <code>string</code>或者 <code>string[]</code></p>
+</li>
+<li><p><strong>envBytes</strong>：将环境变量读取为 <code>bytes</code>或者 <code>bytes[]</code>. </p>
+</li>
+<li><p><strong>parseJson</strong>：解析字符串形式的 JSON 文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">string memory root = vm.projectRoot();</span><br><span class="line">string memory path = string.concat(root, &quot;/src/test/fixtures/broadcast.log.json&quot;);</span><br><span class="line">string memory json = vm.readFile(path);</span><br><span class="line">bytes memory transactionDetails = json.parseRaw(&quot;.transactions[0].tx&quot;);</span><br><span class="line">RawTx1559Detail memory rawTxDetail = abi.decode(transactionDetails, (RawTx1559Detail));</span><br><span class="line"></span><br><span class="line">// 返回与“key”对应的值</span><br><span class="line">vm.parseJson(string memory json, string memory key)</span><br><span class="line">// 返回整个json文件</span><br><span class="line">vm.parseJson(string memory json);</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h1 id="Utilities-实用程序"><a href="#Utilities-实用程序" class="headerlink" title="Utilities 实用程序"></a>Utilities 实用程序</h1><ol>
+<li><p><strong>addr</strong>(uint256 privateKey) returns (address)：计算给定私钥的地址。</p>
+</li>
+<li><p><strong>sign</strong>(uint256 privateKey, bytes32 digest) returns (uint8 v, bytes32 r, bytes32 s)：使用私钥 privateKey 签署摘要摘要，返回 (v, r, s)。 这对于测试获取签名数据并执行 ecrecover 来验证签名者的函数非常有用。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">address alice = vm.addr(1);</span><br><span class="line">bytes32 hash = keccak256(&quot;Signed by Alice&quot;);</span><br><span class="line">(uint8 v, bytes32 r, bytes32 s) = vm.sign(1, hash);</span><br><span class="line">address signer = ecrecover(hash, v, r, s);</span><br><span class="line">assertEq(alice, signer); // [PASS]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>label</strong>(address addr, string calldata label)：为测试跟踪中的 addr 设置标签 label， 如果地址被标记，则测试跟踪中将显示标签而不是地址。</p>
+</li>
+<li><p><strong>deriveKey</strong>(string calldata mnemonic, uint32 index) returns (uint256)：在导出路径m&#x2F;44’&#x2F;60’&#x2F;0’&#x2F;0&#x2F;{index}处导出。</p>
+<p><strong>deriveKey</strong>(string calldata mnemonic, string calldata path,uint32 index) returns (uint256)：允许您指定派生路径作为第二个参数。</p>
+<p>从给定的助记词或助记词文件路径派生私钥。 </p>
+</li>
+<li><p><strong>rememberKey</strong>(uint256 privateKey) returns (address)：将私钥存储在forge的本地钱包中并返回相应的地址，该地址稍后可用于广播。</p>
+</li>
+<li><p><strong>toString</strong>：将任何类型转换为其字符串版本。</p>
+</li>
+</ol>
+<h1 id="Snapshots-快照"><a href="#Snapshots-快照" class="headerlink" title="Snapshots 快照"></a>Snapshots 快照</h1><p>1.<strong>snapshot</strong>() returns(uint256)：拍摄区块链状态的快照并返回创建的快照的标识符</p>
+<p>2.<strong>revertTo</strong>(uint256) returns(bool)：将区块链的状态恢复到给定的快照。 这将删除给定的快照以及此后拍摄的任何快照（例如：恢复到 id 1 将删除 id 2、3 等的快照）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">struct Storage &#123;</span><br><span class="line">    uint slot0;</span><br><span class="line">    uint slot1;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">contract SnapshotTest is Test &#123;</span><br><span class="line">    Cheats constant cheats = Cheats(HEVM_ADDRESS);</span><br><span class="line"></span><br><span class="line">    Storage store;</span><br><span class="line"></span><br><span class="line">    function setUp() public &#123;</span><br><span class="line">        store.slot0 = 10;</span><br><span class="line">        store.slot1 = 20;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function testSnapshot() public &#123;</span><br><span class="line">        uint256 snapshot = cheats.snapshot();</span><br><span class="line">        store.slot0 = 300;</span><br><span class="line">        store.slot1 = 400;</span><br><span class="line"></span><br><span class="line">        assertEq(store.slot0, 300);</span><br><span class="line">        assertEq(store.slot1, 400);</span><br><span class="line"></span><br><span class="line">        // after resetting to a snapshot all changes are discarded</span><br><span class="line">        cheats.revertTo(snapshot);</span><br><span class="line">        assertEq(store.slot0, 10, &quot;snapshot revert for slot 0 unsuccessful&quot;);</span><br><span class="line">        assertEq(store.slot1, 20, &quot;snapshot revert for slot 1 unsuccessful&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="RPC-远程过程调用"><a href="#RPC-远程过程调用" class="headerlink" title="RPC 远程过程调用"></a>RPC 远程过程调用</h1><p><strong>rpcUrl</strong>(string calldata alias) returns(string memory)：返回已配置别名的 URL</p>
+<p><strong>rpcUrls</strong>() returns(string[2] [] memory)：返回所有配置的（别名、URL）对</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># --snip--</span></span><br><span class="line"><span class="section">[rpc_endpoints]</span></span><br><span class="line"><span class="attr">optimism</span> = <span class="string">&quot;https://optimism.alchemyapi.io/v2/...&quot;</span></span><br><span class="line"><span class="attr">mainnet</span> = <span class="string">&quot;$&#123;RPC_MAINNET&#125;&quot;</span> </span><br><span class="line"></span><br><span class="line">string memory <span class="attr">url</span> = vm.rpcUrl(<span class="string">&quot;optimism&quot;</span>)<span class="comment">;</span></span><br><span class="line">assertEq(url, &quot;https://optimism.alchemyapi.io/v2/...&quot;)<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Files-文件"><a href="#Files-文件" class="headerlink" title="Files 文件"></a>Files 文件</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// 读取文件的全部内容到字符串，(path) =&gt; (data)</span><br><span class="line">function readFile(string calldata) external returns (string memory);</span><br><span class="line">// 读取文件的下一行为字符串，(path) =&gt; (line)</span><br><span class="line">function readLine(string calldata) external returns (string memory);</span><br><span class="line">// 将数据写入文件，如果不存在则创建一个文件，如果存在则完全替换其内容,(path, data) =&gt; ()</span><br><span class="line">function writeFile(string calldata, string calldata) external;</span><br><span class="line">// 将行写入文件，如果不存在则创建一个文件,(path, data) =&gt; ()</span><br><span class="line">function writeLine(string calldata, string calldata) external;</span><br><span class="line">// 关闭文件读取，重置偏移量并允许从readLine开始读取,(path) =&gt; ()</span><br><span class="line">function closeFile(string calldata) external;</span><br><span class="line">// 删除文件。该作弊代码将在以下情况下恢复，但不限于这些情况:Path指向一个目录、文件不存在、用户没有权限删除文件,(path) =&gt; ()</span><br><span class="line">function removeFile(string calldata) external;</span><br></pre></td></tr></table></figure>
+
+
+
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/02/26/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/8-%E4%BD%9C%E5%BC%8A%E7%A0%81%E6%80%BB%E7%BB%93/" title="8-作弊码总结">https://kongpengyq.com/2023/02/26/区块链/区块链知识点总结/合约框架/Foundry/8-作弊码总结/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" rel="tag"># 区块链知识点总结</a>
+              <a href="/tags/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/" rel="tag"># 合约框架</a>
+              <a href="/tags/Foundry/" rel="tag"># Foundry</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/02/23/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/7-DSTest/" rel="prev" title="7-DSTest">
+      <i class="fa fa-chevron-left"></i> 7-DSTest
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/02/26/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/9-Forge%E6%A0%87%E5%87%86%E5%BA%93%E5%8F%82%E8%80%83/" rel="next" title="9-Forge标准库参考">
+      9-Forge标准库参考 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Environment-%E7%8E%AF%E5%A2%83"><span class="nav-text">Environment  环境</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Assertions-%E6%96%AD%E8%A8%80"><span class="nav-text">Assertions 断言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fuzzer-%E6%A8%A1%E7%B3%8A"><span class="nav-text">Fuzzer 模糊</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Forking-%E5%88%86%E5%8F%89"><span class="nav-text">Forking 分叉</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#External-%E5%A4%96%E9%83%A8"><span class="nav-text">External 外部</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Utilities-%E5%AE%9E%E7%94%A8%E7%A8%8B%E5%BA%8F"><span class="nav-text">Utilities 实用程序</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Snapshots-%E5%BF%AB%E7%85%A7"><span class="nav-text">Snapshots 快照</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RPC-%E8%BF%9C%E7%A8%8B%E8%BF%87%E7%A8%8B%E8%B0%83%E7%94%A8"><span class="nav-text">RPC 远程过程调用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Files-%E6%96%87%E4%BB%B6"><span class="nav-text">Files 文件</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

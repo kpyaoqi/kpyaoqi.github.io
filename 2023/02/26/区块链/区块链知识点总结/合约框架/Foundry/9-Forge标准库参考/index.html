@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Forge 标准库包含的内容：  标准库  Std Logs: 在 DSTest 库的日志事件的基础上进行扩展。 Std Assertions: 在 DSTest 库的断言功能的基础上进行扩展。 Std Cheats: 围绕 Forge 作弊代码的包装，以提高安全性和开发人员体验。 Std Errors: 围绕常见的内部 Solidity 错误和 reverts 的包装。 Std Storage:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="9-Forge标准库参考">
+<meta property="og:url" content="https://kongpengyq.com/2023/02/26/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/9-Forge%E6%A0%87%E5%87%86%E5%BA%93%E5%8F%82%E8%80%83/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="Forge 标准库包含的内容：  标准库  Std Logs: 在 DSTest 库的日志事件的基础上进行扩展。 Std Assertions: 在 DSTest 库的断言功能的基础上进行扩展。 Std Cheats: 围绕 Forge 作弊代码的包装，以提高安全性和开发人员体验。 Std Errors: 围绕常见的内部 Solidity 错误和 reverts 的包装。 Std Storage:">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-02-25T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.805Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链知识点总结">
+<meta property="article:tag" content="合约框架">
+<meta property="article:tag" content="Foundry">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/02/26/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/9-Forge%E6%A0%87%E5%87%86%E5%BA%93%E5%8F%82%E8%80%83/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>9-Forge标准库参考 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/02/26/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/9-Forge%E6%A0%87%E5%87%86%E5%BA%93%E5%8F%82%E8%80%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          9-Forge标准库参考
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-02-26 00:00:00" itemprop="dateCreated datePublished" datetime="2023-02-26T00:00:00+08:00">2023-02-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Foundry/" itemprop="url" rel="index">
+                    <span itemprop="name">Foundry</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Forge-标准库"><a href="#Forge-标准库" class="headerlink" title="Forge 标准库"></a>Forge 标准库</h1><p>包含的内容：</p>
+<ul>
+<li><p>标准库</p>
+<ul>
+<li>Std Logs: 在 DSTest 库的日志事件的基础上进行扩展。</li>
+<li>Std Assertions: 在 DSTest 库的断言功能的基础上进行扩展。</li>
+<li>Std Cheats: 围绕 Forge 作弊代码的包装，以提高安全性和开发人员体验。</li>
+<li>Std Errors: 围绕常见的内部 Solidity 错误和 reverts 的包装。</li>
+<li>Std Storage: 用于存储操作的工具类。</li>
+<li>Std Math: 实用的数学函数。</li>
+<li>Script Utils: 可以在测试和脚本中访问的工具类。</li>
+<li>Console Logging: 控制台日志功能。</li>
+</ul>
+</li>
+<li><p>一个作弊代码实例 vm，你可以通过它调用 Forge 作弊代码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vm.startPrank(alice);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>所有 Hardhat console 功能的记录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">console.log(alice.balance); // or `console2`</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>所有用于断言和日志的 Dappsys 测试函数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">assertEq(dai.balanceOf(alice), 10000e18);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>工具类函数也包括在 Script.sol 中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// 对于给定的部署者地址和 nonce，计算合约将被部署到的地址</span><br><span class="line">address futureContract = computeCreateAddress(alice, 1);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="Std-Logs"><a href="#Std-Logs" class="headerlink" title="Std Logs"></a>Std Logs</h2><p>Std Logs 在 DSTest 库的日志事件基础上进行扩展。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">event log_array(uint256[] val);</span><br><span class="line">event log_array(int256[] val);</span><br><span class="line">event log_array(address[] val);</span><br><span class="line">event log_named_array(string key, uint256[] val);</span><br><span class="line">event log_named_array(string key, int256[] val);</span><br><span class="line">event log_named_array(string key, address[] val);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Std-Assertions"><a href="#Std-Assertions" class="headerlink" title="Std Assertions"></a>Std Assertions</h2><ol>
+<li><strong>fail</strong>(string memory err)：如果命中某个分支或执行点，则测试失败，并发出消息。</li>
+<li><strong>assertFalse</strong>(bool data)、<strong>assertFalse</strong>(bool data, string memory err)：断言条件为假。</li>
+<li><strong>assertEq</strong>：断言 <code>a</code> 等于 <code>b</code>，对 <code>bool</code>、<code>bytes</code>、<code>int256</code> 和 <code>uint256</code> 数组起作用。</li>
+<li><strong>assertApproxEqAbs</strong>：uint256，断言 <code>a</code> 近似等于 <code>b</code>，delta 为百分比</li>
+<li><strong>assertApproxEqRel</strong>：uint256，断言 <code>a</code> 近似等于 <code>b</code>，delta 为百分比，其中 <code>1e18</code> 为100%。</li>
+</ol>
+<h2 id="Std-Cheats"><a href="#Std-Cheats" class="headerlink" title="Std Cheats"></a>Std Cheats</h2><ol>
+<li><p><strong>skip</strong>(uint256 time)：将 <code>block.timestamp</code> 向前跳过指定的秒数</p>
+</li>
+<li><p><strong>rewind</strong>(uint256 time)：将 <code>block.timestamp</code> 重新调整为指定的秒数</p>
+</li>
+<li><p><strong>hoax</strong>(address who,(uint256 give),(address origin)):从一个有一些 ether 的地址设置一个 prank，如果没有指定余额，它将被设置为 2^128 wei</p>
+</li>
+<li><p><strong>startHoax</strong>(address who,(uint256 give),(address origin)):从一个有一些 ether 的地址开始一个永久的prank，如果没有指定余额，它将被设置为 2^128 wei</p>
+</li>
+<li><p><strong>deal</strong>((address token,)address to, uint256 give(, bool adjust))：围绕 deal 作弊码的包装，也适用于大多数 ERC-20 代币,如果使用 <code>deal</code> 的替代签名，在设置余额后调整代币的总供应量。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">deal(address(dai), alice, 10000e18);</span><br><span class="line">assertEq(dai.balanceOf(alice), 10000e18);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>deployCode</strong>(string memory what(,bytes memory args)(,uint256 val)) returns (address):通过从 artifacts 目录中获取合约字节码来部署合约,calldata 参数可以是 <code>ContractFile.sol</code>（如果文件名和合约名称相同），<code>ContractFile.sol:ContractName</code>，或者是相对于项目根目录的 artifact 路径。值也可以通过使用 <code>val</code> 参数来传递。如果你需要在构造函数上发送 ETH，这是必要的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">address deployment = deployCode(&quot;MyContract.sol&quot;, abi.encode(arg1, arg2));</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>bound</strong>(uint256 x, uint256 min, uint256 max) returns (uint256 result)：一个数学函数，用于将模糊测试的输入包裹在一定范围内</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">input = bound(input, 99, 101);</span><br><span class="line">返回99输入0。</span><br><span class="line">返回100输入1。</span><br><span class="line">返回101输入2。</span><br><span class="line">返回99输入3。</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>changePrank</strong>(address who)：</p>
+</li>
+<li><p><strong>makeAddr</strong>(string memory name) returns(address addr)：创建一个由所提供的 <code>name</code> 衍生的地址</p>
+</li>
+<li><p><strong>makeAddrAndKey</strong>(string memory name) returns(address addr, uint256 privateKey)：创建一个由提供的 <code>name</code> 衍生的地址和私钥。</p>
+</li>
+<li><p><strong>noGasMetering</strong>：一个函数修改器，在函数的生命周期内关闭 Gas 计量</p>
+</li>
+</ol>
+<h2 id="Std-Errors"><a href="#Std-Errors" class="headerlink" title="Std Errors"></a>Std Errors</h2><ol>
+<li><strong>assertionError</strong>：当断言失败时，Solidity 内部的错误</li>
+<li><strong>arithmeticError</strong>：当算术运算失败时，Solidity 内部的错误，例如下溢和溢出</li>
+<li><strong>divisionError</strong>：当除法失败时的 Solidity 内部错误，例如除以零</li>
+<li><strong>enumConversionError</strong>：当试图将一个数字转换为一个枚举的变体时，如果该数字大于该枚举的变体数量（从0开始计算），则 Solidity 内部会出现错误</li>
+<li><strong>encodeStorageError</strong>：当试图访问存储中被破坏的数据时的 Solidity 内部错误，除非使用了程序集，否则数据不会损坏。</li>
+<li><strong>popError</strong>：当试图从一个空数组上弹出一个元素时，Solidity 内部的错误</li>
+<li><strong>indexOOBError</strong>：当试图访问一个超出边界的数组元素时，Solidity 内部的错误</li>
+<li><strong>memOverflowError</strong>：当试图分配一个超过 2^64-1 项的动态内存数组，Solidity 内部出现的错误</li>
+<li><strong>zeroVarError</strong>：当试图通过一个尚未初始化的函数指针调用一个函数时，Solidity 的内部错误</li>
+</ol>
+<blockquote>
+<p>为了捕捉的错误，我们在预计会导致下溢的函数调用之前插入<code>vm.expectRevert(stdError.arithmeticError)</code>。</p>
+</blockquote>
+<h2 id="Std-Storage"><a href="#Std-Storage" class="headerlink" title="Std Storage"></a>Std Storage</h2><p>Std Storage 是一个库，使操纵存储变得容易，要使用 Std Storage，在你的测试合约中添加以下一行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">using stdStorage for StdStorage;</span><br></pre></td></tr></table></figure>
+
+<h3 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h3><p>查询功能：</p>
+<ul>
+<li>target: 设置目标合约的地址</li>
+<li>sig: 将函数的 4 字节选择器设置为静态调用</li>
+<li>with_key: 传递一个参数给函数，可以多次使用以传递多个参数。顺序很重要。</li>
+<li>depth: 设置值在 tuple 中的位置（例如，在 struct 中）。</li>
+</ul>
+<p>终端功能：</p>
+<ul>
+<li>find: 在给定的 target、sig、with_key(s) 和 depth 中找到一个任意的储存槽</li>
+<li>checked_write: 设置要写到存储槽的数据</li>
+<li>read_<type>:从存储槽中读取 <code>bytes32</code>，<code>bool</code>，<code>address</code>，<code>uint256</code>，或<code>int256</code> 的值。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// MetaRPG.sol</span><br><span class="line">struct Character &#123;</span><br><span class="line">    string name;</span><br><span class="line">    uint256 level;</span><br><span class="line">&#125;</span><br><span class="line">// playerToCharacter跟踪玩家的角色信息。</span><br><span class="line">mapping (address =&gt; Character) public playerToCharacter;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// MetaRPG.t.sol</span><br><span class="line">// 比方说，我们想把我们的角色的等级设置为 120。</span><br><span class="line">stdstore</span><br><span class="line">    .target(address(metaRpg))</span><br><span class="line">    .sig(&quot;playerToCharacter(address)&quot;)</span><br><span class="line">    .with_key(address(this))</span><br><span class="line">    .depth(1)</span><br><span class="line">    .checked_write(120);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Std-Math"><a href="#Std-Math" class="headerlink" title="Std Math"></a>Std Math</h2><ol>
+<li><strong>abs</strong>(int256 a) returns (uint256):返回一个数字的绝对值。</li>
+<li><strong>delta</strong>(uint256 a, uint256 b) returns (uint256):返回两个数字的绝对值之差</li>
+<li><strong>percentDelta</strong>(uint256 a, uint256 b) returns (uint256)：返回两个数字之间的差值，以百分比表示，其中 <code>1e18</code> 是 100%</li>
+</ol>
+<h2 id="Script-Utils"><a href="#Script-Utils" class="headerlink" title="Script Utils"></a><strong>Script Utils</strong></h2><ol>
+<li><strong>computeCreateAddress</strong>(address deployer, uint256 nonce) returns (address)：对于给定的部署者地址和 nonce，计算合约将被部署到的地址。对预先计算合约将被部署的地址很有用</li>
+<li><strong>deriveRememberKey</strong>(string memory mnemonic, uint32 index) returns (address who, uint256 privateKey)：从助记符中导出私钥，同时将其存储在 forge 的本地钱包中。返回地址和私钥。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/02/26/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/9-Forge%E6%A0%87%E5%87%86%E5%BA%93%E5%8F%82%E8%80%83/" title="9-Forge标准库参考">https://kongpengyq.com/2023/02/26/区块链/区块链知识点总结/合约框架/Foundry/9-Forge标准库参考/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" rel="tag"># 区块链知识点总结</a>
+              <a href="/tags/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/" rel="tag"># 合约框架</a>
+              <a href="/tags/Foundry/" rel="tag"># Foundry</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/02/26/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Foundry/8-%E4%BD%9C%E5%BC%8A%E7%A0%81%E6%80%BB%E7%BB%93/" rel="prev" title="8-作弊码总结">
+      <i class="fa fa-chevron-left"></i> 8-作弊码总结
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/02/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E5%90%88%E7%BA%A6%E6%A1%86%E6%9E%B6/Hardhat/" rel="next" title="Hardhat">
+      Hardhat <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Forge-%E6%A0%87%E5%87%86%E5%BA%93"><span class="nav-text">Forge 标准库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Std-Logs"><span class="nav-text">Std Logs</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Std-Assertions"><span class="nav-text">Std Assertions</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Std-Cheats"><span class="nav-text">Std Cheats</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Std-Errors"><span class="nav-text">Std Errors</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Std-Storage"><span class="nav-text">Std Storage</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD"><span class="nav-text">功能</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Std-Math"><span class="nav-text">Std Math</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Script-Utils"><span class="nav-text">Script Utils</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

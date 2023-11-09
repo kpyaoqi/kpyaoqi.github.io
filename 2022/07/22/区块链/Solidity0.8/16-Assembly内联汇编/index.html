@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="使用内联汇编，可以在 Solidity 源程序中嵌入汇编代码，对 EVM 有更细粒度的控制。内联汇编主要用在编写库函数时很有用，一般用于写工具函数，比如椭圆签名解析等。在项目中用汇编编主要是 opensea 的 seaport 合约. 在合约的内部使用汇编，是在合约内部包含 assembly 关键字进行编写的，在 Solidity inline assembly(内联汇编) 中的语言被称为 Yul">
+<meta property="og:type" content="article">
+<meta property="og:title" content="16-Assembly内联汇编">
+<meta property="og:url" content="https://kongpengyq.com/2022/07/22/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/16-Assembly%E5%86%85%E8%81%94%E6%B1%87%E7%BC%96/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="使用内联汇编，可以在 Solidity 源程序中嵌入汇编代码，对 EVM 有更细粒度的控制。内联汇编主要用在编写库函数时很有用，一般用于写工具函数，比如椭圆签名解析等。在项目中用汇编编主要是 opensea 的 seaport 合约. 在合约的内部使用汇编，是在合约内部包含 assembly 关键字进行编写的，在 Solidity inline assembly(内联汇编) 中的语言被称为 Yul">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-21T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.691Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="Solidity0.8.17">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/07/22/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/16-Assembly%E5%86%85%E8%81%94%E6%B1%87%E7%BC%96/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>16-Assembly内联汇编 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/07/22/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/16-Assembly%E5%86%85%E8%81%94%E6%B1%87%E7%BC%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          16-Assembly内联汇编
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-22 00:00:00" itemprop="dateCreated datePublished" datetime="2022-07-22T00:00:00+08:00">2022-07-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Solidity0-8-17/" itemprop="url" rel="index">
+                    <span itemprop="name">Solidity0.8.17</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>24k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>22 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>使用内联汇编，可以在 Solidity 源程序中嵌入汇编代码，对 EVM 有更细粒度的控制。内联汇编主要用在编写库函数时很有用，一般用于写工具函数，比如椭圆签名解析等。在项目中用汇编编主要是 opensea 的 <a target="_blank" rel="noopener" href="https://github.com/ProjectOpenSea/seaport">seaport</a> 合约.</p>
+<p>在合约的内部使用汇编，是在合约内部包含 <code>assembly</code> 关键字进行编写的，在 Solidity <code>inline assembly</code>(内联汇编) 中的语言被称为 Yul。</p>
+<p><a target="_blank" rel="noopener" href="https://docs.soliditylang.org/zh/latest/yul.html">Yul</a> 除了在 Solidity 之中作为 inline assembly 的一部分，也能当作独立的直译语言能够被编译成 bytecode 给不同的后端。</p>
+<p>注意：内联汇编是一种在底层访问以太坊虚拟机的语言，由于编译器无法对汇编语句进行检查，所以 Solidity 提供的很多重要安全特性都没办法作用于汇编。写汇编代码相对比较困难，很多时候只有在处理一些相对复杂的问题时才需要使用它，并且开发者需要明确知道自己要做什么。</p>
+<h1 id="基本格式"><a href="#基本格式" class="headerlink" title="基本格式"></a>基本格式</h1><p>通过 <code>assembly &#123;&#125;</code> 包裹代码。并且内部每一行语句不需要使用<code>;</code>显示的标注结束。Assembly 也支持注释，可以使用 <code>//</code> 和 <code>/* */</code> 来进行注释。</p>
+<p>⚠️ 注意： Inline Assembly 中，代码块之间是不能彼此沟通的，里面声明的变量都是本地变量。</p>
+<h3 id="例子-不同代码块无法互相访问"><a href="#例子-不同代码块无法互相访问" class="headerlink" title="例子: 不同代码块无法互相访问"></a>例子: 不同代码块无法互相访问</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public view returns (uint256) &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let x := 2</span><br><span class="line">        &#125;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let y := x // DeclarationError: Identifier &quot;x&quot; not found.</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>let 指令执行如下任务：</p>
+<ul>
+<li>创建一个新的堆栈槽位</li>
+<li>为变量保留该槽位</li>
+<li>当到达代码块结束时自动销毁该槽位</li>
+</ul>
+<p>因此，使用 let 指令在汇编代码块中定义的变量，在代码块外部是无法访问的。但是内部代码块可以访问外部代码块的内容。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public pure &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let x := 3</span><br><span class="line"></span><br><span class="line">            &#123;</span><br><span class="line">                let y := x // success</span><br><span class="line">            &#125; // 到此处会销毁y</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="例子-简单的加法"><a href="#例子-简单的加法" class="headerlink" title="例子: 简单的加法"></a>例子: 简单的加法</h3><p>下面是一个计算 <code>_x + _y</code> 的两种写法对比，汇编的语法节省了 <code>1.76%</code> 的 gas。 assembly 核心是更细粒度的控制，省 gas 只是它的外在表现。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    // 输入 1,2 ; 输出 22307 gas</span><br><span class="line">    function addSolidity(uint256 _x, uint256 _y) public pure returns (uint256) &#123;</span><br><span class="line">        return (_x + _y);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 输入 1,2 ; 输出 21915 gas</span><br><span class="line">    function addAssembly(uint256 _x, uint256 _y) public pure returns (uint256) &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            // let result 是声明一个变量 result</span><br><span class="line">            // add(_x, _y) 是计算 x + y 的结果</span><br><span class="line">            // := 是将 x + y 的结果赋值给变量 result</span><br><span class="line">            let result := add(_x, _y)</span><br><span class="line"></span><br><span class="line">            // mstore(0x0, result) 在内存 `0x0` 的位置储存 `result`</span><br><span class="line">            mstore(0x0, result)</span><br><span class="line"></span><br><span class="line">            // 从内存索引 0x0 位置返回32字节</span><br><span class="line">            return(0x0, 32)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="语言基础"><a href="#语言基础" class="headerlink" title="语言基础"></a>语言基础</h1><p>Yul 提供了高级结构，如 <code>for</code> 循环、<code>if</code> 语句 <code>switch</code> 和函数调用等等，下面按照分类进行介绍。</p>
+<p>在 Inline Assembly 中，以下几个点很重要：</p>
+<ul>
+<li>赋值: 使用的是<code>:=</code>，而不是<code>=</code>。</li>
+<li>声明变量: 使用 <code>let</code> 声明；（不是正常带有指定类型的强类型方式）</li>
+</ul>
+<h3 id="声明与赋值"><a href="#声明与赋值" class="headerlink" title="声明与赋值"></a>声明与赋值</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public pure returns (uint256, uint256) &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let x := 2  // 声明 x，赋值为2</span><br><span class="line">            let y       // 声明 y，初始化为 0</span><br><span class="line">            y := 5      // 赋值 y 为5</span><br><span class="line"></span><br><span class="line">            mstore(0x0, x) // 内存中储存 x</span><br><span class="line">            mstore(add(0x0, 32), y) // 内存中移动32位，再储存y</span><br><span class="line"></span><br><span class="line">            // 返回内存中 0 - 64 的数据</span><br><span class="line">            return(0x0, 64)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果就是 <code>2,5</code>；</p>
+<p>在 Solidity 汇编中字面量的写法与 Solidity 一致。但是 字符串字面量 最多可以包含 32 个字符。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public pure &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let a := 0x123 // 16进制</span><br><span class="line">            let b := 42 // 10进制</span><br><span class="line">            let c := &quot;hello world&quot; // 字符串</span><br><span class="line">            let d := &quot;very long string more than 32 bytes&quot; // 长度 35 的 字符串，错误！</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="汇编只能读取局部变量"><a href="#汇编只能读取局部变量" class="headerlink" title="汇编只能读取局部变量"></a>汇编只能读取局部变量</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    uint256 a = 2;</span><br><span class="line">    function demoAssembly() public pure &#123;</span><br><span class="line">        uint256 b = 5;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            // 可以读取 x 和 y</span><br><span class="line">            let x := add(2, 3)</span><br><span class="line">            let y := 10</span><br><span class="line">            let z := add(x, y)</span><br><span class="line">        &#125;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            // 可以读取 x 和 b</span><br><span class="line">            let x := add(2, 3)</span><br><span class="line">            let y := mul(x, b)</span><br><span class="line">        &#125;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let x := add(2, 3)</span><br><span class="line"></span><br><span class="line">            // ❌ TypeError: Only local variables are supported.</span><br><span class="line">            // To access storage variables, use the &quot;.slot&quot; and &quot;.offset&quot; suffixes.</span><br><span class="line">            let y := mul(x, a)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="条件判断"><a href="#条件判断" class="headerlink" title="条件判断"></a>条件判断</h1><ul>
+<li>if</li>
+<li>switch</li>
+</ul>
+<h3 id="if"><a href="#if" class="headerlink" title="if"></a>if</h3><p>特点如下</p>
+<ul>
+<li>只有 if ，没有 else</li>
+<li>if 语句强制要求代码块使用大括号，<code>&#123;&#125;</code>不允许省略</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public pure &#123;</span><br><span class="line">        uint256 x;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            // success</span><br><span class="line">            if iszero(x) &#123;</span><br><span class="line">                x := sub(1, x)</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            // fail: 没有使用 &#123;&#125; 包裹代码</span><br><span class="line">            // if iszero(x) revert(0, 0)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果需要在 Solidity 内联汇编中检查多种条件，可以考虑使用 switch 语句。</p>
+<h3 id="switch"><a href="#switch" class="headerlink" title="switch"></a>switch</h3><p>switch 语句支持 一个默认分支 default，当表达式的值不匹配任何其他分支条件时，将 执行默认分支的代码。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly(uint256 x) public pure returns (uint256 result) &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            switch x</span><br><span class="line">            case 0 &#123;</span><br><span class="line">                result := 0</span><br><span class="line">            &#125;</span><br><span class="line">            case 1 &#123;</span><br><span class="line">                result := 1</span><br><span class="line">            &#125;</span><br><span class="line">            default &#123;</span><br><span class="line">                result := mul(x, x)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="for-循环"><a href="#for-循环" class="headerlink" title="for 循环"></a>for 循环</h1><p>for 循环也包含 3 个元素</p>
+<ul>
+<li>初始化：比如<code>let i := 0</code></li>
+<li>执行条件：比如<code>lt(i, n)</code> ，必须是函数风格表达式</li>
+<li>迭代后续步骤：比如<code>add(i, 1)</code></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public pure returns (uint256 result) &#123;</span><br><span class="line">        uint256 leng = 10;</span><br><span class="line"></span><br><span class="line">        assembly &#123;</span><br><span class="line">            for</span><br><span class="line">            &#123; let i := 0 &#125;</span><br><span class="line">            lt(i, leng)</span><br><span class="line">            &#123; i := add(i, 1) &#125;</span><br><span class="line">            &#123;</span><br><span class="line">                result := add(result, i)</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            // 下面可以省略</span><br><span class="line">            mstore(0x0, result)</span><br><span class="line">            return(0x0, 32)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>for 循环的<strong>初始化部分</strong>和<strong>迭代后续步骤</strong>可以留空 , 改写为下面的格式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public pure returns (uint256 result) &#123;</span><br><span class="line">        uint256 leng = 10;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let i := 0 // 初始条件写在这</span><br><span class="line">            for &#123;&#125; lt(i, leng) &#123;&#125; &#123;</span><br><span class="line">                // 核心部分</span><br><span class="line">                result := add(result, i)</span><br><span class="line"></span><br><span class="line">                // 迭代后续步骤写在这</span><br><span class="line">                i := add(i, 1)</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            // 可以省略</span><br><span class="line">            mstore(0x0, result)</span><br><span class="line">            return(0x0, 32)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>备注: <code>continue</code> or <code>break</code> 语句只能在 <code>for</code> 循环体内使用</p>
+<h1 id="函数的定义和使用"><a href="#函数的定义和使用" class="headerlink" title="函数的定义和使用"></a>函数的定义和使用</h1><p>函数的运行机制如下：</p>
+<ul>
+<li>从堆栈提取参数</li>
+<li>将结果压入堆栈</li>
+<li>和 Solidity 函数不同，不需要指定汇编函数的可见性<ul>
+<li>例如 public 或 private， 因为汇编函数仅在定义所在的汇编代码块内有效。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public pure returns (uint256 free_memory_pointer) &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            // 函数定义</span><br><span class="line">            function allocate(length) -&gt; pos &#123;</span><br><span class="line">                pos := mload(0x40)</span><br><span class="line">                mstore(0x40, add(pos, length))</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            // 函数使用</span><br><span class="line">            free_memory_pointer := allocate(64)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="EVM-内置函数-内置操作码"><a href="#EVM-内置函数-内置操作码" class="headerlink" title="EVM 内置函数&#x2F;内置操作码"></a>EVM 内置函数&#x2F;内置操作码</h1><ul>
+<li>算数操作<ul>
+<li><code>add</code>: 加法</li>
+<li><code>mul</code>:</li>
+</ul>
+</li>
+<li>比较操作<ul>
+<li><code>lt</code></li>
+<li><code>gt</code></li>
+</ul>
+</li>
+<li>位操作<ul>
+<li><code>not</code>:</li>
+<li><code>and</code>:</li>
+</ul>
+</li>
+<li>密码学操作，目前仅包含 keccak256</li>
+<li>环境操作，主要指与区块链相关的全局信息，例如 blockhash 或 coinbase 收款账号</li>
+<li>存储、内存和栈操作</li>
+<li>交易与合约调用操作</li>
+<li>停机操作</li>
+<li>日志操作</li>
+</ul>
+<p>下面是详细的列表说明，标记为<code>-</code>的操作不返回结果，其他所有操作码只返回一个值。</p>
+<p>标有 F、H、B、C 、I 和 L 分别自出现的时间，对应的如下</p>
+<ul>
+<li><code>F</code>: Frontier</li>
+<li><code>H</code>: Homestead</li>
+<li><code>B</code>: Byzantium</li>
+<li><code>C</code>: Constantinople</li>
+<li><code>I</code>: Istanbul</li>
+<li><code>L</code>: London</li>
+</ul>
+<p>常见的常量值是 <code>0x20</code> &#x2F; <code>0x40</code> , 代表十进制的 32 和 64。</p>
+<h3 id="数学计算"><a href="#数学计算" class="headerlink" title="数学计算"></a>数学计算</h3><table>
+<thead>
+<tr>
+<th>操作符号</th>
+<th>返回值</th>
+<th>版本</th>
+<th>解释说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>add(x, y)</td>
+<td></td>
+<td>F</td>
+<td><code>x + y</code></td>
+</tr>
+<tr>
+<td>sub(x, y)</td>
+<td></td>
+<td>F</td>
+<td><code>x - y</code></td>
+</tr>
+<tr>
+<td>mul(x, y)</td>
+<td></td>
+<td>F</td>
+<td><code>x * y</code></td>
+</tr>
+<tr>
+<td>div(x, y)</td>
+<td></td>
+<td>F</td>
+<td><code>x / y</code> (如果 y 为 0，则结果为 0)</td>
+</tr>
+<tr>
+<td>mod(x, y)</td>
+<td></td>
+<td>F</td>
+<td><code>x % y</code> (如果 y 为 0，则结果为 0)</td>
+</tr>
+<tr>
+<td>exp(x, y)</td>
+<td></td>
+<td>F</td>
+<td><code>x</code> 的 <code>y</code> 次方</td>
+</tr>
+<tr>
+<td>addmod(x, y, m)</td>
+<td></td>
+<td>F</td>
+<td><code>(x + y) % m</code> 任意精度算术，如果 m &#x3D;&#x3D; 0 则为 0</td>
+</tr>
+<tr>
+<td>mulmod(x, y, m)</td>
+<td></td>
+<td>F</td>
+<td><code>(x * y) % m</code> 任意精度算术，如果 m &#x3D;&#x3D; 0 则为 0</td>
+</tr>
+<tr>
+<td>sdiv(x, y)</td>
+<td></td>
+<td>F</td>
+<td><code>x / y</code>, 以二进制补码作为符号 (如果 y 为 0，则结果为 0)</td>
+</tr>
+<tr>
+<td>smod(x, y)</td>
+<td></td>
+<td>F</td>
+<td><code>x % y</code>, 以二进制补码作为符号 (如果 y 为 0，则结果为 0)</td>
+</tr>
+</tbody></table>
+<h4 id="add-加法"><a href="#add-加法" class="headerlink" title="add: 加法"></a>add: 加法</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">function demoAssembly(uint256 _x, uint256 _y)</span><br><span class="line">    public</span><br><span class="line">    pure</span><br><span class="line">    returns (uint256)</span><br><span class="line">&#123;</span><br><span class="line">    assembly &#123;</span><br><span class="line">        let result := add(_x, _y)</span><br><span class="line">        mstore(0x0, result)</span><br><span class="line">        return(0x0, 32)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面合约函数，传入参数:<code>1,2</code>，返回<code>3</code>。</p>
+<p>这里需要返回<code>uint256</code>类型，assembly 内部返回是，从什么位置开发，返回多少个数据。需要返回两个数据。比如我把 uint256 改为 uint8，代码如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">function demoAssembly(uint8 _x, uint8 _y)</span><br><span class="line">    public</span><br><span class="line">    pure</span><br><span class="line">    returns (uint8)</span><br><span class="line">&#123;</span><br><span class="line">    assembly &#123;</span><br><span class="line">        let result := add(_x, _y)</span><br><span class="line">        mstore(0x0, result)</span><br><span class="line">        return(0x0, 2)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>相同的参数会报错: <code>error:Failed to decode output: Error: data out-of-bounds (length=2, offset=32, code=BUFFER_OVERRUN, version=abi/5.5.0)</code></p>
+<h4 id="sub-减法"><a href="#sub-减法" class="headerlink" title="sub: 减法"></a>sub: 减法</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly(uint256 _x, uint256 _y)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (uint256)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let result := sub(_x, _y)</span><br><span class="line">            mstore(0x0, result)</span><br><span class="line">            return(0x0, 32)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>传入参数:<code>2,1</code>，返回<code>1</code>。</p>
+<p>注意：这时候如果传参 <code>1,2</code>，会溢出返回，得到的结果不会报错，反而是:<code>115792089237316195423570985008687907853269984665640564039457584007913129639935</code>，因为 assembly 绕过了 solidity 的安全检查。当我们使用 assembly 编码时候，安全问题需要自己控制，不要错误的认为 solidity 的默认机制会保护代码。</p>
+<h4 id="mul-乘法"><a href="#mul-乘法" class="headerlink" title="mul: 乘法"></a>mul: 乘法</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly(uint256 _x, uint256 _y)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (uint256)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let result := mul(_x, _y)</span><br><span class="line">            mstore(0x0, result)</span><br><span class="line">            return(0x0, 32)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>传入参数:<code>2,3</code>，返回<code>6</code>。</p>
+<h4 id="div-除法"><a href="#div-除法" class="headerlink" title="div: 除法"></a>div: 除法</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly(uint256 _x, uint256 _y)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (uint256)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let result := div(_x, _y)</span><br><span class="line">            mstore(0x0, result)</span><br><span class="line">            return(0x0, 32)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>传入参数:<code>3,2</code>，返回<code>1</code>。</li>
+<li>传入参数:<code>3,1</code>，返回<code>3</code>。</li>
+<li>传入参数:<code>3,0</code>，返回<code>0</code>。</li>
+</ul>
+<h4 id="mod-求模"><a href="#mod-求模" class="headerlink" title="mod: 求模"></a>mod: 求模</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly(uint256 _x, uint256 _y)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (uint256)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let result := mod(_x, _y)</span><br><span class="line">            mstore(0x0, result)</span><br><span class="line">            return(0x0, 32)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>传入参数:<code>3,2</code>，返回<code>1</code></li>
+<li>传入参数:<code>3,1</code>，返回<code>0</code></li>
+<li>传入参数:<code>3,0</code>,返回<code>0</code></li>
+<li>传入参数:<code>3,30</code>,返回<code>3</code></li>
+</ul>
+<h4 id="exp-次方"><a href="#exp-次方" class="headerlink" title="exp: 次方"></a>exp: 次方</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly(uint256 _x, uint256 _y)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (uint256)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let result := exp(_x, _y)</span><br><span class="line">            mstore(0x0, result)</span><br><span class="line">            return(0x0, 32)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>传入参数:<code>10,2</code>，返回<code>100</code>。</li>
+<li>传入参数:<code>10,3</code>，返回<code>1000</code>。</li>
+</ul>
+<h4 id="addmod-先求和再求模"><a href="#addmod-先求和再求模" class="headerlink" title="addmod: 先求和再求模"></a>addmod: 先求和再求模</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly(</span><br><span class="line">        uint256 _x,</span><br><span class="line">        uint256 _y,</span><br><span class="line">        uint256 _m</span><br><span class="line">    ) public pure returns (uint256) &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let result := addmod(_x, _y, _m)</span><br><span class="line">            mstore(0x0, result)</span><br><span class="line">            return(0x0, 32)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>传入参数:<code>2,3,3</code>，返回<code>2</code>。</li>
+</ul>
+<h4 id="mulmod-先相乘再求模"><a href="#mulmod-先相乘再求模" class="headerlink" title="mulmod: 先相乘再求模"></a>mulmod: 先相乘再求模</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly(</span><br><span class="line">        uint256 _x,</span><br><span class="line">        uint256 _y,</span><br><span class="line">        uint256 _m</span><br><span class="line">    ) public pure returns (uint256) &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            let result := mulmod(_x, _y, _m)</span><br><span class="line">            mstore(0x0, result)</span><br><span class="line">            return(0x0, 32)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>传入参数:<code>2,3,3</code>，返回<code>0</code>。</li>
+</ul>
+<h4 id="二进制补码"><a href="#二进制补码" class="headerlink" title="二进制补码"></a>二进制补码</h4><p>下面两个方法，用法基本和 div &#x2F; mod 差不多</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">let result := sdiv(_x, _y)</span><br><span class="line">let result := smod(_x, _y)</span><br></pre></td></tr></table></figure>
+
+<h3 id="比较关系"><a href="#比较关系" class="headerlink" title="比较关系"></a>比较关系</h3><table>
+<thead>
+<tr>
+<th>操作符号</th>
+<th>返回值</th>
+<th>版本</th>
+<th>解释说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>gt(x, y)</td>
+<td></td>
+<td>F</td>
+<td>如果 <code>x &gt; y</code> 等于 1, 否则 0</td>
+</tr>
+<tr>
+<td>lt(x, y)</td>
+<td></td>
+<td>F</td>
+<td>如果 <code>x &lt; y</code> 等于 1, 否则 0</td>
+</tr>
+<tr>
+<td>eq(x, y)</td>
+<td></td>
+<td>F</td>
+<td>如果 <code>x == y</code> 等于 1, 否则 0</td>
+</tr>
+<tr>
+<td>iszero(x)</td>
+<td></td>
+<td>F</td>
+<td>如果 <code>x == 0</code> 等于 1, 否则 0</td>
+</tr>
+<tr>
+<td>slt(x, y)</td>
+<td></td>
+<td>F</td>
+<td>如果 <code>x &lt; y</code> 等于 1, 否则 0, 以二进制补码作为符号</td>
+</tr>
+<tr>
+<td>sgt(x, y)</td>
+<td></td>
+<td>F</td>
+<td>如果 <code>x &gt; y</code> 等于 1, 否则 0, 以二进制补码作为符号</td>
+</tr>
+</tbody></table>
+<h4 id="gt-大于"><a href="#gt-大于" class="headerlink" title="gt: 大于"></a>gt: 大于</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly(uint256 _x, uint256 _y)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (bool result)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result := gt(_x, _y)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>传入参数:<code>1,2</code>，返回 <code>false</code></li>
+<li>传入参数:<code>10,3</code>，返回 <code>true</code></li>
+</ul>
+<h4 id="lt-小于"><a href="#lt-小于" class="headerlink" title="lt: 小于"></a>lt: 小于</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly(uint256 _x, uint256 _y)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (bool result)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result := lt(_x, _y)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>传入参数:<code>1,2</code>，返回 <code>true</code></li>
+<li>传入参数:<code>10,3</code>，返回 <code>false</code></li>
+</ul>
+<h4 id="eq-等于"><a href="#eq-等于" class="headerlink" title="eq: 等于"></a>eq: 等于</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly(uint256 _x, uint256 _y)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (bool result)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result := eq(_x, _y)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>传入参数:<code>1,2</code>，返回 <code>false</code></li>
+<li>传入参数:<code>2,2</code>，返回 <code>true</code></li>
+</ul>
+<h4 id="iszero-等于零"><a href="#iszero-等于零" class="headerlink" title="iszero: 等于零"></a>iszero: 等于零</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly(uint256 _x)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (bool result)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result := iszero(_x)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意该参数只接收一个参数</p>
+<ul>
+<li>传入参数:<code>1</code>，返回 <code>false</code></li>
+<li>传入参数:<code>0</code>，返回 <code>true</code></li>
+</ul>
+<h3 id="按位-移位"><a href="#按位-移位" class="headerlink" title="按位 &amp; 移位"></a>按位 &amp; 移位</h3><table>
+<thead>
+<tr>
+<th>操作符号</th>
+<th>返回值</th>
+<th>版本</th>
+<th>解释说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>not(x)</td>
+<td></td>
+<td>F</td>
+<td>对 x 按位取反,类似<code>~x</code>;<code>x</code> 的按位非</td>
+</tr>
+<tr>
+<td>and(x, y)</td>
+<td></td>
+<td>F</td>
+<td>x 和 y 的按位与</td>
+</tr>
+<tr>
+<td>or(x, y)</td>
+<td></td>
+<td>F</td>
+<td>x 和 y 的按位或</td>
+</tr>
+<tr>
+<td>xor(x, y)</td>
+<td></td>
+<td>F</td>
+<td>x 和 y 的按位异或</td>
+</tr>
+<tr>
+<td>shl(x, y)</td>
+<td></td>
+<td>C</td>
+<td>y 逻辑左移 x 位</td>
+</tr>
+<tr>
+<td>shr(x, y)</td>
+<td></td>
+<td>C</td>
+<td>y 逻辑右移 x 位</td>
+</tr>
+<tr>
+<td>sar(x, y)</td>
+<td></td>
+<td>C</td>
+<td>将 y 算术右移 x 位</td>
+</tr>
+</tbody></table>
+<h4 id="not-按位非"><a href="#not-按位非" class="headerlink" title="not: 按位非"></a>not: 按位非</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly(int256 _x) public pure returns (int256 result) &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result := not(_x)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>传入参数:<code>0</code>，返回 <code>-1</code></li>
+<li>传入参数:<code>1</code>，返回 <code>-2</code></li>
+<li>传入参数:<code>-1</code>，返回 <code>0</code></li>
+<li>传入参数:<code>-11</code>，返回 <code>10</code></li>
+</ul>
+<h4 id="and-按位与"><a href="#and-按位与" class="headerlink" title="and: 按位与"></a>and: 按位与</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public pure returns (int256 result) &#123;</span><br><span class="line">        int256 _x = 2;</span><br><span class="line">        int256 _y = 3;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result := and(_x, _y)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果是 2</p>
+<h4 id="or-按位或"><a href="#or-按位或" class="headerlink" title="or: 按位或"></a>or: 按位或</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public pure returns (int256 result) &#123;</span><br><span class="line">        int256 _x = 2;</span><br><span class="line">        int256 _y = 3;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result := or(_x, _y)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果是 3</p>
+<h4 id="xor-按位异或"><a href="#xor-按位异或" class="headerlink" title="xor: 按位异或"></a>xor: 按位异或</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public pure returns (int256 result) &#123;</span><br><span class="line">        int256 _x = 2;</span><br><span class="line">        int256 _y = 3;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result := xor(_x, _y)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果 1</p>
+<h4 id="shl-逻辑左移"><a href="#shl-逻辑左移" class="headerlink" title="shl: 逻辑左移"></a>shl: 逻辑左移</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public pure returns (uint256 result) &#123;</span><br><span class="line">        uint256 A = 2;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result := shl(A, 1) // 4</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="shr-逻辑右移"><a href="#shr-逻辑右移" class="headerlink" title="shr: 逻辑右移"></a>shr: 逻辑右移</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public pure returns (uint256 result) &#123;</span><br><span class="line">        uint256 A = 2;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result := shr(A, 1) // 0</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="sar-算术右移"><a href="#sar-算术右移" class="headerlink" title="sar: 算术右移"></a>sar: 算术右移</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public pure returns (uint256 result) &#123;</span><br><span class="line">        uint256 A = 2;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result := sar(A, 1) // 0</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="EVM-区块交易相关"><a href="#EVM-区块交易相关" class="headerlink" title="EVM 区块交易相关"></a>EVM 区块交易相关</h3><table>
+<thead>
+<tr>
+<th>操作符号</th>
+<th>返回值</th>
+<th>版本</th>
+<th>解释说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>address()</td>
+<td></td>
+<td>F</td>
+<td>当前合约地址 &#x2F; execution context</td>
+</tr>
+<tr>
+<td>balance(a)</td>
+<td></td>
+<td>F</td>
+<td>地址 a 的 wei 余额</td>
+</tr>
+<tr>
+<td>selfbalance()</td>
+<td></td>
+<td>I</td>
+<td>相当于 <code>balance(address())</code>，但更便宜</td>
+</tr>
+<tr>
+<td>extcodehash(a)</td>
+<td></td>
+<td>C</td>
+<td>地址 a 的代码哈希</td>
+</tr>
+<tr>
+<td><strong>msg 相关</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>caller()</td>
+<td></td>
+<td>F</td>
+<td>call sender ( 类似<code>msg.sender</code>？) (excluding <code>delegatecall</code>)</td>
+</tr>
+<tr>
+<td>callvalue()</td>
+<td></td>
+<td>F</td>
+<td>wei sent together with the current call（类似<code>msg.value</code>？）</td>
+</tr>
+<tr>
+<td><strong>block 相关</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>chainid()</td>
+<td></td>
+<td>I</td>
+<td>当前网络的链 ID (EIP-1344)</td>
+</tr>
+<tr>
+<td>basefee()</td>
+<td></td>
+<td>L</td>
+<td>当前区块的基本费用 (EIP-3198 and EIP-1559)</td>
+</tr>
+<tr>
+<td>timestamp()</td>
+<td></td>
+<td>F</td>
+<td>当前块的时间戳，自纪元以来的秒数</td>
+</tr>
+<tr>
+<td>coinbase()</td>
+<td></td>
+<td>F</td>
+<td>当前采矿受益人</td>
+</tr>
+<tr>
+<td>number()</td>
+<td></td>
+<td>F</td>
+<td>当前区块号</td>
+</tr>
+<tr>
+<td>difficulty()</td>
+<td></td>
+<td>F</td>
+<td>当前区块的难度</td>
+</tr>
+<tr>
+<td>gaslimit()</td>
+<td></td>
+<td>F</td>
+<td>当前区块的区块 gas limit</td>
+</tr>
+<tr>
+<td><strong>tx 相关</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>origin()</td>
+<td></td>
+<td>F</td>
+<td>交易发送方</td>
+</tr>
+<tr>
+<td>gasprice()</td>
+<td></td>
+<td>F</td>
+<td>交易的 gas 价格</td>
+</tr>
+<tr>
+<td><strong>其它</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>gas()</td>
+<td></td>
+<td>F</td>
+<td>剩余 gas</td>
+</tr>
+<tr>
+<td>blockhash(b)</td>
+<td></td>
+<td>F</td>
+<td>指定 block 的 hash - 仅适用于最后 256 个块，不包括当前块</td>
+</tr>
+</tbody></table>
+<h4 id="address"><a href="#address" class="headerlink" title="address()"></a>address()</h4><p>相当于 <code>address(this)</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public view returns (address ads1, address ads2) &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            ads1 := address()</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        ads2 = address(this);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>返回</p>
+<ul>
+<li><code>0:address: ads1 0x3c725134d74D5c45B4E4ABd2e5e2a109b5541288</code></li>
+<li><code>1:address: ads2 0x3c725134d74D5c45B4E4ABd2e5e2a109b5541288</code></li>
+</ul>
+<h4 id="balance-a"><a href="#balance-a" class="headerlink" title="balance(a)"></a>balance(a)</h4><p>相当于 <code>address.balance</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (uint256 result1, uint256 result2)</span><br><span class="line">    &#123;</span><br><span class="line">        address sender = msg.sender;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := balance(sender)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        result2 = address(sender).balance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>返回</p>
+<ul>
+<li><code>0:uint256: result1 99999999999992173039</code></li>
+<li><code>1:uint256: result2 99999999999992173039</code></li>
+</ul>
+<h4 id="selfbalance"><a href="#selfbalance" class="headerlink" title="selfbalance()"></a>selfbalance()</h4><p>相当于 <code>balance(address())</code>，但更便宜</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    constructor() payable &#123;&#125;</span><br><span class="line"></span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (uint256 result1, uint256 result2)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := balance(address())</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        result2 = address(this).balance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="extcodehash-a"><a href="#extcodehash-a" class="headerlink" title="extcodehash(a)"></a>extcodehash(a)</h4><p>相当于 <code>address.codehash</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (bytes32 result1, bytes32 result2)</span><br><span class="line">    &#123;</span><br><span class="line">        address sender = msg.sender;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := extcodehash(address())</span><br><span class="line">        &#125;</span><br><span class="line">        result2 = address(this).codehash;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>0:bytes32: result1 0xcbefd958c5e7814e7e635b599c5859eb893c410292a7f9f82088c3e84ee3c0e9</code></li>
+<li><code>1:bytes32: result2 0xcbefd958c5e7814e7e635b599c5859eb893c410292a7f9f82088c3e84ee3c0e9</code></li>
+</ul>
+<h4 id="caller"><a href="#caller" class="headerlink" title="caller()"></a>caller()</h4><p>相当于 <code>msg.sender</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly() public view returns (address ads1, address ads2) &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            ads1 := caller()</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        ads2 = msg.sender;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="callvalue"><a href="#callvalue" class="headerlink" title="callvalue()"></a>callvalue()</h4><p>相当于 <code>msg.value</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        payable</span><br><span class="line">        returns (uint256 result1, uint256 result2)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := callvalue()</span><br><span class="line">        &#125;</span><br><span class="line">        result2 = msg.value;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="chainid"><a href="#chainid" class="headerlink" title="chainid()"></a>chainid()</h4><p>相当于 <code>block.chainid</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (uint256 result1, uint256 result2)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := chainid() // 1</span><br><span class="line">        &#125;</span><br><span class="line">        result2 = block.chainid; // 1</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="basefee"><a href="#basefee" class="headerlink" title="basefee()"></a>basefee()</h4><p>相当于 <code>block.basefee</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (uint256 result1, uint256 result2)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := basefee()</span><br><span class="line">        &#125;</span><br><span class="line">        result2 = block.basefee;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="timestamp"><a href="#timestamp" class="headerlink" title="timestamp()"></a>timestamp()</h4><p>相当于 <code>block.timestamp</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (uint256 result1, uint256 result2)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := timestamp()</span><br><span class="line">        &#125;</span><br><span class="line">        result2 = block.timestamp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="coinbase"><a href="#coinbase" class="headerlink" title="coinbase()"></a>coinbase()</h4><p>相当于 <code>block.coinbase</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (address result1, address result2)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := coinbase()</span><br><span class="line">        &#125;</span><br><span class="line">        result2 = block.coinbase;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="number"><a href="#number" class="headerlink" title="number()"></a>number()</h4><p>相当于 <code>block.number</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (uint256 result1, uint256 result2)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := number()</span><br><span class="line">        &#125;</span><br><span class="line">        result2 = block.number;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="difficulty"><a href="#difficulty" class="headerlink" title="difficulty()"></a>difficulty()</h4><p>相当于 <code>block.difficulty</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (uint256 result1, uint256 result2)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := difficulty()</span><br><span class="line">        &#125;</span><br><span class="line">        result2 = block.difficulty;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="gaslimit"><a href="#gaslimit" class="headerlink" title="gaslimit()"></a>gaslimit()</h4><p>相当于 <code>block.gaslimit</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (uint256 result1, uint256 result2)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := gaslimit()</span><br><span class="line">        &#125;</span><br><span class="line">        result2 = block.gaslimit;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="origin"><a href="#origin" class="headerlink" title="origin()"></a>origin()</h4><p>相当于 <code>tx.origin</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (address result1, address result2)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := origin()</span><br><span class="line">        &#125;</span><br><span class="line">        result2 = tx.origin;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="gasprice"><a href="#gasprice" class="headerlink" title="gasprice()"></a>gasprice()</h4><p>相当于 <code>tx.gasprice</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (uint256 result1, uint256 result2)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := gasprice()</span><br><span class="line">        &#125;</span><br><span class="line">        result2 = tx.gasprice;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="gas"><a href="#gas" class="headerlink" title="gas()"></a>gas()</h4><p>相当于 <code>gasleft()</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (uint256 result1, uint256 result2)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := gas() // 2978815</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // 与 assembly 之间的顺序不改变最后的值</span><br><span class="line">        // 所以 assembly 优先执行？</span><br><span class="line">        result2 = gasleft(); // 2978808</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="blockhash-b"><a href="#blockhash-b" class="headerlink" title="blockhash(b)"></a>blockhash(b)</h4><p>相当于 <code>blockhash(number)</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function demoAssembly()</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (bytes32 result1, bytes32 result2)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            result1 := blockhash(1)</span><br><span class="line">        &#125;</span><br><span class="line">        result2 = blockhash(1);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="常见方法"><a href="#常见方法" class="headerlink" title="常见方法"></a>常见方法</h3><table>
+<thead>
+<tr>
+<th>操作符号</th>
+<th>返回值</th>
+<th>版本</th>
+<th>解释说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>sload(p)</td>
+<td></td>
+<td>F</td>
+<td><code>storage[p]</code></td>
+</tr>
+<tr>
+<td>mload(p)</td>
+<td></td>
+<td>F</td>
+<td><code>mem[p…(p+32))</code></td>
+</tr>
+<tr>
+<td>sstore(p, v)</td>
+<td>-</td>
+<td>F</td>
+<td><code>storage[p] := v</code></td>
+</tr>
+<tr>
+<td>mstore(p, v)</td>
+<td>-</td>
+<td>F</td>
+<td><code>mem[p…(p+32)) := v</code></td>
+</tr>
+<tr>
+<td>mstore8(p, v)</td>
+<td>-</td>
+<td>F</td>
+<td><code>mem[p] := v</code> &amp; 0xff (只修改单个字节)</td>
+</tr>
+<tr>
+<td>keccak256(p, n)</td>
+<td></td>
+<td>F</td>
+<td><code>keccak(mem[p…(p+n)))</code></td>
+</tr>
+<tr>
+<td>create(v, p, n)</td>
+<td></td>
+<td>F</td>
+<td>create 创建合约</td>
+</tr>
+<tr>
+<td>create2(v, p, n, s)</td>
+<td></td>
+<td>C</td>
+<td>create2 创建合约</td>
+</tr>
+</tbody></table>
+<p>小例子:</p>
+<ul>
+<li><code>mload(p)</code>: 分配数据</li>
+<li><code>mstore(offset, value)</code>: 在 <code>offset</code> 的位置储存 <code>value</code></li>
+</ul>
+<h4 id="sload-p"><a href="#sload-p" class="headerlink" title="sload(p)"></a>sload(p)</h4><p>sload 是 storage load，<code>sload(key)</code> 是从 storage 的哪个 slot 来 load，详细原理可以在后面介绍的 <strong>状态变量在存储中的布局</strong> 了解更多。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    uint256 public a = 123;</span><br><span class="line">    uint256 public b = 456;</span><br><span class="line"></span><br><span class="line">    function demoAssembly() public view returns (uint256) &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            // v 是长度是 32 bytes</span><br><span class="line">            // 从 slot #0 读数据 =&gt; 读到的是 123</span><br><span class="line">            // 从 slot #1 读数据 =&gt; 读到的是 456</span><br><span class="line">            let v := sload(0)</span><br><span class="line"></span><br><span class="line">            // 在内存位置 0x80 处储存变量 v 后面的数据</span><br><span class="line">            mstore(0x80, v)</span><br><span class="line"></span><br><span class="line">            // 返回值:从 0x80 位置，返回 32个字节</span><br><span class="line">            return(0x80, 32)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面例子中，<code>slot #0</code> 是 123，<code>slot #1</code> 是 456。</p>
+<p>注意: <code>slot #0</code> 可能是多个状态变量公用的。比如把状态变量改为如下类型,读 <code>slot #0</code> ，该位置储存了<code>a+b</code>;</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uint128 public a = 1;</span><br><span class="line">uint128 public b = 2;</span><br><span class="line">uint256 public c = 456;</span><br></pre></td></tr></table></figure>
+
+<h4 id="mload-p"><a href="#mload-p" class="headerlink" title="mload(p)"></a>mload(p)</h4><p>mload 是 memory load，<code>mload(key)</code> 是从 memory 的哪个 slot 来 load，类似 <code>sload</code>。</p>
+<ul>
+<li>问题：内存数据 mload 时为什么从第 32 位开始?<ul>
+<li>答案：前 32 个字节存储的是数据的长度;</li>
+<li>参考: <a target="_blank" rel="noopener" href="https://www.cnblogs.com/wanghui-garcia/p/9592807.html">https://www.cnblogs.com/wanghui-garcia/p/9592807.html</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="sstore-p-v"><a href="#sstore-p-v" class="headerlink" title="sstore(p, v)"></a>sstore(p, v)</h4><h4 id="mstore-p-v"><a href="#mstore-p-v" class="headerlink" title="mstore(p, v)"></a>mstore(p, v)</h4><p>下面 name1 和 name2 都返回 “Anbang” 的字符串</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    // gas 23471</span><br><span class="line">    bytes6 public name1 = &quot;Anbang&quot;; // 0x416e62616e67</span><br><span class="line"></span><br><span class="line">    // gas 21229</span><br><span class="line">    function name2() public pure returns (string memory) &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            // 在 0x20 处 储存值 0x20</span><br><span class="line">            mstore(0x20, 0x20)</span><br><span class="line"></span><br><span class="line">            // name1 length = 0x06</span><br><span class="line">            // 参数1: 0x40 + length = 0x40 + 0x06 =&gt; 0x46</span><br><span class="line">            // 参数2: length + name1  = 0x46 + 0x416e62616e67 =&gt; 0x06416e62616e67</span><br><span class="line">            mstore(0x46, 0x06416e62616e67)</span><br><span class="line"></span><br><span class="line">            // 返回 memory 从 0x20处之后的 0x60 长度的数据</span><br><span class="line">            return(0x20, 0x60)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面是从<code>0x20</code>处开始写数据，这个位置不是强制的，使用<code>0x00</code>也可以的。</p>
+<h4 id="mstore8-p-v"><a href="#mstore8-p-v" class="headerlink" title="mstore8(p, v)"></a>mstore8(p, v)</h4><h4 id="keccak256-p-n"><a href="#keccak256-p-n" class="headerlink" title="keccak256(p, n)"></a>keccak256(p, n)</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    // 0x01</span><br><span class="line">    function solidityKeccak(bytes memory _input) public pure returns (bytes32) &#123;</span><br><span class="line">        return keccak256(abi.encodePacked(_input));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 0x01</span><br><span class="line">    function assemblyKeccak(bytes memory _input)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (bytes32 x)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            x := keccak256(add(_input, 0x20), mload(_input))</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="create-v-p-n"><a href="#create-v-p-n" class="headerlink" title="create(v, p, n)"></a>create(v, p, n)</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"> assembly &#123;</span><br><span class="line">    // create(v,p,n);</span><br><span class="line">    // v 是 发送的ETH值</span><br><span class="line">    // p 是 内存中机器码开始的位置</span><br><span class="line">    // n 是 内存中机器码的大小</span><br><span class="line">    // msg.value 不能使用，需要用 callvalue()</span><br><span class="line">    adds := create(callvalue(), add(_code, 0x20), mload(_code))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="create2-v-p-n-s"><a href="#create2-v-p-n-s" class="headerlink" title="create2(v, p, n, s)"></a>create2(v, p, n, s)</h4><p>下面是 <a target="_blank" rel="noopener" href="https://github.com/Uniswap/v2-core/blob/master/contracts/UniswapV2Factory.sol">UniswapV2Factory</a> 中创建 pair 核心逻辑</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Z &#123;</span><br><span class="line">    bytes6 public name1 = &quot;Anbang&quot;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function addr() public returns (address pair) &#123;</span><br><span class="line">        bytes memory bytecode = type(Z).creationCode;</span><br><span class="line">        // bytes32 salt = keccak256(abi.encodePacked(address(0), address(1)));</span><br><span class="line">        uint256 salt = block.number;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            pair := create2(0, add(bytecode, 32), mload(bytecode), salt)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="操作数据-大小"><a href="#操作数据-大小" class="headerlink" title="操作数据&#x2F;大小"></a>操作数据&#x2F;大小</h3><table>
+<thead>
+<tr>
+<th>操作符号</th>
+<th>返回值</th>
+<th>版本</th>
+<th>解释说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>msize()</td>
+<td></td>
+<td>F</td>
+<td>内存大小，即最大访问内存索引</td>
+</tr>
+<tr>
+<td>pc()</td>
+<td></td>
+<td>F</td>
+<td>当前在代码中的位置</td>
+</tr>
+<tr>
+<td>codesize()</td>
+<td></td>
+<td>F</td>
+<td>当前合约的代码大小 &#x2F; execution context</td>
+</tr>
+<tr>
+<td>codecopy(t, f, s)</td>
+<td>-</td>
+<td>F</td>
+<td>从位置 f 的代码复制 s 个字节到位置 t 的内存</td>
+</tr>
+<tr>
+<td>extcodesize(a)</td>
+<td></td>
+<td>F</td>
+<td>获取地址 a 的代码大小</td>
+</tr>
+<tr>
+<td>extcodecopy(a, t, f, s)</td>
+<td>-</td>
+<td>F</td>
+<td>像 codecopy(t, f, s) 但在地址 a 处获取代码</td>
+</tr>
+<tr>
+<td>signextend(i, x)</td>
+<td></td>
+<td>F</td>
+<td>sign extend from <code>(i*8+7)</code>th bit counting from least significant</td>
+</tr>
+<tr>
+<td>byte(n, x)</td>
+<td></td>
+<td>F</td>
+<td>x 的第 n 个字节，这个索引是从 0 开始的</td>
+</tr>
+<tr>
+<td>pop(x)</td>
+<td>-</td>
+<td>F</td>
+<td>丢弃值 x</td>
+</tr>
+</tbody></table>
+<h4 id="msize"><a href="#msize" class="headerlink" title="msize()"></a>msize()</h4><p>内存大小，即最大访问内存索引</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    function test() public pure returns (int256) &#123;</span><br><span class="line">        int8 v0 = 1;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            v0 := msize()</span><br><span class="line">        &#125;</span><br><span class="line">        return int256(v0);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="pc"><a href="#pc" class="headerlink" title="pc()"></a>pc()</h4><h4 id="codesize"><a href="#codesize" class="headerlink" title="codesize()"></a>codesize()</h4><h4 id="codecopy-t-f-s"><a href="#codecopy-t-f-s" class="headerlink" title="codecopy(t, f, s)"></a>codecopy(t, f, s)</h4><h4 id="extcodesize-a"><a href="#extcodesize-a" class="headerlink" title="extcodesize(a)"></a>extcodesize(a)</h4><h4 id="extcodecopy-a-t-f-s"><a href="#extcodecopy-a-t-f-s" class="headerlink" title="extcodecopy(a, t, f, s)"></a>extcodecopy(a, t, f, s)</h4><h4 id="signextend-i-x"><a href="#signextend-i-x" class="headerlink" title="signextend(i, x)"></a>signextend(i, x)</h4><h4 id="byte-n-x"><a href="#byte-n-x" class="headerlink" title="byte(n, x)"></a>byte(n, x)</h4><h4 id="pop-x"><a href="#pop-x" class="headerlink" title="pop(x)"></a>pop(x)</h4><h3 id="call-相关"><a href="#call-相关" class="headerlink" title="call 相关"></a>call 相关</h3><table>
+<thead>
+<tr>
+<th>操作符号</th>
+<th>返回值</th>
+<th>版本</th>
+<th>解释说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>calldataload(p)</td>
+<td></td>
+<td>F</td>
+<td>从位置 p 开始调用数据 (32 bytes)</td>
+</tr>
+<tr>
+<td>calldatasize()</td>
+<td></td>
+<td>F</td>
+<td>调用数据的大小（以字节为单位）</td>
+</tr>
+<tr>
+<td>calldatacopy(t, f, s)</td>
+<td>-</td>
+<td>F</td>
+<td>从位置 f 的 calldata 复制 s 个字节到位置 t 的内存</td>
+</tr>
+<tr>
+<td>call(g, a, v, in, insize, out, outsize)</td>
+<td></td>
+<td>F</td>
+<td>在地址 a 调用合约 <a target="_blank" rel="noopener" href="https://www.axihe.com/#yul-call-return-area">See more</a></td>
+</tr>
+<tr>
+<td>callcode(g, a, v, in, insize, out, outsize)</td>
+<td></td>
+<td>F</td>
+<td>与 <code>call</code> 相同，但仅使用 a 中的代码，否则留在当前合约的上下文中 <a target="_blank" rel="noopener" href="https://www.axihe.com/#yul-call-return-area">See more</a></td>
+</tr>
+<tr>
+<td>delegatecall(g, a, in, insize, out, outsize)</td>
+<td></td>
+<td>H</td>
+<td>与 <code>callcode</code> 相同，但也保留 <code>caller</code> 和 <code>callvalue</code> <a target="_blank" rel="noopener" href="https://www.axihe.com/#yul-call-return-area">See more</a></td>
+</tr>
+<tr>
+<td>staticcall(g, a, in, insize, out, outsize)</td>
+<td></td>
+<td>B</td>
+<td>与 <code>call(g, a, 0, in, insize, out, outsize)</code> 相同，但不允许状态修改 ons <a target="_blank" rel="noopener" href="https://www.axihe.com/#yul-call-return-area">See more</a></td>
+</tr>
+</tbody></table>
+<h3 id="结束执行"><a href="#结束执行" class="headerlink" title="结束执行"></a>结束执行</h3><table>
+<thead>
+<tr>
+<th>操作符号</th>
+<th>返回值</th>
+<th>版本</th>
+<th>解释说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>return(p, s)</td>
+<td>-</td>
+<td>F</td>
+<td>结束执行, return data mem[p…(p+s))</td>
+</tr>
+<tr>
+<td>stop()</td>
+<td>-</td>
+<td>F</td>
+<td>结束执行, 类似 <code>return(0, 0)</code></td>
+</tr>
+<tr>
+<td>revert(p, s)</td>
+<td>-</td>
+<td>B</td>
+<td>结束执行, revert state changes, return data mem[p…(p+s))</td>
+</tr>
+<tr>
+<td>selfdestruct(a)</td>
+<td>-</td>
+<td>F</td>
+<td>结束执行, destroy current contract and send funds to a</td>
+</tr>
+<tr>
+<td>invalid()</td>
+<td>-</td>
+<td>F</td>
+<td>结束执行 with invalid instruction</td>
+</tr>
+<tr>
+<td>returndatasize()</td>
+<td></td>
+<td>B</td>
+<td>最后返回数据的大小</td>
+</tr>
+<tr>
+<td>returndatacopy(t, f, s)</td>
+<td>-</td>
+<td>B</td>
+<td>将 s 个字节从位置 f 的 returndata 复制到位置 t 的 mem</td>
+</tr>
+</tbody></table>
+<h3 id="log-信息"><a href="#log-信息" class="headerlink" title="log 信息"></a>log 信息</h3><table>
+<thead>
+<tr>
+<th>操作符号</th>
+<th>返回值</th>
+<th>版本</th>
+<th>解释说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>log0(p, s)</td>
+<td>-</td>
+<td>F</td>
+<td>log without topics and data mem[p…(p+s))</td>
+</tr>
+<tr>
+<td>log1(p, s, t1)</td>
+<td>-</td>
+<td>F</td>
+<td>log with topic t1 and data mem[p…(p+s))</td>
+</tr>
+<tr>
+<td>log2(p, s, t1, t2)</td>
+<td>-</td>
+<td>F</td>
+<td>log with topics t1, t2 and data mem[p…(p+s))</td>
+</tr>
+<tr>
+<td>log3(p, s, t1, t2, t3)</td>
+<td>-</td>
+<td>F</td>
+<td>log with topics t1, t2, t3 and data mem[p…(p+s))</td>
+</tr>
+<tr>
+<td>log4(p, s, t1, t2, t3, t4)</td>
+<td>-</td>
+<td>F</td>
+<td>log with topics t1, t2, t3, t4 and data mem[p…(p+s))</td>
+</tr>
+</tbody></table>
+<h1 id="实战应用"><a href="#实战应用" class="headerlink" title="实战应用"></a>实战应用</h1><h3 id="例子-1-一个演示"><a href="#例子-1-一个演示" class="headerlink" title="例子 1:一个演示"></a>例子 1:一个演示</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">library VectorSum &#123;</span><br><span class="line">    // 此函数效率较低，因为优化器当前无法删除数组访问中的边界检查。</span><br><span class="line">    function sumSolidity(uint256[] memory data)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (uint256 sum)</span><br><span class="line">    &#123;</span><br><span class="line">        for (uint256 i = 0; i &lt; data.length; ++i) sum += data[i];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // We know that we only access the array in bounds, so we can avoid the check.</span><br><span class="line">    // 0x20 needs to be added to an array because the first slot contains the</span><br><span class="line">    // array length.</span><br><span class="line">    // 我们知道我们只在边界内访问数组，</span><br><span class="line">    // 所以我们可以避免检查。0x20 需要添加到数组，因为第一个槽包含数组长度。</span><br><span class="line">    function sumAsm(uint256[] memory data) public pure returns (uint256 sum) &#123;</span><br><span class="line">        for (uint256 i = 0; i &lt; data.length; ++i) &#123;</span><br><span class="line">            assembly &#123;</span><br><span class="line">                sum := add(sum, mload(add(add(data, 0x20), mul(i, 0x20))))</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Same as above, but accomplish the entire code within inline assembly.</span><br><span class="line">    function sumPureAsm(uint256[] memory data)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (uint256 sum)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            // Load the length (first 32 bytes)</span><br><span class="line">            let len := mload(data)</span><br><span class="line"></span><br><span class="line">            // Skip over the length field.</span><br><span class="line">            //</span><br><span class="line">            // Keep temporary variable so it can be incremented in place.</span><br><span class="line">            //</span><br><span class="line">            // NOTE: incrementing data would result in an unusable</span><br><span class="line">            //       data variable after this assembly block</span><br><span class="line">            let dataElementLocation := add(data, 0x20)</span><br><span class="line"></span><br><span class="line">            // Iterate until the bound is not met.</span><br><span class="line">            for &#123;</span><br><span class="line">                let end := add(dataElementLocation, mul(len, 0x20))</span><br><span class="line">            &#125; lt(dataElementLocation, end) &#123;</span><br><span class="line">                dataElementLocation := add(dataElementLocation, 0x20)</span><br><span class="line">            &#125; &#123;</span><br><span class="line">                sum := add(sum, mload(dataElementLocation))</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="例子-2-获取合约代码"><a href="#例子-2-获取合约代码" class="headerlink" title="例子 2:获取合约代码"></a>例子 2:获取合约代码</h3><p>gas 相差无几，重点看一下 code 的背后原理</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    // 24310 gas</span><br><span class="line">    function codeBySolidity(address _addr)</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (bytes memory o_code)</span><br><span class="line">    &#123;</span><br><span class="line">        return _addr.code;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 24286 gas</span><br><span class="line">    function codeByAssembly(address _addr)</span><br><span class="line">        public</span><br><span class="line">        view</span><br><span class="line">        returns (bytes memory o_code)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            // 1.使用 extcodesize 获取合约内的代码大小</span><br><span class="line">            let size := extcodesize(_addr)</span><br><span class="line"></span><br><span class="line">            // 2.使用 mload 分配输出字节数组</span><br><span class="line">            // 类似 o_code = new bytes（size）</span><br><span class="line">            o_code := mload(0x40)</span><br><span class="line"></span><br><span class="line">            // 在 0x40 的位置存入数据</span><br><span class="line">            //      add(size, 0x20) :</span><br><span class="line">            //              size 加 0x20</span><br><span class="line">            //      add(add(size, 0x20), 0x1f)</span><br><span class="line">            //              size 加 0x20,再加 0x1f</span><br><span class="line">            //      not(0x1f)</span><br><span class="line">            //              0x1f 的按位非</span><br><span class="line">            //      and(add(add(size, 0x20), 0x1f), not(0x1f))</span><br><span class="line">            //          &quot;size 加 0x20,再加 0x1f&quot; 和 &quot;0x1f的按位非&quot; 的按位与</span><br><span class="line">            mstore(</span><br><span class="line">                0x40,</span><br><span class="line">                add(o_code, and(add(add(size, 0x20), 0x1f), not(0x1f)))</span><br><span class="line">            )</span><br><span class="line"></span><br><span class="line">            // 把长度保存到内存中</span><br><span class="line">            mstore(o_code, size)</span><br><span class="line"></span><br><span class="line">            // 实际获取代码，这需要汇编语言</span><br><span class="line">            extcodecopy(_addr, add(o_code, 0x20), 0, size)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="例子-3-计算数值数组的和"><a href="#例子-3-计算数值数组的和" class="headerlink" title="例子 3:计算数值数组的和"></a>例子 3:计算数值数组的和</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">library VectorSum &#123;</span><br><span class="line">    // 因为目前的优化器在访问数组时无法移除边界检查，</span><br><span class="line">    // 所以这个函数的执行效率比较低。</span><br><span class="line">    function sumSolidity(uint256[] memory _data)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (uint256 o_sum)</span><br><span class="line">    &#123;</span><br><span class="line">        for (uint256 i = 0; i &lt; _data.length; ++i) o_sum += _data[i];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 我们只能在数组范围内访问数组元素，所以我们可以在内联汇编中不做边界检查。</span><br><span class="line">    // 由于 ABI 编码中数组数据的第一个字（32 字节）的位置保存的是数组长度，</span><br><span class="line">    // 所以我们在访问数组元素时需要加入 0x20 作为偏移量。</span><br><span class="line">    function sumAsm(uint256[] memory _data)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (uint256 o_sum)</span><br><span class="line">    &#123;</span><br><span class="line">        for (uint256 i = 0; i &lt; _data.length; ++i) &#123;</span><br><span class="line">            assembly &#123;</span><br><span class="line">                o_sum := add(o_sum, mload(add(add(_data, 0x20), mul(i, 0x20))))</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 和上面一样，但在内联汇编内完成整个代码。</span><br><span class="line">    function sumPureAsm(uint256[] memory _data)</span><br><span class="line">        public</span><br><span class="line">        pure</span><br><span class="line">        returns (uint256 o_sum)</span><br><span class="line">    &#123;</span><br><span class="line">        assembly &#123;</span><br><span class="line">            // 取得数组长度（取前 32 字节）</span><br><span class="line">            let len := mload(_data)</span><br><span class="line"></span><br><span class="line">            // 略过长度字段。</span><br><span class="line">            //</span><br><span class="line">            // 保持临时变量以便它可以在原地增加。</span><br><span class="line">            //</span><br><span class="line">            // 注意：对 _data 数值的增加将导致 _data 在这个汇编语句块之后不再可用。</span><br><span class="line">            //      因为无法再基于 _data 来解析后续的数组数据。</span><br><span class="line">            let data := add(_data, 0x20)</span><br><span class="line"></span><br><span class="line">            // 迭代到数组数据结束</span><br><span class="line">            for &#123;</span><br><span class="line">                let end := add(data, mul(len, 0x20))</span><br><span class="line">            &#125; lt(data, end) &#123;</span><br><span class="line">                data := add(data, 0x20)</span><br><span class="line">            &#125; &#123;</span><br><span class="line">                o_sum := add(o_sum, mload(data))</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/07/22/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/16-Assembly%E5%86%85%E8%81%94%E6%B1%87%E7%BC%96/" title="16-Assembly内联汇编">https://kongpengyq.com/2022/07/22/区块链/Solidity0.8/16-Assembly内联汇编/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/Solidity0-8-17/" rel="tag"># Solidity0.8.17</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/20/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/14-Library%E5%BA%93/" rel="prev" title="14-Library库">
+      <i class="fa fa-chevron-left"></i> 14-Library库
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/25/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/17-metadata%E5%85%83%E6%95%B0%E6%8D%AE/" rel="next" title="17-metadata元数据">
+      17-metadata元数据 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A0%BC%E5%BC%8F"><span class="nav-text">基本格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90-%E4%B8%8D%E5%90%8C%E4%BB%A3%E7%A0%81%E5%9D%97%E6%97%A0%E6%B3%95%E4%BA%92%E7%9B%B8%E8%AE%BF%E9%97%AE"><span class="nav-text">例子: 不同代码块无法互相访问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90-%E7%AE%80%E5%8D%95%E7%9A%84%E5%8A%A0%E6%B3%95"><span class="nav-text">例子: 简单的加法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80"><span class="nav-text">语言基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A3%B0%E6%98%8E%E4%B8%8E%E8%B5%8B%E5%80%BC"><span class="nav-text">声明与赋值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B1%87%E7%BC%96%E5%8F%AA%E8%83%BD%E8%AF%BB%E5%8F%96%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F"><span class="nav-text">汇编只能读取局部变量</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD"><span class="nav-text">条件判断</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#if"><span class="nav-text">if</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#switch"><span class="nav-text">switch</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#for-%E5%BE%AA%E7%8E%AF"><span class="nav-text">for 循环</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E7%9A%84%E5%AE%9A%E4%B9%89%E5%92%8C%E4%BD%BF%E7%94%A8"><span class="nav-text">函数的定义和使用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#EVM-%E5%86%85%E7%BD%AE%E5%87%BD%E6%95%B0-%E5%86%85%E7%BD%AE%E6%93%8D%E4%BD%9C%E7%A0%81"><span class="nav-text">EVM 内置函数&#x2F;内置操作码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E5%AD%A6%E8%AE%A1%E7%AE%97"><span class="nav-text">数学计算</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#add-%E5%8A%A0%E6%B3%95"><span class="nav-text">add: 加法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sub-%E5%87%8F%E6%B3%95"><span class="nav-text">sub: 减法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mul-%E4%B9%98%E6%B3%95"><span class="nav-text">mul: 乘法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#div-%E9%99%A4%E6%B3%95"><span class="nav-text">div: 除法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mod-%E6%B1%82%E6%A8%A1"><span class="nav-text">mod: 求模</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#exp-%E6%AC%A1%E6%96%B9"><span class="nav-text">exp: 次方</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#addmod-%E5%85%88%E6%B1%82%E5%92%8C%E5%86%8D%E6%B1%82%E6%A8%A1"><span class="nav-text">addmod: 先求和再求模</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mulmod-%E5%85%88%E7%9B%B8%E4%B9%98%E5%86%8D%E6%B1%82%E6%A8%A1"><span class="nav-text">mulmod: 先相乘再求模</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%A1%A5%E7%A0%81"><span class="nav-text">二进制补码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AF%94%E8%BE%83%E5%85%B3%E7%B3%BB"><span class="nav-text">比较关系</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#gt-%E5%A4%A7%E4%BA%8E"><span class="nav-text">gt: 大于</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#lt-%E5%B0%8F%E4%BA%8E"><span class="nav-text">lt: 小于</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#eq-%E7%AD%89%E4%BA%8E"><span class="nav-text">eq: 等于</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#iszero-%E7%AD%89%E4%BA%8E%E9%9B%B6"><span class="nav-text">iszero: 等于零</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%89%E4%BD%8D-%E7%A7%BB%E4%BD%8D"><span class="nav-text">按位 &amp; 移位</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#not-%E6%8C%89%E4%BD%8D%E9%9D%9E"><span class="nav-text">not: 按位非</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#and-%E6%8C%89%E4%BD%8D%E4%B8%8E"><span class="nav-text">and: 按位与</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#or-%E6%8C%89%E4%BD%8D%E6%88%96"><span class="nav-text">or: 按位或</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#xor-%E6%8C%89%E4%BD%8D%E5%BC%82%E6%88%96"><span class="nav-text">xor: 按位异或</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#shl-%E9%80%BB%E8%BE%91%E5%B7%A6%E7%A7%BB"><span class="nav-text">shl: 逻辑左移</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#shr-%E9%80%BB%E8%BE%91%E5%8F%B3%E7%A7%BB"><span class="nav-text">shr: 逻辑右移</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sar-%E7%AE%97%E6%9C%AF%E5%8F%B3%E7%A7%BB"><span class="nav-text">sar: 算术右移</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EVM-%E5%8C%BA%E5%9D%97%E4%BA%A4%E6%98%93%E7%9B%B8%E5%85%B3"><span class="nav-text">EVM 区块交易相关</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#address"><span class="nav-text">address()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#balance-a"><span class="nav-text">balance(a)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#selfbalance"><span class="nav-text">selfbalance()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#extcodehash-a"><span class="nav-text">extcodehash(a)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#caller"><span class="nav-text">caller()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#callvalue"><span class="nav-text">callvalue()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#chainid"><span class="nav-text">chainid()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#basefee"><span class="nav-text">basefee()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#timestamp"><span class="nav-text">timestamp()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#coinbase"><span class="nav-text">coinbase()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#number"><span class="nav-text">number()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#difficulty"><span class="nav-text">difficulty()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#gaslimit"><span class="nav-text">gaslimit()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#origin"><span class="nav-text">origin()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#gasprice"><span class="nav-text">gasprice()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#gas"><span class="nav-text">gas()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#blockhash-b"><span class="nav-text">blockhash(b)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E6%96%B9%E6%B3%95"><span class="nav-text">常见方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#sload-p"><span class="nav-text">sload(p)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mload-p"><span class="nav-text">mload(p)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sstore-p-v"><span class="nav-text">sstore(p, v)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mstore-p-v"><span class="nav-text">mstore(p, v)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mstore8-p-v"><span class="nav-text">mstore8(p, v)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#keccak256-p-n"><span class="nav-text">keccak256(p, n)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#create-v-p-n"><span class="nav-text">create(v, p, n)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#create2-v-p-n-s"><span class="nav-text">create2(v, p, n, s)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%93%8D%E4%BD%9C%E6%95%B0%E6%8D%AE-%E5%A4%A7%E5%B0%8F"><span class="nav-text">操作数据&#x2F;大小</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#msize"><span class="nav-text">msize()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pc"><span class="nav-text">pc()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#codesize"><span class="nav-text">codesize()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#codecopy-t-f-s"><span class="nav-text">codecopy(t, f, s)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#extcodesize-a"><span class="nav-text">extcodesize(a)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#extcodecopy-a-t-f-s"><span class="nav-text">extcodecopy(a, t, f, s)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#signextend-i-x"><span class="nav-text">signextend(i, x)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#byte-n-x"><span class="nav-text">byte(n, x)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pop-x"><span class="nav-text">pop(x)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#call-%E7%9B%B8%E5%85%B3"><span class="nav-text">call 相关</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9D%9F%E6%89%A7%E8%A1%8C"><span class="nav-text">结束执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#log-%E4%BF%A1%E6%81%AF"><span class="nav-text">log 信息</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E6%88%98%E5%BA%94%E7%94%A8"><span class="nav-text">实战应用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90-1-%E4%B8%80%E4%B8%AA%E6%BC%94%E7%A4%BA"><span class="nav-text">例子 1:一个演示</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90-2-%E8%8E%B7%E5%8F%96%E5%90%88%E7%BA%A6%E4%BB%A3%E7%A0%81"><span class="nav-text">例子 2:获取合约代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90-3-%E8%AE%A1%E7%AE%97%E6%95%B0%E5%80%BC%E6%95%B0%E7%BB%84%E7%9A%84%E5%92%8C"><span class="nav-text">例子 3:计算数值数组的和</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

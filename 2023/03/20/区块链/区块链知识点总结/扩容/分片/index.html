@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="分片以太坊分片（Ethereum sharding）是指以太坊区块链网络的一个扩容方案，旨在提高以太坊的吞吐量和可扩展性。在传统的以太坊区块链中，每个区块都需要被所有的节点验证和执行，这导致了处理速度较慢和高昂的交易费用。 分片是通过将整个以太坊网络分割成多个小的子链（片段）来解决这个问题。每个分片将具有自己的交易历史和状态，并且可以独立地处理交易。这样一来，不同的分片可以并行地处理交易，从而提高">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分片">
+<meta property="og:url" content="https://kongpengyq.com/2023/03/20/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/%E5%88%86%E7%89%87/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="分片以太坊分片（Ethereum sharding）是指以太坊区块链网络的一个扩容方案，旨在提高以太坊的吞吐量和可扩展性。在传统的以太坊区块链中，每个区块都需要被所有的节点验证和执行，这导致了处理速度较慢和高昂的交易费用。 分片是通过将整个以太坊网络分割成多个小的子链（片段）来解决这个问题。每个分片将具有自己的交易历史和状态，并且可以独立地处理交易。这样一来，不同的分片可以并行地处理交易，从而提高">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-03-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.811Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链知识点总结">
+<meta property="article:tag" content="扩容">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/03/20/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/%E5%88%86%E7%89%87/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>分片 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/03/20/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/%E5%88%86%E7%89%87/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          分片
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-03-20 00:00:00" itemprop="dateCreated datePublished" datetime="2023-03-20T00:00:00+08:00">2023-03-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%89%A9%E5%AE%B9/" itemprop="url" rel="index">
+                    <span itemprop="name">扩容</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="分片"><a href="#分片" class="headerlink" title="分片"></a>分片</h1><p>以太坊分片（Ethereum sharding）是指以太坊区块链网络的一个扩容方案，旨在提高以太坊的吞吐量和可扩展性。在传统的以太坊区块链中，<strong>每个区块都需要被所有的节点验证和执行，这导致了处理速度较慢和高昂的交易费用。</strong></p>
+<p>分片是通过<strong>将整个以太坊网络分割成多个小的子链（片段）</strong>来解决这个问题。<strong>每个分片将具有自己的交易历史和状态，并且可以独立地处理交易</strong>。这样一来，<strong>不同的分片可以并行地处理交易，从而提高整体的吞吐量和效率</strong>。</p>
+<p><strong>每个分片都将由一组节点组成，这些节点负责验证和执行该分片中的交易。这些节点称为验证者（validators）</strong>。验证者通过参与共识算法来确定每个分片的交易顺序和状态更新。<strong>分片之间的通信和交互是通过主链（beacon chain）来实现的</strong>，主链维护了整个网络的状态和共识规则。</p>
+<p>以太坊分片的实施是通过以太坊2.0（Ethereum 2.0）的升级来实现的。以太坊2.0是以太坊网络的下一代版本，它引入了分片和其他改进，旨在提高可扩展性、安全性和效率。</p>
+<p><strong>Danksharding</strong>是以太坊成为真正可扩展区块链的方式，但要实现这一目标需要进行多项协议升级。<strong>Proto-Danksharding</strong>是这个过程中的一个中间步骤。两者都旨在使第 2 层上的交易对用户来说尽可能便宜，并且应该将以太坊扩展到每秒超过 100,000 笔交易。</p>
+<h2 id="什么是-Proto-Danksharding？"><a href="#什么是-Proto-Danksharding？" class="headerlink" title="什么是 Proto-Danksharding？"></a>什么是 Proto-Danksharding？</h2><p>Proto-Danksharding，也称为<a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844（在新标签页中打开）</a>，<a target="_blank" rel="noopener" href="https://ethereum.org/zh/layer2/#rollups"> Rollups </a>将更便宜的数据添加到块的一种方式这个名字来自提出这个想法的两位研究人员：Protolambda 和 Dankrad Feist。目前，rollups 的用户交易成本受到限制，因为他们将交易发布在<code>CALLDATA</code>. 这是昂贵的，因为它由所有以太坊节点处理并永远存在于链上，即使汇总只需要很短的时间。Proto-Danksharding <strong>引入了可以发送并附加到块的数据块</strong>。EVM 无法访问这些 blob 中的数据，并且<strong>会在固定时间段（1-3 个月）后自动删除</strong>。这意味着汇总可以更便宜地发送数据，并以更便宜的交易形式将节省的费用转嫁给最终用户。</p>
+<h3 id="为什么-blob-使汇总更便宜？"><a href="#为什么-blob-使汇总更便宜？" class="headerlink" title="为什么 blob 使汇总更便宜？"></a>为什么 blob 使汇总更便宜？</h3><p><strong>Rollups 是一种扩展以太坊的方法，它通过在链下批处理交易然后将结果发布到以太坊</strong>。汇总基本上由两部分组成：数据和执行检查。数据是由汇总处理的完整交易序列，以产生发布到以太坊的状态变化。执行检查是由一些诚实的参与者（“证明者”）重新执行这些交易，以确保提议的状态更改是正确的。为了执行检查，交易数据必须足够长的时间可供任何人下载和检查。这意味着 rollup sequencer 的任何不诚实行为都可以被证明者识别和挑战。但是，它不需要永远可用。</p>
+<h3 id="为什么删除-blob-数据就可以了？"><a href="#为什么删除-blob-数据就可以了？" class="headerlink" title="为什么删除 blob 数据就可以了？"></a>为什么删除 blob 数据就可以了？</h3><p><strong>Rollups 在链上发布对其交易数据的承诺，并使实际数据在数据块中可用</strong>。这意味着证明者可以检查承诺是否有效或质疑他们认为错误的数据。在节点级别，数据块保存在共识客户端中。共识客户端证明他们已经看到了数据并且它已经在网络中传播。如果数据永久保存，这些客户端将膨胀并导致运行节点的大量硬件需求。相反，数据每 1-3 个月自动从节点中删除一次。共识客户证明表明，证明者有足够的机会验证数据。实际数据可以由汇总操作员、用户或其他人存储在链外。</p>
+<h3 id="如何验证-blob-数据？"><a href="#如何验证-blob-数据？" class="headerlink" title="如何验证 blob 数据？"></a>如何验证 blob 数据？</h3><p>Rollups 在数据 blob 中发布它们执行的事务。他们还发布了对数据的“承诺”。他们通过对数据拟合多项式函数来做到这一点。然后可以在不同的点评估此功能。例如，如果我们定义一个非常简单的函数<code>f(x) = 2x-1</code>，那么我们可以评估这个函数的<code>x = 1</code>, <code>x = 2</code>，<code>x = 3</code>给出结果<code>1, 3, 5</code>。证明者将相同的函数应用于数据并在相同的点对其进行评估。如果更改了原始数据，则函数将不相同，因此在每个点计算的值也不会相同。实际上，承诺和证明更为复杂，因为它们包含在加密函数中。</p>
+<h3 id="什么是KZG？"><a href="#什么是KZG？" class="headerlink" title="什么是KZG？"></a>什么是KZG？</h3><p>将数据块减少为小的<a target="_blank" rel="noopener" href="https://dankradfeist.de/ethereum/2020/06/16/kate-polynomial-commitments.html">加密“承诺”的方案</a>。必须验证汇总提交的数据块，以确保汇总没有行为不当。这涉及<strong>证明者重新执行 blob 中的交易以检查承诺是否有效</strong>。这在概念上与执行客户端使用 Merkle 证明在第 1 层检查以太坊交易有效性的方式相同。KZG 是将多项式方程拟合到数据的替代证明。承诺在一些秘密数据点评估多项式。<strong>证明者将在数据上拟合相同的多项式并以相同的值对其进行评估</strong>，检查结果是否相同。这是一种验证数据的方法，该数据与一些汇总使用的零知识技术兼容，并最终与以太坊协议的其他部分使用。</p>
+<h3 id="什么是KZG仪式？"><a href="#什么是KZG仪式？" class="headerlink" title="什么是KZG仪式？"></a>什么是KZG仪式？</h3><p>KZG 仪式是以太坊社区中许多人共同生成秘密随机数字串的一种方式，可<strong>用于验证某些数据</strong>。非常重要的一点是，<strong>这串数字是未知的，任何人都无法重新创建。为确保这一点，参加仪式的每个人都会收到前一位参与者的字符串。然后他们创建一些新的随机值（例如，通过允许浏览器测量鼠标的移动）并将其与先前的值混合。</strong>然后他们将价值发送给下一个参与者并从他们的本地机器上销毁它。只要仪式中的一个人诚实地这样做，最终的价值对于攻击者来说是不可知的。EIP-4844 KZG 仪式向公众开放，数万人参加以增加自己的熵。要破坏仪式，100% 的参与者必须主动不诚实。从参与者的角度来看，如果他们知道自己是诚实的，就没有必要相信其他任何人，因为他们知道他们获得了仪式（他们个人满足了 N 选 1 的诚实参与者要求）。</p>
+<h3 id="KZG仪式的随机数有什么用？"><a href="#KZG仪式的随机数有什么用？" class="headerlink" title="KZG仪式的随机数有什么用？"></a>KZG仪式的随机数有什么用？</h3><p>当 rollup 在 blob 中发布数据时，他们提供了他们在链上发布的“承诺”。这种<strong>承诺是在某些点评估多项式拟合数据的结果</strong>。这些点<strong>由 KZG 仪式中生成的随机数定义</strong>。然后，<strong>证明者可以在相同点评估多项式以验证数据——如果它们得出相同的值，则数据是正确的。</strong></p>
+<h3 id="为什么-KZG-随机数据必须保密？"><a href="#为什么-KZG-随机数据必须保密？" class="headerlink" title="为什么 KZG 随机数据必须保密？"></a>为什么 KZG 随机数据必须保密？</h3><p>如果有人知道用于承诺的随机位置，他们很容易生成适合这些特定点的新多项式（即“碰撞”）。这意味着他们可以在 blob 中添加或删除数据，并且仍然提供有效的证据。为了防止这种情况发生，他们不是向证明者提供实际的秘密位置，而是使用椭圆曲线实际接收包裹在加密“黑匣子”中的位置。这些以原始值不能被逆向工程的方式有效地打乱了值，但是通过一些聪明的代数证明者和验证者仍然可以在它们代表的点上评估多项式。</p>
+<p>Danksharding 和 Proto-Danksharding 都不遵循旨在将区块链分成多个部分的传统“分片”模型。分片链不再是路线图的一部分。相反，Danksharding 使用跨 blob 的分布式数据采样来扩展以太坊。这实现起来要简单得多。这种模型有时被称为“数据分片”。</p>
+<h2 id="什么是-Danksharding？"><a href="#什么是-Danksharding？" class="headerlink" title="什么是 Danksharding？"></a>什么是 Danksharding？</h2><p>Danksharding 是从 Proto-Danksharding 开始的汇总扩展的完整实现。Danksharding 将在以太坊上带来大量空间用于汇总以转储其压缩的交易数据。这意味着以太坊将能够轻松支持数百个单独的汇总，并使每秒数百万笔交易成为现实。</p>
+<p>其工作方式是将附加到块的 blob 从 Proto-Danksharding 中的 1 个扩展到完整 Danksharding 中的 64 个。其余所需的更改都是对共识客户端操作方式的更新，以使它们能够处理新的大 blob。其中一些更改已经在路线图上用于独立于 Danksharding 的其他目的。例如，Danksharding 要求实现提议者-构建者分离。这是一次升级，将不同验证者之间的构建块和提议块的任务分开。同样，Danksharding 需要数据可用性采样，但对于不存储太多历史数据的非常轻量级的客户端（“无状态客户端”）的开发也需要它。</p>
+<h3 id="为什么Danksharding需要proposer-builder分离？"><a href="#为什么Danksharding需要proposer-builder分离？" class="headerlink" title="为什么Danksharding需要proposer-builder分离？"></a>为什么Danksharding需要proposer-builder分离？</h3><p>需要提议者-构建者分离，以<strong>防止各个验证者不得不为 32MB 的 blob 数据生成昂贵的承诺和证明</strong>。这会给家庭利益相关者带来太大压力，并要求他们投资更强大的硬件，这会损害权力下放。相反，专门的区块构建者负责这项昂贵的计算工作。然后，他们将他们的区块提供给区块提议者进行广播。区块提议者简单地选择最有利可图的区块。任何人都可以廉价且快速地验证 blob，这意味着任何普通验证者都可以检查区块构建者是否诚实行事。这允许在不牺牲去中心化的情况下处理大型 blob。</p>
+<h3 id="为什么-Danksharding-需要数据可用性采样？"><a href="#为什么-Danksharding-需要数据可用性采样？" class="headerlink" title="为什么 Danksharding 需要数据可用性采样？"></a>为什么 Danksharding 需要数据可用性采样？</h3><p>验证器需要数据可用性采样才能快速有效地验证 blob 数据。使用数据可用性采样，验证器可以非常确定 blob 数据可用并正确提交。每个验证器都可以随机抽取几个数据点并创建证明，这意味着验证器不必检查整个 blob。如果有任何数据丢失，它会被快速识别并拒绝 blob。</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/03/20/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/%E5%88%86%E7%89%87/" title="分片">https://kongpengyq.com/2023/03/20/区块链/区块链知识点总结/扩容/分片/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" rel="tag"># 区块链知识点总结</a>
+              <a href="/tags/%E6%89%A9%E5%AE%B9/" rel="tag"># 扩容</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/03/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/%E4%BE%A7%E9%93%BE/" rel="prev" title="侧链">
+      <i class="fa fa-chevron-left"></i> 侧链
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/25/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/%E7%8A%B6%E6%80%81%E9%80%9A%E9%81%93/" rel="next" title="状态通道">
+      状态通道 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E7%89%87"><span class="nav-text">分片</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-Proto-Danksharding%EF%BC%9F"><span class="nav-text">什么是 Proto-Danksharding？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-blob-%E4%BD%BF%E6%B1%87%E6%80%BB%E6%9B%B4%E4%BE%BF%E5%AE%9C%EF%BC%9F"><span class="nav-text">为什么 blob 使汇总更便宜？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%88%A0%E9%99%A4-blob-%E6%95%B0%E6%8D%AE%E5%B0%B1%E5%8F%AF%E4%BB%A5%E4%BA%86%EF%BC%9F"><span class="nav-text">为什么删除 blob 数据就可以了？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E9%AA%8C%E8%AF%81-blob-%E6%95%B0%E6%8D%AE%EF%BC%9F"><span class="nav-text">如何验证 blob 数据？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFKZG%EF%BC%9F"><span class="nav-text">什么是KZG？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFKZG%E4%BB%AA%E5%BC%8F%EF%BC%9F"><span class="nav-text">什么是KZG仪式？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#KZG%E4%BB%AA%E5%BC%8F%E7%9A%84%E9%9A%8F%E6%9C%BA%E6%95%B0%E6%9C%89%E4%BB%80%E4%B9%88%E7%94%A8%EF%BC%9F"><span class="nav-text">KZG仪式的随机数有什么用？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-KZG-%E9%9A%8F%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BF%85%E9%A1%BB%E4%BF%9D%E5%AF%86%EF%BC%9F"><span class="nav-text">为什么 KZG 随机数据必须保密？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-Danksharding%EF%BC%9F"><span class="nav-text">什么是 Danksharding？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88Danksharding%E9%9C%80%E8%A6%81proposer-builder%E5%88%86%E7%A6%BB%EF%BC%9F"><span class="nav-text">为什么Danksharding需要proposer-builder分离？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-Danksharding-%E9%9C%80%E8%A6%81%E6%95%B0%E6%8D%AE%E5%8F%AF%E7%94%A8%E6%80%A7%E9%87%87%E6%A0%B7%EF%BC%9F"><span class="nav-text">为什么 Danksharding 需要数据可用性采样？</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="应用程序二进制接口1.1 AbiCoderAbiCoder是编码器的集合，可用于在EVM和更高级别库之间通过二进制数据格式进行编码和解码的操作。 大多数开发人员不需要直接使用这个类，因为Interface类极大地简化了这些操作。 1.2 ABI格式1.2.1 HUman-REadable ABIHuman-Readable ABI 是早期被 ethers 所描述提出的， 它允许使用一个Solidi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="7-实用工具Utils">
+<meta property="og:url" content="https://kongpengyq.com/2022/08/24/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/7-%E5%AE%9E%E7%94%A8%E5%B7%A5%E5%85%B7Utils/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="应用程序二进制接口1.1 AbiCoderAbiCoder是编码器的集合，可用于在EVM和更高级别库之间通过二进制数据格式进行编码和解码的操作。 大多数开发人员不需要直接使用这个类，因为Interface类极大地简化了这些操作。 1.2 ABI格式1.2.1 HUman-REadable ABIHuman-Readable ABI 是早期被 ethers 所描述提出的， 它允许使用一个Solidi">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-08-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.709Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="ether@5.4.js">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/08/24/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/7-%E5%AE%9E%E7%94%A8%E5%B7%A5%E5%85%B7Utils/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>7-实用工具Utils | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/08/24/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/7-%E5%AE%9E%E7%94%A8%E5%B7%A5%E5%85%B7Utils/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          7-实用工具Utils
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-08-24 00:00:00" itemprop="dateCreated datePublished" datetime="2022-08-24T00:00:00+08:00">2022-08-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ether-5-4-js/" itemprop="url" rel="index">
+                    <span itemprop="name">ether@5.4.js</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>16k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>15 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="应用程序二进制接口"><a href="#应用程序二进制接口" class="headerlink" title="应用程序二进制接口"></a>应用程序二进制接口</h1><h2 id="1-1-AbiCoder"><a href="#1-1-AbiCoder" class="headerlink" title="1.1 AbiCoder"></a>1.1 AbiCoder</h2><p><strong>AbiCoder</strong>是编码器的集合，可用于在EVM和更高级别库之间通过二进制数据格式进行编码和解码的操作。</p>
+<p>大多数开发人员不需要直接使用这个类，因为Interface类极大地简化了这些操作。</p>
+<h2 id="1-2-ABI格式"><a href="#1-2-ABI格式" class="headerlink" title="1.2 ABI格式"></a>1.2 ABI格式</h2><h3 id="1-2-1-HUman-REadable-ABI"><a href="#1-2-1-HUman-REadable-ABI" class="headerlink" title="1.2.1 HUman-REadable ABI"></a>1.2.1 HUman-REadable ABI</h3><p><strong>Human-Readable ABI</strong> 是早期被 ethers 所描述提出的， 它允许使用一个Solidity式签名(Solidity signature)来描述每个方法(method)、事件(event)和错误(error)。</p>
+<h3 id="1-2-2-Solidity-JSON-ABI"><a href="#1-2-2-Solidity-JSON-ABI" class="headerlink" title="1.2.2 **Solidity JSON **ABI"></a>1.2.2 **Solidity JSON **ABI</h3><p><strong>Solidity JSON ABI</strong>是许多工具导出的标准格式，包括Solidity编译器.</p>
+<h3 id="1-2-3-Solidity-Object-ABI"><a href="#1-2-3-Solidity-Object-ABI" class="headerlink" title="1.2.3 Solidity Object ABI"></a>1.2.3 <strong>Solidity Object</strong> ABI</h3><p>使用JSON.parse解析Solidity JSON ABI的结果完全与Interface类兼容， 且该对象的每个方法、事件和错误都与Fragment类兼容。</p>
+<p>一些开发人员可能更喜欢这种方式，因为它允许将ABI属性作为普通的JavaScript对象访问，并且Solidity ABI与JSON ABI非常匹配。</p>
+<h2 id="1-3-Fragments"><a href="#1-3-Fragments" class="headerlink" title="1.3 Fragments"></a>1.3 Fragments</h2><p>对一个ABI进行描述解释</p>
+<h3 id="1-3-0-Formats"><a href="#1-3-0-Formats" class="headerlink" title="1.3.0 Formats"></a>1.3.0 Formats</h3><p>每个Fragment和ParamType可以使用其<code>format</code>方法输出。</p>
+<p><strong><em>ethers</em>.<em>utils</em>.<em>FormatTypes</em>.full ⇒ <em>string</em>：</strong>这是一个完整的人类可读(human-readable)的字符串，包括所有的参数名，任何可选的修饰符	(例如，<code>indexed</code>，<code>public</code>等)和空格，以提高代码可读性。</p>
+<p><strong><em>ethers</em>.<em>utils</em>.<em>FormatTypes</em>.minimal ⇒ <em>string</em>：</strong>这类似于<code>full</code>，除了没有不必要的空白或参数名。这对于存储最小的字符串非常有用，	该字符串仍然可以使用Fragment . from， 从完全重构原始的Fragment。</p>
+<p><strong><em>ethers</em>.<em>utils</em>.<em>FormatTypes</em>.json ⇒ <em>string</em>：</strong>这将返回一个JavaScript对象，安全地调用<code>JSON.stringify</code>创建一个JSON字符串。</p>
+<p><strong><em>ethers</em>.<em>utils</em>.<em>FormatTypes</em>.sighash ⇒ <em>string</em>：</strong>一个最小的输出格式，Solidity在计算签名哈希或事件主题topic的哈希时使用它。</p>
+<h3 id="1-3-1-Fragment"><a href="#1-3-1-Fragment" class="headerlink" title="1.3.1 Fragment"></a>1.3.1 <strong>Fragment</strong></h3><p>一个ABI是<strong>Fragments</strong>的集合，每个fragment指定:一个错误、一个事件、一个函数、一个构造函数</p>
+<p><strong>属性：</strong></p>
+<p><strong><em>fragment</em>.name ⇒ <em>string</em>：</strong>事件或函数的name。如果是ConstructorFragment时为null。</p>
+<p><em><strong>fragment*.type ⇒ *string：</strong></em>这是一个表示Fragment类型的字符串。如:<code>constructor</code>、<code>event</code>、<code>function</code></p>
+<p>**<em>fragment</em>.inputs ⇒ *Array&lt; ParamType &gt;*：**构造函数、事件等输入参数的ParamType的数组。</p>
+<p><strong>方法：</strong></p>
+<p><strong><em>fragment</em>.format( [ <em>format</em> &#x3D; <em>sighash</em> ] ) ⇒ <em>string</em>：</strong>使用可用的输出格式创建Fragment的字符串描述。</p>
+<p><strong><em>ethers</em>.<em>utils</em>.______Fragment.from( <em>objectOrString</em> ) ⇒ ____<em>Fragment</em>：</strong>从任何兼容的object或String创建一个新的**__Fragment**子类。</p>
+<p><strong><em>ethers</em>.<em>utils</em>.<em>Fragment</em>.is__Fragment( <em>object</em> ) ⇒ <em>boolean</em>：</strong>如果<em>object</em> 是一个**__Fragment**返回true。</p>
+<h3 id="1-3-2-ConstructorFragment"><a href="#1-3-2-ConstructorFragment" class="headerlink" title="1.3.2 ConstructorFragment"></a>1.3.2 ConstructorFragment</h3><p>**<em>fragment</em>.gas ⇒ *大数(BigNumber)*：**表示部署期间应该使用的gas limit，它可以是null。</p>
+<p><strong><em>fragment</em>.payable ⇒ <em>boolean</em>：</strong>表示构造函数在部署期间是否可以接收ether(例如：msg.value !&#x3D; 0)。</p>
+<p><strong><em>fragment</em>.stateMutability ⇒ <em>string</em>：</strong>构造函数的state mutability。它可以是:<code>nonpayable</code>、<code>payable</code></p>
+<h3 id="1-3-3-ErrorFragment"><a href="#1-3-3-ErrorFragment" class="headerlink" title="1.3.3 ErrorFragment"></a>1.3.3 ErrorFragment</h3><h3 id="1-3-4-EventFragment"><a href="#1-3-4-EventFragment" class="headerlink" title="1.3.4 EventFragment"></a>1.3.4 EventFragment</h3><p><strong><em>fragment</em>.anonymous ⇒ <em>boolean</em>：</strong>表示事件(event)是否匿名。匿名事件在创建日志时不会将其topic哈希值注入到topic0中</p>
+<h3 id="1-3-5-FunctionFragment"><a href="#1-3-5-FunctionFragment" class="headerlink" title="1.3.5 FunctionFragment"></a>1.3.5 FunctionFragment</h3><p><strong><em>fragment</em>.constant ⇒ <em>boolean</em>：</strong>表示函数是否为常量(即不改变状态)。如果设为true表示状态可变性是<code>pure</code> 或 <code>view</code>。</p>
+<p><strong><em>fragment</em>.stateMutability ⇒ <em>string</em>：</strong>构造器的状态可变性。它可以是:<code>nonpayable</code>、<code>payable</code>、<code>pure</code>、<code>view</code></p>
+<p>**<em>fragment</em>.outputs ⇒ *Array&lt; ParamType &gt;*：**函数输出参数的列表。</p>
+<h3 id="1-3-6-ParamType"><a href="#1-3-6-ParamType" class="headerlink" title="1.3.6 ParamType"></a>1.3.6 ParamType</h3><p>表示Solidity中的参数:</p>
+<p><strong>属性：</strong></p>
+<p><strong><em>paramType</em>.name ⇒ <em>string</em>：</strong>本地参数名。对于未命名的参数，这个值为null。例如，参数字符串<code>string foobar</code>会输出<code>foobar</code>。</p>
+<p><em><strong>paramType*.type ⇒ *string：</strong></em>参数的完整类型，包括元组和数组符号。对于未命名的参数，这个值可能为null。</p>
+<p><em><strong>paramType*.baseType ⇒ *string：</strong></em>参数的基类型(base type)。对于原始类型(例如<code>address</code>, <code>uint256</code>等)，这等同于type。 对于数组，	它将是string <code>array</code>，对于元组，它将是string <code>tuple</code>。</p>
+<p><em><strong>paramType*.indexed ⇒ *boolean：</strong></em>参数是否被标记为索引。这只适用于参数是EventFragment的部分。</p>
+<p><em><strong>paramType*.arrayChildren ⇒ *ParamType：</strong></em>数组的children类型。对于任何非数组的参数，这将是null。</p>
+<p><em><strong>paramType*.arrayLength ⇒ *number：</strong></em>数组的长度，或动态数组的长度<code>-1</code>。对于不是数组的参数，这个值为null。</p>
+<p>**<em>paramType</em>.components ⇒ *Array&lt; ParamType &gt;*：**元组的组成部分。这对于非元组参数是null。</p>
+<p><strong>方法：</strong></p>
+<p><strong><em>paramType</em>.format( [ <em>outputType</em> &#x3D; <em>sighash</em> ] )：</strong>使用可用的output formats创建Fragment的字符串描述。</p>
+<p><strong><em>ethers</em>.<em>utils</em>.<em>ParamType</em>.from( <em>objectOrString</em> ) ⇒ <em>ParamType</em>：</strong>从任何兼容的<em>object或String</em>创建一个新的<strong>ParamType</strong>。</p>
+<p><strong><em>ethers</em>.<em>utils</em>.<em>ParamType</em>.isParamType( <em>object</em> ) ⇒ <em>boolean</em>：</strong>如果<em>object</em> 是一个<strong>ParamType</strong>返回true。</p>
+<h2 id="1-4-Interface"><a href="#1-4-Interface" class="headerlink" title="1.4 Interface"></a>1.4 Interface</h2><p>**接口(Interface)**类是以太坊网络上的与合约交互所需的编码和解码的一种抽象,EVM本身并不理解ABI是什么。</p>
+<p>它只是一组商定的格式，用于编码合约所需的各种类型的数据，以便它们可以相互交互。</p>
+<p><strong>（创建实例)new <em>ethers</em>.<em>utils</em>.Interface( <em>abi</em> ):<strong>从表示<em>abi</em>的JSON字符串或对象创建一个新的</strong>接口</strong>。</p>
+<h3 id="1-4-1-属性"><a href="#1-4-1-属性" class="headerlink" title="1.4.1 属性"></a>1.4.1 属性</h3><p>**<em>interface</em>.fragments ⇒ *Array&lt; Fragment &gt;*：**接口中所有的Fragments。</p>
+<p><em><strong>interface*.errors ⇒ *Array&lt; ErrorFragment &gt;：</strong></em>接口中所有的Error Fragments。</p>
+<p><em><strong>interface*.events ⇒ *Array&lt; EventFragment &gt;：</strong></em>接口中所有的Event Fragments。</p>
+<p><em><strong>interface*.functions ⇒ *Array&lt; FunctionFragment &gt;：</strong></em>接口中所有的Function Fragments。</p>
+<p><em><strong>interface*.deploy ⇒ *ConstructorFragment“：</strong></em>接口中所有的Constructor Fragments。</p>
+<h3 id="1-4-2-格式化"><a href="#1-4-2-格式化" class="headerlink" title="1.4.2 格式化"></a>1.4.2 格式化</h3><p>**<em>interface</em>.format( [ <em>format</em> ] ) ⇒ *string | Array&lt; string &gt;*：**返回格式化的接口。如果格式类型是<code>json</code>，则返回一个字符串，否则返回	一个由human-readable（人类可读）字符串组成的数组。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">FormatTypes</span> = ethers.<span class="property">utils</span>.<span class="property">FormatTypes</span>;</span><br><span class="line"></span><br><span class="line">iface.<span class="title function_">format</span>(<span class="title class_">FormatTypes</span>.<span class="property">json</span>)</span><br><span class="line"><span class="comment">// &#x27;[&#123;&quot;type&quot;:&quot;constructor&quot;,&quot;payable&quot;:false,&quot;inputs&quot;:[&#123;&quot;type&quot;:&quot;string&quot;,&quot;name&quot;:&quot;symbol&quot;&#125;,&#123;&quot;type&quot;:&quot;string&quot;,&quot;name&quot;:&quot;name&quot;&#125;]&#125;,&#123;&quot;type&quot;:&quot;function&quot;,&quot;name&quot;:&quot;transferFrom&quot;,&quot;constant&quot;:false,&quot;payable&quot;:false,&quot;inputs&quot;:[&#123;&quot;type&quot;:&quot;address&quot;,&quot;name&quot;:&quot;from&quot;&#125;,&#123;&quot;type&quot;:&quot;address&quot;,&quot;name&quot;:&quot;to&quot;&#125;,&#123;&quot;type&quot;:&quot;uint256&quot;,&quot;name&quot;:&quot;amount&quot;&#125;],&quot;outputs&quot;:[]&#125;,&#123;&quot;type&quot;:&quot;function&quot;,&quot;name&quot;:&quot;mint&quot;,&quot;constant&quot;:false,&quot;stateMutability&quot;:&quot;payable&quot;,&quot;payable&quot;:true,&quot;inputs&quot;:[&#123;&quot;type&quot;:&quot;uint256&quot;,&quot;name&quot;:&quot;amount&quot;&#125;],&quot;outputs&quot;:[]&#125;,&#123;&quot;type&quot;:&quot;function&quot;,&quot;name&quot;:&quot;balanceOf&quot;,&quot;constant&quot;:true,&quot;stateMutability&quot;:&quot;view&quot;,&quot;payable&quot;:false,&quot;inputs&quot;:[&#123;&quot;type&quot;:&quot;address&quot;,&quot;name&quot;:&quot;owner&quot;&#125;],&quot;outputs&quot;:[&#123;&quot;type&quot;:&quot;uint256&quot;&#125;]&#125;,&#123;&quot;type&quot;:&quot;event&quot;,&quot;anonymous&quot;:false,&quot;name&quot;:&quot;Transfer&quot;,&quot;inputs&quot;:[&#123;&quot;type&quot;:&quot;address&quot;,&quot;name&quot;:&quot;from&quot;,&quot;indexed&quot;:true&#125;,&#123;&quot;type&quot;:&quot;address&quot;,&quot;name&quot;:&quot;to&quot;,&quot;indexed&quot;:true&#125;,&#123;&quot;type&quot;:&quot;uint256&quot;,&quot;name&quot;:&quot;amount&quot;&#125;]&#125;,&#123;&quot;type&quot;:&quot;error&quot;,&quot;name&quot;:&quot;AccountLocked&quot;,&quot;inputs&quot;:[&#123;&quot;type&quot;:&quot;address&quot;,&quot;name&quot;:&quot;owner&quot;&#125;,&#123;&quot;type&quot;:&quot;uint256&quot;,&quot;name&quot;:&quot;balance&quot;&#125;]&#125;,&#123;&quot;type&quot;:&quot;function&quot;,&quot;name&quot;:&quot;addUser&quot;,&quot;constant&quot;:false,&quot;payable&quot;:false,&quot;inputs&quot;:[&#123;&quot;type&quot;:&quot;tuple&quot;,&quot;name&quot;:&quot;user&quot;,&quot;components&quot;:[&#123;&quot;type&quot;:&quot;string&quot;,&quot;name&quot;:&quot;name&quot;&#125;,&#123;&quot;type&quot;:&quot;address&quot;,&quot;name&quot;:&quot;addr&quot;&#125;]&#125;],&quot;outputs&quot;:[&#123;&quot;type&quot;:&quot;uint256&quot;,&quot;name&quot;:&quot;id&quot;&#125;]&#125;,&#123;&quot;type&quot;:&quot;function&quot;,&quot;name&quot;:&quot;addUsers&quot;,&quot;constant&quot;:false,&quot;payable&quot;:false,&quot;inputs&quot;:[&#123;&quot;type&quot;:&quot;tuple[]&quot;,&quot;name&quot;:&quot;user&quot;,&quot;components&quot;:[&#123;&quot;type&quot;:&quot;string&quot;,&quot;name&quot;:&quot;name&quot;&#125;,&#123;&quot;type&quot;:&quot;address&quot;,&quot;name&quot;:&quot;addr&quot;&#125;]&#125;],&quot;outputs&quot;:[&#123;&quot;type&quot;:&quot;uint256[]&quot;,&quot;name&quot;:&quot;id&quot;&#125;]&#125;,&#123;&quot;type&quot;:&quot;function&quot;,&quot;name&quot;:&quot;getUser&quot;,&quot;constant&quot;:true,&quot;stateMutability&quot;:&quot;view&quot;,&quot;payable&quot;:false,&quot;inputs&quot;:[&#123;&quot;type&quot;:&quot;uint256&quot;,&quot;name&quot;:&quot;id&quot;&#125;],&quot;outputs&quot;:[&#123;&quot;type&quot;:&quot;tuple&quot;,&quot;name&quot;:&quot;user&quot;,&quot;components&quot;:[&#123;&quot;type&quot;:&quot;string&quot;,&quot;name&quot;:&quot;name&quot;&#125;,&#123;&quot;type&quot;:&quot;address&quot;,&quot;name&quot;:&quot;addr&quot;&#125;]&#125;]&#125;]&#x27;</span></span><br><span class="line"></span><br><span class="line">iface.<span class="title function_">format</span>(<span class="title class_">FormatTypes</span>.<span class="property">full</span>)</span><br><span class="line"><span class="comment">// [</span></span><br><span class="line"><span class="comment">//   &#x27;constructor(string symbol, string name)&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;function transferFrom(address from, address to, uint256 amount)&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;function mint(uint256 amount) payable&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;function balanceOf(address owner) view returns (uint256)&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;event Transfer(address indexed from, address indexed to, uint256 amount)&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;error AccountLocked(address owner, uint256 balance)&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;function addUser(tuple(string name, address addr) user) returns (uint256 id)&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;function addUsers(tuple(string name, address addr)[] user) returns (uint256[] id)&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;function getUser(uint256 id) view returns (tuple(string name, address addr) user)&#x27;</span></span><br><span class="line"><span class="comment">// ]</span></span><br><span class="line"></span><br><span class="line">iface.<span class="title function_">format</span>(<span class="title class_">FormatTypes</span>.<span class="property">minimal</span>)</span><br><span class="line"><span class="comment">// [</span></span><br><span class="line"><span class="comment">//   &#x27;constructor(string,string)&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;function transferFrom(address,address,uint256)&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;function mint(uint256) payable&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;function balanceOf(address) view returns (uint256)&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;event Transfer(address indexed,address indexed,uint256)&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;error AccountLocked(address,uint256)&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;function addUser(tuple(string,address)) returns (uint256)&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;function addUsers(tuple(string,address)[]) returns (uint256[])&#x27;,</span></span><br><span class="line"><span class="comment">//   &#x27;function getUser(uint256) view returns (tuple(string,address))&#x27;</span></span><br><span class="line"><span class="comment">// ]</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4-3-Fragment-Access"><a href="#1-4-3-Fragment-Access" class="headerlink" title="1.4.3 Fragment Access"></a>1.4.3 <strong>Fragment Access</strong></h3><p><strong><em>interface</em>.getFunction( <em>fragment</em> ) ⇒ FunctionFragment：</strong>返回<em>fragment</em>的FunctionFragment</p>
+<p><strong><em>interface</em>.getError( <em>fragment</em> ) ⇒ ErrorFragment：</strong>返回<em>fragment</em>的ErrorFragment</p>
+<p><strong><em>interface</em>.getEvent( <em>fragment</em> ) ⇒ EventFragment：</strong>返回<em>fragment</em>的EventFragment</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 通过方法(method)的签名，这是经过标准化后的，因此空格和多余的属性会被舍去</span></span><br><span class="line"></span><br><span class="line">iface.<span class="title function_">getFunction</span>(<span class="string">&quot;transferFrom(address, address, uint256)&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过name的方式;这只在方法名称是唯一确定的情况下才有效</span></span><br><span class="line">iface.<span class="title function_">getFunction</span>(<span class="string">&quot;transferFrom&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过函数选择器</span></span><br><span class="line">iface.<span class="title function_">getFunction</span>(<span class="string">&quot;0x23b872dd&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果方法不存在将抛出异常</span></span><br><span class="line">iface.<span class="title function_">getFunction</span>(<span class="string">&quot;doesNotExist()&quot;</span>);</span><br><span class="line"><span class="comment">// [Error: no matching function] &#123;</span></span><br><span class="line"><span class="comment">//   argument: &#x27;signature&#x27;,</span></span><br><span class="line"><span class="comment">//   code: &#x27;INVALID_ARGUMENT&#x27;,</span></span><br><span class="line"><span class="comment">//   reason: &#x27;no matching function&#x27;,</span></span><br><span class="line"><span class="comment">//   value: &#x27;doesNotExist()&#x27;</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4-4-签名和主题的哈希"><a href="#1-4-4-签名和主题的哈希" class="headerlink" title="1.4.4 签名和主题的哈希"></a>1.4.4 签名和主题的哈希</h3><p><em>*<em>interface</em>.getSighash( <em>fragment</em> ) ⇒ *string&lt; DataHexString&lt; 4 &gt; &gt;<em>：**返回</em>fragment</em>的签名哈希(sighash)或函数选择器(Function Selector)</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">iface.<span class="title function_">getSighash</span>(<span class="string">&quot;balanceOf&quot;</span>);</span><br><span class="line">iface.<span class="title function_">getSighash</span>(<span class="string">&quot;balanceOf(address)&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> fragment = iface.<span class="title function_">getFunction</span>(<span class="string">&quot;balanceOf&quot;</span>)</span><br><span class="line">iface.<span class="title function_">getSighash</span>(fragment);</span><br><span class="line"><span class="comment">// &#x27;0x70a08231&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong><em>interface</em>.getEventTopic( <em>fragment</em> ) ⇒ string&lt; DataHexString&lt; 32 &gt; &gt;：</strong>返回<em>fragment</em>的主题哈希(topic hash)</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">iface.<span class="title function_">getEventTopic</span>(<span class="string">&quot;Transfer&quot;</span>);</span><br><span class="line">iface.<span class="title function_">getEventTopic</span>(<span class="string">&quot;Transfer(address, address, uint)&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> fragment = iface.<span class="title function_">getEvent</span>(<span class="string">&quot;Transfer&quot;</span>)</span><br><span class="line">iface.<span class="title function_">getEventTopic</span>(fragment);</span><br><span class="line"><span class="comment">// &#x27;0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4-5-编码数据"><a href="#1-4-5-编码数据" class="headerlink" title="1.4.5 编码数据"></a>1.4.5 编码数据</h3><h3 id="1-4-6-解码数据"><a href="#1-4-6-解码数据" class="headerlink" title="1.4.6 解码数据"></a>1.4.6 解码数据</h3><h3 id="1-4-7-解析"><a href="#1-4-7-解析" class="headerlink" title="1.4.7 解析"></a>1.4.7 解析</h3><h1 id="地址"><a href="#地址" class="headerlink" title="地址"></a>地址</h1><p><em>*<em>ethers</em>.<em>utils</em>.getAddress( <em>address</em> ) ⇒ *string&lt; 地址(Address) &gt;<em>：**返回一个校验和</em>地址</em>。</p>
+<p>**<em>ethers</em>.<em>utils</em>.getIcapAddress( <em>address</em> ) ⇒ *string&lt; IcapAddress &gt;*：**返回一个ICAP address地址，与getAddress具有相同的限制条件。</p>
+<p><strong><em>ethers</em>.<em>utils</em>.isAddress( <em>address</em> ) ⇒ boolean：</strong>如果地址有效(任何支持的格式)则返回true。</p>
+<p><em>*<em>ethers</em>.<em>utils</em>.computeAddress( <em>publicOrPrivateKey</em> ) ⇒ *string&lt; 地址(Address) &gt;<em>：**返回</em>publicOrPrivateKey</em>的地址。公钥可以压缩或不压缩，私钥将自动转换为派生的公钥。</p>
+<p>**<em>ethers</em>.<em>utils</em>.recoverAddress( <em>digest</em> , <em>signature</em> ) ⇒ *string&lt; 地址(Address) &gt;*：**使用ECDSA Public Key Recovery来确定摘要(digest)生成签名的公钥地址，</p>
+<p>**<em>ethers</em>.<em>utils</em>.getContractAddress( <em>transaction</em> ) ⇒ *string&lt; 地址(Address) &gt;*：**一个交易用于部署合约则返回部署合约后的合约地址。</p>
+<p>**<em>ethers</em>.<em>utils</em>.getCreate2Address( <em>from</em> , <em>salt</em> , <em>initCodeHash</em> ) ⇒ *string&lt; 地址(Address) &gt;*：**返回给定CREATE2调用后的合约地址。</p>
+<h1 id="大数-BigNumber"><a href="#大数-BigNumber" class="headerlink" title="大数(BigNumber)"></a>大数(BigNumber)</h1><p><strong>BigNumber</strong>是一个可以安全地对任意大小的数字进行数学运算的对象。</p>
+<p>大多数需要返回值的操作将返回一个<strong>BigNumber</strong>，接受值的参数通常会接收它们。</p>
+<h2 id="3-1-创建实例"><a href="#3-1-创建实例" class="headerlink" title="3.1 创建实例"></a>3.1 创建实例</h2><p>BigNumber的构造函数不能被直接调用。相反，使用静态<code>BigNumber.from</code>。</p>
+<p><em>*<em>ethers</em>.<em>BigNumber</em>.from( <em>aBigNumberish</em> ) ⇒ *大数(BigNumber)<em>：**为</em>aBigNumberish</em>返回一个<strong>BigNumber</strong>的实例</p>
+<h2 id="3-2-方法"><a href="#3-2-方法" class="headerlink" title="3.2 方法"></a>3.2 方法</h2><h3 id="3-2-1-数学运算"><a href="#3-2-1-数学运算" class="headerlink" title="3.2.1 数学运算"></a>3.2.1 数学运算</h3><p><em>*<em>BigNumber</em>.add( <em>otherValue</em> ) ⇒ *大数(BigNumber)<em>：**返回值为</em>BigNumber</em> <strong>+</strong> <em>otherValue</em>的BigNumber。</p>
+<p>**<em>BigNumber</em>.sub( <em>otherValue</em> ) ⇒ *大数(BigNumber)*：**返回值为 <em>BigNumber</em> <strong>-</strong> <em>otherValue</em>的BigNumber。</p>
+<p>**<em>BigNumber</em>.mul( <em>otherValue</em> ) ⇒ *大数(BigNumber)*：**返回值为 <em>BigNumber</em> <strong>×</strong> <em>otherValue</em>的BigNumber。</p>
+<p><em><strong>BigNumber*.div( <em>divisor</em> ) ⇒ *大数(BigNumber)：</strong></em>返回值为 <em>BigNumber</em> <strong>÷</strong> <em>divisor</em>的BigNumber。</p>
+<p><em><strong>BigNumber*.mod( <em>divisor</em> ) ⇒ *大数(BigNumber)：</strong></em>返回值为 <em>BigNumber</em> ÷ <em>divisor</em>余数的BigNumber。</p>
+<p><em><strong>BigNumber*.pow( <em>exponent</em> ) ⇒ *大数(BigNumber)：</strong></em>返回值为 <em>BigNumber</em> 指数的幂为<em>exponent</em>的BigNumber。</p>
+<p>**<em>BigNumber</em>.abs( ) ⇒ *大数(BigNumber):***返回值为绝对值的BigNumber。</p>
+<p>**<em>BigNumber</em>.mask( <em>bitcount</em> ) ⇒ *大数(BigNumber):**<em>返回一个BigNumber，其BigNumber的值超出</em>bitcount*最低有效位的位则设为0。</p>
+<h4 id="Two’s-Complement"><a href="#Two’s-Complement" class="headerlink" title="Two’s Complement"></a>Two’s Complement</h4><p>Two’s Complement是用于编码和解码固定宽度的有符号值，同时有效地保留数学运算。大多数用户不需要与它们交互。</p>
+<p>**<em>BigNumber</em>.fromTwos( <em>bitwidth</em> ) ⇒ <em>大数(BigNumber)</em>:**返回一个BigNumber, 值由带位宽（bitwidth）的二进制补码转换而来。</p>
+<p>**<em>BigNumber</em>.toTwos( <em>bitwidth</em> ) ⇒ *大数(BigNumber)*：**返回一个BigNumber, BigNumber的值转换为带位宽的二进制补码。</p>
+<h3 id="3-2-2-比较和相等"><a href="#3-2-2-比较和相等" class="headerlink" title="3.2.2 比较和相等"></a>3.2.2 比较和相等</h3><p><strong><em>BigNumber</em>.eq( <em>otherValue</em> ) ⇒ <em>boolean</em>：</strong>当且仅当<em>BigNumber</em>的值等于<em>otherValue</em>时返回true。</p>
+<p><em><strong>BigNumber*.lt( <em>otherValue</em> ) ⇒ *boolean：</strong></em>当且仅当<em>BigNumber</em>的值**&lt;**otherValue时返回true。</p>
+<p><em><strong>BigNumber*.lte( <em>otherValue</em> ) ⇒ *boolean：</strong></em>当且仅当<em>BigNumber</em>的值<strong>≤</strong>otherValue时返回true。</p>
+<p><strong><em>BigNumber</em>.gt( <em>otherValue</em> ) ⇒ <em>boolean</em>：</strong>当且仅当<em>BigNumber</em>的值**&gt;**<em>otherValue</em>时返回true。</p>
+<p><em><strong>BigNumber*.gte( <em>otherValue</em> ) ⇒ *boolean：</strong></em>当且仅当<em>BigNumber</em>的值<strong>≥</strong><em>otherValue</em>时返回true。</p>
+<p><em><strong>BigNumber*.isZero( ) ⇒ *boolean：</strong></em>当且仅当<em>BigNumber</em>的值为0时返回true。</p>
+<h3 id="3-2-3-转换"><a href="#3-2-3-转换" class="headerlink" title="3.2.3 转换"></a>3.2.3 转换</h3><p><strong><em>BigNumber</em>.toBigInt( ) ⇒ <em>bigint</em>：</strong>在支持BigInt的平台上以JavScript BigInt值返回BigNumber的值。</p>
+<p><strong><em>BigNumber</em>.toNumber( ) ⇒ <em>number</em>：</strong>将BigNumber的值转换JavaScript值。</p>
+<blockquote>
+<p>如果该值大于<em>Number.MAX_SAFE_INTEGER</em>或小于等于<em>Number.MIN_SAFE_INTEGER</em>， 则会<strong>抛出一个错误</strong>。</p>
+</blockquote>
+<p><strong><em>BigNumber</em>.toString( ) ⇒ <em>string</em>：</strong>以十进制字符串的形式返回BigNumber的值。</p>
+<p>**<em>BigNumber</em>.toHexString( ) ⇒ *string&lt; DataHexString &gt;*：**返回BigNumber的值为十六进制的值，<code>0x</code>是前缀DataHexString.。</p>
+<h3 id="3-2-4-检查"><a href="#3-2-4-检查" class="headerlink" title="3.2.4 检查"></a>3.2.4 检查</h3><p><strong><em>ethers</em>.<em>BigNumber</em>.isBigNumber( <em>object</em> ) ⇒ <em>boolean</em>：</strong>当且仅当对象是BigNumber是<em>对象</em>时返回true。</p>
+<h1 id="字节处理"><a href="#字节处理" class="headerlink" title="字节处理"></a>字节处理</h1><h2 id="类型"><a href="#类型" class="headerlink" title="类型"></a>类型</h2><p><strong>Bytes：Bytes</strong>是一个Array或TypedArray对象， 每个值都在有效字节范围内(例如0到255之间)，或者是一个具有<code>length</code>属性的对象，每	个索引的属性都在有效字节范围内。</p>
+<p><strong>BytesLike：BytesLike</strong>可以是Bytes或DataHexString。</p>
+<p><strong>DataHexString：DataHexstring</strong>与HexString是相同的，除了它有偶数个nibbles，因此二进制数据作为字符串是有效的。</p>
+<p><strong>HexString：Hexstring</strong>是一个字符串，有一个0x前缀，后面跟着nibbles number类型(例如，不区分大小写的十六进制字符<code>0-9</code>和<code>a-f</code>)</p>
+<p><strong>Signature：</strong></p>
+<ul>
+<li><strong>r</strong> and <strong>s</strong> — The x co-ordinate of <strong>r</strong> and the <strong>s</strong> value of the signature</li>
+<li><strong>v</strong> — The parity of the y co-ordinate of <strong>r</strong></li>
+<li><strong>_vs</strong> — The compact representation of the <strong>s</strong> and <strong>v</strong></li>
+<li><strong>recoveryParam</strong> — The normalized (i.e. 0 or 1) value of <strong>v</strong></li>
+</ul>
+<p>**Raw Signature：原始签名(Raw Signature)**是一种常见的签名格式，r, s和v被连接成一个65字节(130 nibble)的DataHexString。</p>
+<p><strong>SignatureLike：SignatureLike</strong>类似于一个Signature，除了多余的属性可以被省略或者它也可以是一个 Raw Signature。</p>
+<p>​	例如，如果指定了**_vs<strong>，则</strong>s<strong>和</strong>v<strong>可以省略。同样，如果提供了</strong>recoveryParam<strong>， 则可以省略</strong>v**(在这种情况下，可以计算出缺失的值)。</p>
+<h2 id="4-1-检查"><a href="#4-1-检查" class="headerlink" title="4.1 检查"></a>4.1 检查</h2><p><strong><em>ethers</em>.<em>utils</em>.isBytes( <em>object</em> ) ⇒ <em>boolean</em>：</strong>当且仅当<em>object</em>为有效Bytes时返回true。</p>
+<p><strong><em>ethers</em>.<em>utils</em>.isBytesLike( <em>object</em> ) ⇒ <em>boolean</em>：</strong>当且仅当<em>object</em>是Bytes或DataHexString时返回true。</p>
+<p><strong><em>ethers</em>.<em>utils</em>.isHexString( <em>object</em> , [ <em>length</em> ] ) ⇒ <em>boolean</em>：</strong>当且仅当<em>object</em>是一个有效的十六进制字符串时返回true。 如果指定了<em>length</em>并且<em>object</em> 不是一个有效的长度字节的DataHexString，则抛出一个InvalidArgument错误。</p>
+<h2 id="4-2-数组和十六进制字符串之间的转换"><a href="#4-2-数组和十六进制字符串之间的转换" class="headerlink" title="4.2 数组和十六进制字符串之间的转换"></a>4.2 数组和十六进制字符串之间的转换</h2><p><strong><em>ethers</em>.<em>utils</em>.arrayify( <em>DataHexStringOrArrayish</em> [ , <em>options</em> ] ) ⇒ <em>Uint8Array</em>：</strong>将<em>DataHexStringOrArrayish</em>转换为Uint8Array。</p>
+<p><em>*<em>ethers</em>.<em>utils</em>.hexlify( <em>hexstringOrArrayish</em> ) ⇒ *string&lt; DataHexString &gt;<em>：**将</em>hexstringOrArrayish</em>转换为DataHexString。</p>
+<p><em>*<em>ethers</em>.<em>utils</em>.hexValue( <em>aBigNumberish</em> ) ⇒ *string&lt; HexString &gt;<em>：**将</em>aBigNumberish</em>转换为HexString，没有前导零。</p>
+<h2 id="4-3-数组处理"><a href="#4-3-数组处理" class="headerlink" title="4.3 数组处理"></a>4.3 数组处理</h2><p><strong><em>ethers</em>.<em>utils</em>.concat( <em>arrayOfBytesLike</em> ) ⇒ <em>Uint8Array</em>：</strong>将<em>arrayOfBytesLike</em>中的所有<a target="_blank" rel="noopener" href="https://learnblockchain.cn/ethers_v5/api/utils/bytes/#BytesLike">BytesLike</a>连接到一个单独的Uint8Array中。</p>
+<p><strong><em>ethers</em>.<em>utils</em>.stripZeros( <em>aBytesLike</em> ) ⇒ <em>Uint8Array</em>：</strong>返回一个无前导零<em>aBtyesLike</em>字节的Uint8Array</p>
+<p><strong><em>ethers</em>.<em>utils</em>.zeroPad( <em>aBytesLike</em> , <em>length</em> ) ⇒ <em>Uint8Array</em>：</strong></p>
+<p>返回一个以aBytesLike为单位的Uint8Array，前面有0字节的length bytes long。</p>
+<p>如果<em>aBytesLike</em>的长度已经超过长度字节，则会抛出InvalidArgument错误。</p>
+<h2 id="4-4-十六进制字符串处理"><a href="#4-4-十六进制字符串处理" class="headerlink" title="4.4 十六进制字符串处理"></a>4.4 十六进制字符串处理</h2><p><em>*<em>ethers</em>.<em>utils</em>.hexConcat( <em>arrayOfBytesLike</em> ) ⇒ *string&lt; DataHexString &gt;<em>：**将</em>arrayOfBytesLike</em>中的所有BytesLike连接成一个单一的DataHexString。</p>
+<p><em>*<em>ethers</em>.<em>utils</em>.hexDataLength( <em>aBytesLike</em> ) ⇒ *string&lt; DataHexString &gt;<em>：**返回</em>aBytesLike</em>的长度(以字节为单位)。</p>
+<p><em>*<em>ethers</em>.<em>utils</em>.hexDataSlice( <em>aBytesLike</em> , <em>offset</em> [ , <em>endOffset</em> ] ) ⇒ <em>string&lt; DataHexString &gt;<em>*<em>：返回一个</em>aBytesLike*切片的DataHexString表示，从</em>offset</em>(以字节为单位)到*endOffset</em>(以字节为单位)。 如果省略了<em>endOffset</em>，则使用<em>aBytesLike</em>的长度。</p>
+<p><em>*<em>ethers</em>.<em>utils</em>.hexStripZeros( <em>aBytesLike</em> ) ⇒ *string&lt; HexString &gt;<em>：**返回</em>aBytesLike</em>的HexString表示形式，去掉所有前导零。</p>
+<p><em>*<em>ethers</em>.<em>utils</em>.hexZeroPad( <em>aBytesLike</em> , <em>length</em> ) ⇒ *string&lt; DataHexString &gt;<em>：**返回被填充到</em>length</em>字节的<em>aBytesLike</em>的DataHexString表示。如果<em>aBytesLike</em>的长度已经超过<em>length</em>字节，则会抛出InvalidArgument错误。</p>
+<h2 id="4-5-签名转换"><a href="#4-5-签名转换" class="headerlink" title="4.5 签名转换"></a>4.5 签名转换</h2><p><em>*<em>ethers</em>.<em>utils</em>.joinSignature( <em>aSignatureLike</em> ) ⇒ *string&lt; RawSignature &gt;<em>：**返回</em>aSignaturelike</em>的原始格式，它是65字节(130个nibbles)长，连接签名的<strong>r</strong>, <strong>s</strong>和(标准化后))<strong>v</strong>。</p>
+<p><strong><em>ethers</em>.<em>utils</em>.splitSignature( <em>aSignatureLikeOrBytesLike</em> ) ⇒ <em>Signature</em>：</strong>返回<em>aSignaturelike</em>的完整扩展格式或原始格式DataHexString，将自动计算所有缺失的属性。</p>
+<h2 id="4-6-随机字节"><a href="#4-6-随机字节" class="headerlink" title="4.6 随机字节"></a>4.6 随机字节</h2><p><strong><em>ethers</em>.<em>utils</em>.randomBytes( <em>length</em> ) ⇒ <em>Uint8Array</em>：</strong>返回一个新的Uint8Array 长度为<em>length</em>的随机字节。</p>
+<p>**<em>ethers</em>.<em>utils</em>.shuffled( <em>array</em> ) ⇒ *Array&lt; any &gt;*：**返回一个使用Fisher-Yates Shuffle打乱后的数组副本。</p>
+<h1 id="以太币格式化与转换"><a href="#以太币格式化与转换" class="headerlink" title="以太币格式化与转换"></a>以太币格式化与转换</h1><p><strong>utils  . etherSymbol</strong> </p>
+<p>以太坊符号(希腊字母  <em>Xi</em>  ) </p>
+<p><strong>utils  . parseEther ( etherString )   &#x3D;&gt;   BigNumber</strong> </p>
+<p>将代表 ether 单位数的  <em>etherString</em>  解析为 wei 单位数的 BitNumber 实例。 （译者注：ether、gwei、wei 等是以太坊的货币单位名称，下同。） </p>
+<p><strong>utils  . formatEther ( wei )   &#x3D;&gt;   string</strong> </p>
+<p>将代表 wei 单位数的  <em>wei</em>  格式化为代表 ether 单位数的十进制字符串。 输出值总是包含至少一个整数和一个小数位，否则将剪除前导和尾随的 0。 </p>
+<p><strong>utils  . parseUnits ( valueString , decimalsOrUnitName )   &#x3D;&gt;   BigNumber</strong> </p>
+<p>将代表某单位数的  <em>valueString</em>  解析为一个代表 wei 单位数的 BigNumber 实例。 参数  <em>decimalsOrUnitsName</em>  可以是 3 到 18 之间（3 的倍数）的小数位数， 或者是以太币单位名称，如： gwei 。 </p>
+<p><strong>utils  . formatUnits ( wei , decimalsOrUnitName )   &#x3D;&gt;   string</strong> </p>
+<p>将  <em>wei</em>  单位数格式化为一个代表某单位数的十进制字符串。 输出值总是包含至少一个整数和一个小数位，否则将修剪前导和尾随的 0。 参数  <em>decimalsOrUnitsName</em>  可以是 3 到 18 之间（3 的倍数）的小数位数， 或者是单位名称，如： gwei 。 </p>
+<p><strong>utils  . commify ( numberOrString )   &#x3D;&gt;   string</strong> </p>
+<p>返回含有千分符的<em>numberOrString</em>。如果  <em>numberOrString</em>  包含小数点， 则输出值将至少具有一位整数和小数。如果不包含小数点，则输出值不会包含小数。 </p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/08/24/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/7-%E5%AE%9E%E7%94%A8%E5%B7%A5%E5%85%B7Utils/" title="7-实用工具Utils">https://kongpengyq.com/2022/08/24/区块链/ether@5.4/7-实用工具Utils/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/ether-5-4-js/" rel="tag"># ether@5.4.js</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/08/20/%E5%8C%BA%E5%9D%97%E9%93%BE/ether@5.4/6-%E5%90%88%E7%BA%A6(contract)/" rel="prev" title="6-合约(contract)">
+      <i class="fa fa-chevron-left"></i> 6-合约(contract)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/08/26/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/1-%E5%BC%80%E5%A7%8B/" rel="next" title="1-开始">
+      1-开始 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%8E%A5%E5%8F%A3"><span class="nav-text">应用程序二进制接口</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-AbiCoder"><span class="nav-text">1.1 AbiCoder</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-ABI%E6%A0%BC%E5%BC%8F"><span class="nav-text">1.2 ABI格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-1-HUman-REadable-ABI"><span class="nav-text">1.2.1 HUman-REadable ABI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-2-Solidity-JSON-ABI"><span class="nav-text">1.2.2 **Solidity JSON **ABI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-3-Solidity-Object-ABI"><span class="nav-text">1.2.3 Solidity Object ABI</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-Fragments"><span class="nav-text">1.3 Fragments</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-0-Formats"><span class="nav-text">1.3.0 Formats</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-1-Fragment"><span class="nav-text">1.3.1 Fragment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-2-ConstructorFragment"><span class="nav-text">1.3.2 ConstructorFragment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-3-ErrorFragment"><span class="nav-text">1.3.3 ErrorFragment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-4-EventFragment"><span class="nav-text">1.3.4 EventFragment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-5-FunctionFragment"><span class="nav-text">1.3.5 FunctionFragment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-6-ParamType"><span class="nav-text">1.3.6 ParamType</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4-Interface"><span class="nav-text">1.4 Interface</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-1-%E5%B1%9E%E6%80%A7"><span class="nav-text">1.4.1 属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-2-%E6%A0%BC%E5%BC%8F%E5%8C%96"><span class="nav-text">1.4.2 格式化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-3-Fragment-Access"><span class="nav-text">1.4.3 Fragment Access</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-4-%E7%AD%BE%E5%90%8D%E5%92%8C%E4%B8%BB%E9%A2%98%E7%9A%84%E5%93%88%E5%B8%8C"><span class="nav-text">1.4.4 签名和主题的哈希</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-5-%E7%BC%96%E7%A0%81%E6%95%B0%E6%8D%AE"><span class="nav-text">1.4.5 编码数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-6-%E8%A7%A3%E7%A0%81%E6%95%B0%E6%8D%AE"><span class="nav-text">1.4.6 解码数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-7-%E8%A7%A3%E6%9E%90"><span class="nav-text">1.4.7 解析</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9C%B0%E5%9D%80"><span class="nav-text">地址</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%A7%E6%95%B0-BigNumber"><span class="nav-text">大数(BigNumber)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B"><span class="nav-text">3.1 创建实例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-%E6%96%B9%E6%B3%95"><span class="nav-text">3.2 方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-1-%E6%95%B0%E5%AD%A6%E8%BF%90%E7%AE%97"><span class="nav-text">3.2.1 数学运算</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Two%E2%80%99s-Complement"><span class="nav-text">Two’s Complement</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-2-%E6%AF%94%E8%BE%83%E5%92%8C%E7%9B%B8%E7%AD%89"><span class="nav-text">3.2.2 比较和相等</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-3-%E8%BD%AC%E6%8D%A2"><span class="nav-text">3.2.3 转换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-4-%E6%A3%80%E6%9F%A5"><span class="nav-text">3.2.4 检查</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AD%97%E8%8A%82%E5%A4%84%E7%90%86"><span class="nav-text">字节处理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B"><span class="nav-text">类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1-%E6%A3%80%E6%9F%A5"><span class="nav-text">4.1 检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-%E6%95%B0%E7%BB%84%E5%92%8C%E5%8D%81%E5%85%AD%E8%BF%9B%E5%88%B6%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B9%8B%E9%97%B4%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="nav-text">4.2 数组和十六进制字符串之间的转换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-3-%E6%95%B0%E7%BB%84%E5%A4%84%E7%90%86"><span class="nav-text">4.3 数组处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-4-%E5%8D%81%E5%85%AD%E8%BF%9B%E5%88%B6%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%A4%84%E7%90%86"><span class="nav-text">4.4 十六进制字符串处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-5-%E7%AD%BE%E5%90%8D%E8%BD%AC%E6%8D%A2"><span class="nav-text">4.5 签名转换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-6-%E9%9A%8F%E6%9C%BA%E5%AD%97%E8%8A%82"><span class="nav-text">4.6 随机字节</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A5%E5%A4%AA%E5%B8%81%E6%A0%BC%E5%BC%8F%E5%8C%96%E4%B8%8E%E8%BD%AC%E6%8D%A2"><span class="nav-text">以太币格式化与转换</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Solidity 如果遇到异常错误，是通过回退状态的方式来进行处理。发生异常时，会撤消当前调用和所有子调用改变的状态变量，同时给调用者返回一个错误标识。 调用者调用某个函数方法，要么成功修改了所有状态变量，要么遇到异常不修改任何状态变量，不存在成功修改部分变量的情况， Solidity 提供了 require 、assert 和 revert 来处理异常。同时可以使用 error 关键字来实现错误">
+<meta property="og:type" content="article">
+<meta property="og:title" content="06-错误处理">
+<meta property="og:url" content="https://kongpengyq.com/2022/06/27/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/06-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="Solidity 如果遇到异常错误，是通过回退状态的方式来进行处理。发生异常时，会撤消当前调用和所有子调用改变的状态变量，同时给调用者返回一个错误标识。 调用者调用某个函数方法，要么成功修改了所有状态变量，要么遇到异常不修改任何状态变量，不存在成功修改部分变量的情况， Solidity 提供了 require 、assert 和 revert 来处理异常。同时可以使用 error 关键字来实现错误">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-06-26T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.678Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="Solidity0.8.17">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/06/27/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/06-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>06-错误处理 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/06/27/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/06-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          06-错误处理
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-27 00:00:00" itemprop="dateCreated datePublished" datetime="2022-06-27T00:00:00+08:00">2022-06-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Solidity0-8-17/" itemprop="url" rel="index">
+                    <span itemprop="name">Solidity0.8.17</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Solidity 如果遇到异常错误，是通过回退状态的方式来进行处理。发生异常时，会撤消当前调用和所有子调用改变的状态变量，同时给调用者返回一个错误标识。</p>
+<p>调用者调用某个函数方法，要么成功修改了所有状态变量，要么遇到异常不修改任何状态变量，不存在成功修改部分变量的情况，</p>
+<p>Solidity 提供了 <strong>require</strong> 、<strong>assert</strong> 和 <strong>revert</strong> 来处理异常。同时可以使用 <code>error</code> 关键字来实现错误。</p>
+<p>跟用错误字符串相比， error 更便宜并且允许你编码额外的数据，还可以用 <code>NatSpec</code> 为用户去描述错误。</p>
+<p>Solidity 使用状态恢复异常来处理错误。这种异常将撤消对当前调用（及其所有子调用）中的状态所做的所有更改，并且还向调用者标记错误。</p>
+<p>如果异常在子调用发生，那么异常会自动冒泡到顶层（例如：异常会重新抛出），除非他们在 <code>try/catch</code> 语句中捕获了错误。 但是如果是在 <code>send</code> 和 低级 <code>call</code>, <code>delegatecall</code> 和 <code>staticcall</code> 的调用里发生异常时， 他们会返回 <code>false</code> （第一个返回值） 而不是冒泡异常。</p>
+<p>警告注意：根据 EVM 的设计，如果被调用的地址不存在，低级别函数 <code>call</code>, <code>delegatecall</code> 和 <code>staticcall</code> 第一个返回值同样是 <code>true</code>。 如果需要，请在调用之前检查账号的存在性。</p>
+<p>异常可以包含错误数据，以 error 示例 的形式传回给调用者。 内置的错误 <code>Error(string)</code> 和 <code>Panic(uint256)</code> 被作为特殊函数使用，下面将解释。 <code>Error</code> 用于 “常规” 错误条件，而 <code>Panic</code> 用于在（无 bug）代码中不应该出现的错误。</p>
+<p>函数 assert 和 require 可用于检查条件并在条件不满足时抛出异常。</p>
+<h1 id="require"><a href="#require" class="headerlink" title="require"></a>require</h1><p>require 用来严查某些条件，如果不满足这些雕件，就会回退所有状态的变化。</p>
+<h2 id="1-1-语法"><a href="#1-1-语法" class="headerlink" title="1.1 语法"></a>1.1 语法</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">require(condition[, &#x27;Something bad happened&#x27;])</span><br></pre></td></tr></table></figure>
+
+<p>如果条件不满足则撤销状态更改 ，用于检查由输入或者外部组件引起的错误。可以同时提供一个错误消息。</p>
+<ul>
+<li>require 函数常常用来检查输入变量或状态变量是否满足条件，以及验证调用外部合约的返回值。</li>
+<li>require 可以有返回值，例如：<code>require(condition, &#39;Something bad happened&#39;);</code>。</li>
+<li>require 的返回值不宜过长，因为返回信息需要消耗 gas。<ul>
+<li>并没有证明长度越长，消耗的 gas 越多。</li>
+</ul>
+</li>
+</ul>
+<p><strong>注解</strong> <code>require</code> 是一个像其他函数一样可被执行的函数。意味着，所有的参数在函数被执行之前就都会被执行。 尤其，在<br><code>require(condition, f())</code> 里，函数 <code>f</code> 会被执行，即便 <code>condition</code> 为 True .</p>
+<h2 id="1-2-使用场景"><a href="#1-2-使用场景" class="headerlink" title="1.2 使用场景"></a>1.2 使用场景</h2><ul>
+<li>验证用户输入，例如：<code>require(input_var&gt;100)</code></li>
+<li>验证外部合约的调用结果，例如：<code>require(external.send(amount))</code></li>
+<li>在执行状态更改操作之前验证状态条件，例如：<code>require(block.number &gt; 49999)</code> 或 <code>require(balance[msg.sender]&gt;=amount)</code></li>
+<li>require() 语句的失败报错，应该被看作一个正常的判断语句流程不能通过的事件。</li>
+</ul>
+<p>一般来说，使用 <code>require()</code> 的频率更多，通常应用于函数的开头和函数修改器内。</p>
+<p>一句话: <strong>require() 函数用于检测输入变量或状态变量是否满足条件，以及验证调用外部合约的返回值。</strong></p>
+<h1 id="assert"><a href="#assert" class="headerlink" title="assert"></a>assert</h1><h2 id="2-1-语法"><a href="#2-1-语法" class="headerlink" title="2.1 语法"></a>2.1 语法</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">assert(bool condition)</span><br></pre></td></tr></table></figure>
+
+<p>如果不满足条件，则会导致 Panic 错误，则撤销状态更改 - 用于检查内部错误。</p>
+<p><code>assert()</code>与 <code>require()</code> 语句都需要满足括号中的条件，才能进行后续操作，若不满足则抛出错误。</p>
+<ul>
+<li>assert：断言，不能包括报错信息的。</li>
+</ul>
+<p><strong>例子</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract Demo &#123;</span><br><span class="line">    uint256 public amount = 0;</span><br><span class="line"></span><br><span class="line">    function test1(uint256 _x) external &#123;</span><br><span class="line">        require(_x &lt; 10, &quot;My error info 1&quot;); // _x &gt;= 10 时候会报错</span><br><span class="line">        amount = _x;</span><br><span class="line">        assert(amount == _x); // 必须等于_x，否则抛出错误</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2-使用场景"><a href="#2-2-使用场景" class="headerlink" title="2.2 使用场景"></a>2.2 使用场景</h2><ul>
+<li>检查溢出</li>
+<li>检查不变量</li>
+<li>更改后验证状态</li>
+<li>预防永远不会发生的情况</li>
+<li>assert()语句的失败报错，意味着发生了代码层面的错误事件，很大可能是合约中有一个 bug 需要修复。</li>
+<li>也可以智能合约写测试。</li>
+</ul>
+<p>一般来说，使用 <code>assert()</code>的频率较少，通常用于函数的结尾。基本上，<code>require()</code> 应该用于检查条件，而 <code>assert()</code> 只是为了防止发生任何非常糟糕的事情。</p>
+<h2 id="2-3-扩展"><a href="#2-3-扩展" class="headerlink" title="2. 3 扩展"></a>2. 3 扩展</h2><p>assert 函数会创建一个 <code>Panic(uint256)</code> 类型的错误。同样的错误在以下列出的特定情形会被编译器创建。</p>
+<p>assert 函数应该只用于测试内部错误，检查不变量，正常的函数代码永远不会产生 Panic, 甚至是基于一个无效的外部输入时。 如果发生了，那就说明出现了一个需要你修复的 bug。如果使用得当，语言分析工具可以识别出那些会导致 Panic 的 assert 条件和函数调用。</p>
+<p>下列情况将会产生一个 Panic 异常： 错误数据会提供的错误码编号，用来指示 Panic 的类型：</p>
+<ol>
+<li>0x00: 用于常规编译器插入的 Panic。</li>
+<li>0x01: 如果你调用 <code>assert</code> 的参数（表达式）结果为 false 。</li>
+<li>0x11: 在 <code>unchecked &#123; ... &#125;</code> 外，如果算术运算结果向上或向下溢出。</li>
+<li>0x12; 如果你用零当除数做除法或模运算（例如 <code>5 / 0</code> 或 <code>23 % 0</code> ）。</li>
+<li>0x21: 如果你将一个太大的数或负数值转换为一个枚举类型。</li>
+<li>0x22: 如果你访问一个没有正确编码的存储 byte 数组.</li>
+<li>0x31: 如果在空数组上 <code>.pop()</code> 。</li>
+<li>0x32: 如果你访问 <code>bytesN</code> 数组（或切片）的索引太大或为负数。(例如：<br><code>x[i]</code> 而 <code>i &gt;= x.length</code> 或 <code>i &lt; 0</code>).</li>
+<li>0x41: 如果你分配了太多的内内存或创建了太大的数组。</li>
+<li>0x51: 如果你调用了零初始化内部函数类型变量。</li>
+</ol>
+<h1 id="revert"><a href="#revert" class="headerlink" title="revert"></a>revert</h1><p>语法: <code>revert([string memory reason])</code></p>
+<ul>
+<li><p>使用 revert：抛出错误,它使用圆括号接受一个字符串：语句将一个自定义的错误作为直接参数，没有括号：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">revert();</span><br><span class="line">revert(&quot;description&quot;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用 <code>revert()</code> 会触发一个没有任何错误数据的回退，而 <code>revert(&quot;description&quot;)</code> 会产生一个 <code>Error(string)</code> 错误。</p>
+</li>
+<li><p>使用 revert：触发自定义错误 ·</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">revert CustomError(arg1, arg2);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>可以接收参数，方便判断。比如可以传入 <code>msg.sender</code> &#x2F; 函数参数 等</li>
+</ul>
+</li>
+</ul>
+<p>终止运行并撤销状态更改。可以同时提供一个解释性的字符串。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract ErrorDemo &#123;</span><br><span class="line">    // 自定义错误</span><br><span class="line">    error MyError(address call, uint256 _i);</span><br><span class="line"></span><br><span class="line">    function testCustomError(uint256 _x) external view &#123;</span><br><span class="line">        if (_x &gt; 10) &#123;</span><br><span class="line">            revert MyError(msg.sender, _x);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>只要参数没有额外的附加效果，使用 <code>if (!condition) revert(...);</code> 和 <code>require(condition, ...);</code> 是等价的，例如当参数是字符串的情况。</p>
+<h1 id="三种方式的总结"><a href="#三种方式的总结" class="headerlink" title="三种方式的总结"></a>三种方式的总结</h1><h2 id="4-1-require、assert-不同点"><a href="#4-1-require、assert-不同点" class="headerlink" title="4.1 require、assert 不同点"></a>4.1 require、assert 不同点</h2><ul>
+<li><code>require(false)</code> 编译为 <code>0xfd</code>，这是 <code>revert()</code> 的操作码，<strong>所以会退还所有剩余的 gas，同时可以返回一个自定义的报错信息</strong>。</li>
+<li><code>assert(false)</code> 编译为 <code>0xfe</code>，这是一个无效的操作码，<strong>所以会消耗掉所有剩余的 gas，并恢复所有的操作</strong>。</li>
+<li><code>require</code> 的 gas 消耗要小于 <code>assert</code>，而且可以有返回值，使用更为灵活。</li>
+</ul>
+<p>错误信息：<code>require</code> 函数可以创建无错误提示的错误，也可以创建一个 <code>Error(string)</code>类型的错误。 <code>require</code>函数应该用于确认条件有效性，例如输入变量，或合约状态变量是否满足条件，或验证外部合约调用返回的值。</p>
+<p>当前不可以使用混合使用 require 和自定义错误，而是需要使用 <code>if (!condition) revert CustomError();</code> 。</p>
+<p>下列情况将会产生一个 <code>Error(string)</code>（或无错误提示）的错误：</p>
+<ol>
+<li>如果你调用 <code>require(x)</code> ，而 <code>x</code> 结果为 <code>false</code> 。</li>
+<li>如果你使用 <code>revert()</code> 或者 <code>revert(&quot;description&quot;)</code> 。</li>
+<li>如果你在不包含代码的合约上执行外部函数调用。</li>
+<li>如果你通过合约接收以太币，而又没有 <code>payable</code>修饰符的公有函数（包括构造函数和 fallback 函数）。</li>
+<li>如果你的合约通过公有 getter 函数接收 Ether 。</li>
+</ol>
+<p>在下面的情况下，来自外部调用的错误数据（如果提供的话）被转发，这意味可能<code>Error</code> 或 <code>Panic</code> 都有可能触发。</p>
+<ol>
+<li>如果 <code>.transfer()</code> 失败。</li>
+<li>如果你通过消息调用调用某个函数，但该函数没有正确结束（例如, 它耗尽了gas，没有匹配函数，或者本身抛出一个异常），不包括使用低级别 <code>call</code>， <code>send</code> ， <code>delegatecall</code> ， <code>callcode</code> 或 <code>staticcall</code><br>的函数调用。低级操作不会抛出异常，而通过返回 <code>false</code> 来指示失败。</li>
+<li>如果你使用 <code>new</code> 关键字创建合约，但合约创建没有正确结束。</li>
+</ol>
+<p>你可以选择给 <code>require</code> 提供一个消息字符串，但 <code>assert</code> 不行。</p>
+<p>如果你没有为 <code>require</code> 提供一个字符串参数，它会用空错误数据进行 revert， 甚至不包括错误选择器。</p>
+<p>在下例中，你可以看到如何轻松使用 <code>require</code> 检查输入条件以及如何使用<code>assert</code> 检查内部错误.</p>
+<p>在内部， Solidity 对异常执行回退操作（指令 <code>0xfd</code> ），从而让 EVM 回退对状态所做的所有更改。回退的原因是无法安全地继续执行，因为无法达到预期的结果。 因为我们想要保持交易的原子性，最安全的动作是回退所有的更改，并让整个交易（或至少调用）没有任何新影响。</p>
+<p>在这两种情况下，调用者都可以使用 <code>try</code>&#x2F; <code>catch</code>来应对此类失败，但是被调用函数的更改将始终被还原。</p>
+<h2 id="4-2-require、assert、revert-共同点"><a href="#4-2-require、assert、revert-共同点" class="headerlink" title="4.2 require、assert、revert 共同点"></a>4.2 require、assert、revert 共同点</h2><p>以下三个语句的功能完全相同：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// revert</span><br><span class="line">if(msg.sender != owner) &#123;</span><br><span class="line">   revert();</span><br><span class="line"> &#125;</span><br><span class="line"> </span><br><span class="line">// require</span><br><span class="line">require(msg.sender == owner);</span><br><span class="line"></span><br><span class="line">// assert</span><br><span class="line">assert(msg.sender == owner);</span><br></pre></td></tr></table></figure>
+
+<h1 id="自定义-Error"><a href="#自定义-Error" class="headerlink" title="自定义 Error"></a>自定义 Error</h1><p>Solidity 中的错误（关键字 error）提供了一种方便且省 gas 的方式来向用户解释为什么一个操作会失败。它们可以被定义在合约（包括接口和库）内部和外部。</p>
+<ul>
+<li><strong><code>error</code> 只能通过 <code>revert</code> 触发</strong></li>
+<li>使用自定义 error 抛出错误，向调用者描述错误信息。</li>
+<li>开发者可以在任何时候，任何条件下触发自定义 Error</li>
+<li>error 花费更少的 gas。</li>
+<li><code>error</code> 可以定义在 contract 之外。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">// 自定义错误</span><br><span class="line">error MyError1(address call, uint256 _i);</span><br><span class="line"></span><br><span class="line">contract ErrorDemo &#123;</span><br><span class="line">    // 自定义错误</span><br><span class="line">    error MyError2(address call, uint256 _i);</span><br><span class="line"></span><br><span class="line">    function testCustom1(uint256 _x) external view &#123;</span><br><span class="line">        if (_x &gt; 10) &#123;</span><br><span class="line">            revert MyError1(msg.sender, _x);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>错误必须与 revert 语句 一起使用。它会还原当前调用中的发生的所有变化，并将错误数据传回给调用者。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: GPL-3.0</span><br><span class="line">pragma solidity ^0.8.4;</span><br><span class="line"></span><br><span class="line">/// 转账时，没有足够的余额。</span><br><span class="line">/// @param available balance available.</span><br><span class="line">/// @param required requested amount to transfer.</span><br><span class="line">error InsufficientBalance(uint256 available, uint256 required);</span><br><span class="line"></span><br><span class="line">contract TestToken &#123;</span><br><span class="line">    mapping(address =&gt; uint) balance;</span><br><span class="line">    function transfer(address to, uint256 amount) public &#123;</span><br><span class="line">        if (amount &gt; balance[msg.sender])</span><br><span class="line">            revert InsufficientBalance(&#123;</span><br><span class="line">                available: balance[msg.sender],</span><br><span class="line">                required: amount</span><br><span class="line">            &#125;);</span><br><span class="line">        balance[msg.sender] -= amount;</span><br><span class="line">        balance[to] += amount;</span><br><span class="line">    &#125;</span><br><span class="line">    // ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>错误不能被重写或覆盖，但是可以继承。只要作用域不同，同一个错误可以在多个地方定义。只能使用 <code>revert</code> 语句创建错误实例。</p>
+<p>错误产生的数据，会通过 revert 操作传递给调用者，可以交由链外组件处理或在 try&#x2F;catch 语句 中捕获它。</p>
+<p>注意，只有外部调用的错误才能被捕获。发生在内部调用或同一函数内的 revert 不能被捕获。</p>
+<h1 id="Natspec-Error"><a href="#Natspec-Error" class="headerlink" title="Natspec Error"></a>Natspec Error</h1><p>使用一个自定义的错误实例通常会比字符串描述便宜得多。因为你可以使用错误名来描述它，它只被编码为四个字节。更长的描述可以通过 NatSpec 提供，这不会产生任何费用。</p>
+<p>通过三个斜杠 <code>///</code> 定义的错误，它比<code>require</code>更省 gas。推荐代替 require 使用。</p>
+<p>如果错误没有任何参数，错误只需要四个字节的数据，你可以使用 NatSpec，来进一步解释错误背后的原因，NatSpec 不会存储在链上。这个方式使得它同时也是一个非常便宜和方便的错误报告功能。</p>
+<p>更具体地说，一个错误实例的 ABI 编码方式与调用相同名称和类型的函数的方式相同，它作为<code>revert</code> 操作码的返回数据使用。 这意味着错误数据由一个 4 字节的选择器和 ABI-encoded 数据组成。选择器是错误的签名的 keccak256 哈希的前四个字节组成。</p>
+<p>代码结构如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/// this is netspec error info</span><br><span class="line">error MyError1();</span><br></pre></td></tr></table></figure>
+
+<p>例子如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract ErrorDemo &#123;</span><br><span class="line">    // netspec error</span><br><span class="line">    /// this is netspec error info,this is netspec error info,this is netspec error info,this is netspec error info</span><br><span class="line">    error MyError1();</span><br><span class="line"></span><br><span class="line">    /// 这是一个错误！老铁，你的输入参数错啦，必须要大于10的数字才可以通过！</span><br><span class="line">    error MyError2();</span><br><span class="line"></span><br><span class="line">    // 21647 gas</span><br><span class="line">    function test1(uint256 _x) external pure &#123;</span><br><span class="line">        if (_x &lt; 10) &#123;</span><br><span class="line">            revert MyError1();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 21691 gas</span><br><span class="line">    function test2(uint256 _x) external pure &#123;</span><br><span class="line">        if (_x &lt; 10) &#123;</span><br><span class="line">            revert MyError2();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 22036 gas</span><br><span class="line">    function test3(uint256 _x) external pure &#123;</span><br><span class="line">        require(</span><br><span class="line">            _x &gt; 10,</span><br><span class="line">            &quot;this is netspec error info,this is netspec error info,this is netspec error info,this is netspec error info&quot;</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 21974 gas</span><br><span class="line">    function test4(uint256 _x) external pure &#123;</span><br><span class="line">        require(</span><br><span class="line">            _x &gt; 10,</span><br><span class="line">            unicode&quot;这是一个错误！老铁，你的输入参数错啦，必须要大于10的数字才可以通过！&quot;</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="try-catch"><a href="#try-catch" class="headerlink" title="try catch"></a>try catch</h1><p>在当前合约发起对外部合约的调用，如果外部合约调用执行失败被 revert，外部合约状态会被回滚，当前合约状态也会被回滚。这是正常的逻辑。</p>
+<p>但有时候我们并不想这样，要是能够捕获外部合约调用异常，然后根据情况做自己的处理会更好吗！所以，这种场景下适应于使用 <code>try...catch</code> 语句。</p>
+<p><code>try catch</code>仅用于外部函数调用和合约创建调用。</p>
+<ul>
+<li>外部函数调用</li>
+<li>合约创建调用</li>
+</ul>
+<h2 id="7-1-语法"><a href="#7-1-语法" class="headerlink" title="7.1 语法"></a>7.1 语法</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">try this.count() &#123;</span><br><span class="line">    // 成功逻辑</span><br><span class="line">    return &quot;success&quot;;</span><br><span class="line">&#125; catch Error(string memory reason) &#123;</span><br><span class="line">    // 失败的逻辑: require / revert</span><br><span class="line">    // 调用 count() 失败时执行，通常是不满足 require 语句条件或触发 revert 语句时所引起的调用失败</span><br><span class="line">    return reason;</span><br><span class="line">&#125; catch (bytes memory) &#123;</span><br><span class="line">    // 失败逻辑</span><br><span class="line">    // 调用 count() 异常时执行，通常是触发 assert 语句或除 0 等比较严重错误时会执行</span><br><span class="line">    return &quot;assert error&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的逻辑也可以简写如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">try this.count() &#123;</span><br><span class="line">    // 成功逻辑</span><br><span class="line">    return &quot;success&quot;;</span><br><span class="line">&#125; catch (bytes memory) &#123;</span><br><span class="line">    // 失败逻辑: require / revert / assert</span><br><span class="line">     return &quot;assert error&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>例子</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.17;</span><br><span class="line"></span><br><span class="line">contract Manager &#123;</span><br><span class="line">    function count() public pure returns (int256) &#123;</span><br><span class="line">         require(1 == 2, &quot;require error&quot;);</span><br><span class="line">         return 2;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function count() public pure returns (int256) &#123;</span><br><span class="line">        assert(1 == 2);</span><br><span class="line">        return 2;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function test() public view returns (string memory) &#123;</span><br><span class="line">        // this 代表当前函数</span><br><span class="line">        try this.count() &#123;</span><br><span class="line">            return &quot;success&quot;;</span><br><span class="line">        &#125; catch Error(string memory reason) &#123;</span><br><span class="line">            // reason 是出错原因</span><br><span class="line">            // 调用 count() 失败时执行，通常是不满足 require 语句条件</span><br><span class="line">            // 或触发 revert 语句时所引起的调用失败</span><br><span class="line">            return reason;</span><br><span class="line">        &#125; catch (bytes memory) &#123;</span><br><span class="line">            // 调用 count() 异常时执行，通常是触发 assert 语句或除 0 等比较严重错误时会执行</span><br><span class="line">            return &quot;assert error&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>外部调用的失败，可以通过 try&#x2F;catch 语句来捕获，例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"> // SPDX-License-Identifier: GPL-3.0</span><br><span class="line">pragma solidity &gt;=0.8.1;</span><br><span class="line"></span><br><span class="line">interface DataFeed &#123; function getData(address token) external returns (uint value); &#125;</span><br><span class="line"></span><br><span class="line">contract FeedConsumer &#123;</span><br><span class="line">    DataFeed feed;</span><br><span class="line">    uint errorCount;</span><br><span class="line">    function rate(address token) public returns (uint value, bool success) &#123;</span><br><span class="line">        // 如果错误超过 10 次，永久关闭这个机制</span><br><span class="line">        require(errorCount &lt; 10);</span><br><span class="line">        try feed.getData(token) returns (uint v) &#123;</span><br><span class="line">            return (v, true);</span><br><span class="line">        &#125; catch Error(string memory reason) &#123;</span><br><span class="line">            // This is executed in case</span><br><span class="line">            // revert was called inside getData</span><br><span class="line">            // and a reason string was provided.</span><br><span class="line">            errorCount++;</span><br><span class="line">            return (0, false);</span><br><span class="line">        &#125;  catch Panic(uint errorCode) &#123;</span><br><span class="line">            // This is executed in case of a panic,</span><br><span class="line">            // i.e. a serious error like division by zero</span><br><span class="line">            // or overflow. The error code can be used</span><br><span class="line">            // to determine the kind of error.</span><br><span class="line">            errorCount++;</span><br><span class="line">            return (0, false);</span><br><span class="line">        &#125; catch (bytes memory lowLevelData) &#123;</span><br><span class="line">            // This is executed in case revert() was used。</span><br><span class="line">            errorCount++;</span><br><span class="line">            return (0, false);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Solidity 根据错误的类型，支持不同种类的捕获代码块：</p>
+<ul>
+<li><code>catch Error(string memory reason) &#123; ... &#125;</code>: 如果错误是由 <code>revert(&quot;reasonString&quot;)</code> 或 <code>require(false, &quot;reasonString&quot;)</code>（或导致这种异常的内部错误）引起的，则执行这个 catch 子句。</li>
+<li><code>catch Panic(uint errorCode) &#123; ... &#125;</code>: 如果错误是由 panic 引起的（如： <code>assert</code> 失败，除以 0，无效的数组访问，算术溢出等），将执行这个 catch 子句。</li>
+<li><code>catch (bytes memory lowLevelData) &#123; ... &#125;</code>: 如果错误签名不符合任何其他子句，如果在解码错误信息时出现了错误，或者如果异常没有一起提供错误数据。在这种情况下，子句声明的变量提供了对低级错误数据的访问。</li>
+<li><code>catch &#123; ... &#125;</code>: 如果你对错误数据不感兴趣，你可以直接使用 <code>catch &#123; ... &#125;</code> (甚至是作为唯一的 catch 子句) 而不是前面几个 catch 子句。</li>
+</ul>
+<p>有计划在未来支持其他类型的错误数据。 <code>Error</code> 和 <code>Panic</code> 字符串目前是按原样解析的，不作为标识符处理。</p>
+<p>为了捕捉所有的错误情况，你至少要有子句 <code>catch &#123; ... &#125;</code> 或 <code>catch (bytes memory lowLevelData) &#123; ... &#125;</code>.</p>
+<p>在 <code>returns</code> 和 <code>catch</code> 子句中声明的变量只在后面的块的范围内有效。</p>
+<p><strong>注解</strong>: 如果在 try&#x2F;catch 语句内部返回的数据解码过程中发生错误，这将导致当前执行的合约出现异常，如此，它不会在 catch 子句中被捕获到。如果在 <code>catch Error(string memory reason)</code> 的解码过程中出现错误，并且有一个低级的 catch 子句，那么这个错误就会在低级 catch 子句被捕获。</p>
+<p><strong>注解</strong>: 如果执行到一个 catch 子句，那么外部调用的状态改变已经被回退了。如果执行到了成功块，那么外部调用的状态改变是有效的。如果状态改变已经被回退，那么要么在 catch 块中继续执行，要么是 try&#x2F;catch 语句的执行本身被回退（例如由于上面提到的解码失败或由于没有提供低级别的 catch 子句时）。</p>
+<p><strong>注解</strong>:调用失败背后的原因可能是多方面的。请不要认为错误信息是直接来自被调用的合约。错误可能发生在调用链的更深处，而被调用的合约只是转发了（冒泡）错误。<br>另外，这可能是由于 out-of-gas 情况，而不是一个逻辑错误状况：调用者总是在调用中保留至少 1&#x2F;64 的 gas，这样即使被调合约 gas 用完，调用方仍有一些 gas 预留（处理剩余逻辑）</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/06/27/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/06-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/" title="06-错误处理">https://kongpengyq.com/2022/06/27/区块链/Solidity0.8/06-错误处理/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/Solidity0-8-17/" rel="tag"># Solidity0.8.17</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/06/24/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/05-%E8%BF%90%E7%AE%97%E6%93%8D%E4%BD%9C%E7%AC%A6/" rel="prev" title="05-运算操作符">
+      <i class="fa fa-chevron-left"></i> 05-运算操作符
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/30/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/08-%E5%BE%AA%E7%8E%AF%E4%B8%8E%E8%BF%AD%E4%BB%A3/" rel="next" title="08-循环与迭代">
+      08-循环与迭代 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#require"><span class="nav-text">require</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-%E8%AF%AD%E6%B3%95"><span class="nav-text">1.1 语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-text">1.2 使用场景</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#assert"><span class="nav-text">assert</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E8%AF%AD%E6%B3%95"><span class="nav-text">2.1 语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-text">2.2 使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-%E6%89%A9%E5%B1%95"><span class="nav-text">2. 3 扩展</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#revert"><span class="nav-text">revert</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89%E7%A7%8D%E6%96%B9%E5%BC%8F%E7%9A%84%E6%80%BB%E7%BB%93"><span class="nav-text">三种方式的总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1-require%E3%80%81assert-%E4%B8%8D%E5%90%8C%E7%82%B9"><span class="nav-text">4.1 require、assert 不同点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-require%E3%80%81assert%E3%80%81revert-%E5%85%B1%E5%90%8C%E7%82%B9"><span class="nav-text">4.2 require、assert、revert 共同点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89-Error"><span class="nav-text">自定义 Error</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Natspec-Error"><span class="nav-text">Natspec Error</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#try-catch"><span class="nav-text">try catch</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#7-1-%E8%AF%AD%E6%B3%95"><span class="nav-text">7.1 语法</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

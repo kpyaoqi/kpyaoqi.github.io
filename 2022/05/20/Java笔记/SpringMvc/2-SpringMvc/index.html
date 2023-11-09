@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="@RequestMapping注解:将请求和控制器关联起来标识一个类时：设置请求的初始信息 标识一个方法时：设置请求的具体信息 这个注解里面还有很多属性：  value:设置多个请求映射的地址 method：设置能通过的请求方式（springmvc提供了扩展注解：@GetMapping、@PostMapping、@PutMapping、@DeleteMapping） params：设置能通过的请求">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2-SpringMvc">
+<meta property="og:url" content="https://kongpengyq.com/2022/05/20/Java%E7%AC%94%E8%AE%B0/SpringMvc/2-SpringMvc/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="@RequestMapping注解:将请求和控制器关联起来标识一个类时：设置请求的初始信息 标识一个方法时：设置请求的具体信息 这个注解里面还有很多属性：  value:设置多个请求映射的地址 method：设置能通过的请求方式（springmvc提供了扩展注解：@GetMapping、@PostMapping、@PutMapping、@DeleteMapping） params：设置能通过的请求">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-05-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.659Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="Java笔记">
+<meta property="article:tag" content="SpringMvc">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/05/20/Java%E7%AC%94%E8%AE%B0/SpringMvc/2-SpringMvc/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>2-SpringMvc | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/05/20/Java%E7%AC%94%E8%AE%B0/SpringMvc/2-SpringMvc/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2-SpringMvc
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-05-20 00:00:00" itemprop="dateCreated datePublished" datetime="2022-05-20T00:00:00+08:00">2022-05-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SpringMvc/" itemprop="url" rel="index">
+                    <span itemprop="name">SpringMvc</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="RequestMapping注解-将请求和控制器关联起来"><a href="#RequestMapping注解-将请求和控制器关联起来" class="headerlink" title="@RequestMapping注解:将请求和控制器关联起来"></a>@RequestMapping注解:将请求和控制器关联起来</h2><p>标识一个类时：设置请求的初始信息</p>
+<p>标识一个方法时：设置请求的具体信息</p>
+<p>这个注解里面还有很多属性：</p>
+<ul>
+<li>value:设置多个请求映射的地址</li>
+<li>method：设置能通过的请求方式（springmvc提供了扩展注解：@GetMapping、@PostMapping、@PutMapping、@DeleteMapping）</li>
+<li>params：设置能通过的请求必须携带的请求参数</li>
+<li>headers：设置能通过的请求必须携带的请求头参数</li>
+</ul>
+<h3 id="请求过来了那当然就是如何获取参数了？"><a href="#请求过来了那当然就是如何获取参数了？" class="headerlink" title="请求过来了那当然就是如何获取参数了？"></a>请求过来了那当然就是如何获取参数了？</h3><ol>
+<li><p>通过ServletAPI获取：将HttpServletRequest作为控制器的形参，会封装放弃那请求的请求参数</p>
+</li>
+<li><p>通过控制器方法获取：当控制器的形参名和请求参数名相同时，DispatcherServlet会将请求参数自动赋值给形参</p>
+</li>
+<li><p>@RequestParam：将请求参数与控制器形参创建映射关系，标注在形参前面，获取请求参数名与形参名相同的，有三个属性（value：指定形参赋值的参数名、required：设置请求参数是否必须、defaultValue：默认值为参数名）</p>
+</li>
+<li><p>@RequestHeader：将请求头信息与控制器形参创建映射关系，用法与@RequestParam</p>
+</li>
+<li><p>@CookieValue：将Cookie数据与控制器形参创建映射关系，用法与@RequestParam</p>
+</li>
+<li><p>通过POJO获取：控制器形参设置一个实体类类型，当请求参数中的参数与该实体类中的属性一一对应，则会给其赋值</p>
+</li>
+</ol>
+<h3 id="域对象的数据共享"><a href="#域对象的数据共享" class="headerlink" title="域对象的数据共享"></a>域对象的数据共享</h3><ol>
+<li>使用ServletAPI向request域对象共享数据:控制器设置形参”HttpServletRequest request“，调用方法request.setAttribute(“AB”, “data”);</li>
+<li>使用ModelAndView向request域对象共享数据：创建一个新的ModelAndView()对象，调用方法：mod.addObject(“AB”, “data”); 设置视图，实现页面跳转 ：mod.setViewName(“success”); 返回ModelAndView()对象：return mav; </li>
+<li>使用Model向request域对象共享数据:控制器设置形参”Model model“，调用方法model.addAttribute(“AB”, “data”);</li>
+<li>使用map向request域对象共享数据::控制器设置形参”Map&lt;String, Object&gt; map“,调用方法map.put(“AB”, “data”);</li>
+<li>使用ModelMap向request域对象共享数据:控制器设置形参”ModelMap modelMap“，调用方法modelMap.addAttribute(“AB”, “data”);</li>
+<li>向session域共享数据:控制器设置形参”HttpSession session”，调用方法session.setAttribute(“AB”, “data”);</li>
+<li>向application域共享数据:控制器设置形参”HttpSession session”，创建session.getServletContext(); 对象，调用方法application.setAttribute(“AB”, “data”);</li>
+</ol>
+<h3 id="SpringMvc视图的渲染"><a href="#SpringMvc视图的渲染" class="headerlink" title="SpringMvc视图的渲染"></a>SpringMvc视图的渲染</h3><ul>
+<li><p>ThymeleafView：当控制器所请求的视图没有前缀的时候，会默认被配置文件中的视图解析器根据前缀和后缀拼接解析，然后转发</p>
+</li>
+<li><p>转发视图：当控制器的请求的视图含有前缀“forword:”时，不会经过视图解析器，而是将前缀去掉，转发到剩下的路径</p>
+</li>
+<li><p>重定向视图：当控制器的请求的视图含有前缀“redirect:”时，不会经过视图解析器，而是将前缀去掉，重定向到剩下的路径</p>
+<p>（当控制器方法中只需要实现页面跳转，则可以设置view controller标签）</p>
+</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">path：设置处理的请求地址 </span></span><br><span class="line"><span class="comment">view-name：设置请求地址所对应的视图名称 </span></span><br><span class="line"><span class="comment">--&gt;</span> </span><br><span class="line"><span class="tag">&lt;<span class="name">mvc:view-controller</span> <span class="attr">path</span>=<span class="string">&quot;/router&quot;</span> <span class="attr">view-name</span>=<span class="string">&quot;success&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">mvc:view-controller</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--开启注解驱动--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">mvc:annotation-driven</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="请求体的转换"><a href="#请求体的转换" class="headerlink" title="请求体的转换"></a>请求体的转换</h3><ol>
+<li>@RequestBody:标注在控制器形参位置，请求体会赋值给形参</li>
+<li>RequestEntity：是一种封装请求报文的类型，标注在形参位置，请求报文会赋值给形参，可以通过getHeaders()获取请求头信息，getBody()获取请求体信息等</li>
+<li>@ResponseBody：标注在控制器方法，将该方法的返回体直接响应在浏览器上</li>
+<li>ResponseEntity：用于控制器方法的返回值类型，该控制器方法的返回值就是响应到浏览器的响应报文</li>
+<li>@RestController：标识在控制器的类上，就相当于为类添加了@Controller注解，并且为其中的每个方法添加了@ResponseBody注解</li>
+</ol>
+<h3 id="拦截器和异常处理器"><a href="#拦截器和异常处理器" class="headerlink" title="拦截器和异常处理器"></a>拦截器和异常处理器</h3><p>在配置文件中配置拦截器</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">&quot;com.yaoqqi.interceptor.FirstInterceptor&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">bean</span>&gt;</span> </span><br><span class="line"><span class="tag">&lt;<span class="name">ref</span> <span class="attr">bean</span>=<span class="string">&quot;firstInterceptor&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">ref</span>&gt;</span> </span><br><span class="line"><span class="comment">&lt;!-- 以上两种配置方式都是对DispatcherServlet所处理的所有的请求进行拦截 --&gt;</span> </span><br><span class="line"><span class="tag">&lt;<span class="name">mvc:interceptor</span>&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">mvc:mapping</span> <span class="attr">path</span>=<span class="string">&quot;/**&quot;</span>/&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">mvc:exclude-mapping</span> <span class="attr">path</span>=<span class="string">&quot;/testRequestEntity&quot;</span>/&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">ref</span> <span class="attr">bean</span>=<span class="string">&quot;firstInterceptor&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">ref</span>&gt;</span> </span><br><span class="line"><span class="tag">&lt;/<span class="name">mvc:interceptor</span>&gt;</span> </span><br><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">    以上配置方式可以通过ref或bean标签设置拦截器，通过mvc:mapping设置需要拦截的请求，通过 </span></span><br><span class="line"><span class="comment">    mvc:exclude-mapping设置需要排除的请求，即不需要拦截的请求 </span></span><br><span class="line"><span class="comment">--&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>拦截器有三个抽象方法：</p>
+<ul>
+<li>preHandle：控制器方法执行之前执行preHandle()，返回值boolean类型表示是否令其通过，返回true为通过并调用控制器方法；返回false表示拦截，即不调用控制器方法</li>
+<li>postHandle：控制器方法执行之后执行postHandle()</li>
+<li>afterComplation：处理完视图和模型数据，渲染视图完毕之后执行afterComplation()</li>
+</ul>
+<h3 id="异常处理器"><a href="#异常处理器" class="headerlink" title="异常处理器"></a>异常处理器</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//@ControllerAdvice将当前类标识为异常处理的组件 </span></span><br><span class="line"><span class="meta">@ControllerAdvice</span> </span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ExceptionController</span> &#123; </span><br><span class="line">    <span class="comment">//@ExceptionHandler用于设置所标识方法处理的异常 </span></span><br><span class="line">    <span class="meta">@ExceptionHandler(ArithmeticException.class)</span> </span><br><span class="line">    <span class="comment">//ex表示当前请求处理中出现的异常对象 </span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">handleArithmeticException</span><span class="params">(Exception ex, Model model)</span>&#123; </span><br><span class="line">        model.addAttribute(<span class="string">&quot;ex&quot;</span>, ex); </span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;error&quot;</span>; </span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/05/20/Java%E7%AC%94%E8%AE%B0/SpringMvc/2-SpringMvc/" title="2-SpringMvc">https://kongpengyq.com/2022/05/20/Java笔记/SpringMvc/2-SpringMvc/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java%E7%AC%94%E8%AE%B0/" rel="tag"># Java笔记</a>
+              <a href="/tags/SpringMvc/" rel="tag"># SpringMvc</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/05/14/Java%E7%AC%94%E8%AE%B0/SpringMvc/1-%E6%A6%82%E8%BF%B0/" rel="prev" title="1-概述">
+      <i class="fa fa-chevron-left"></i> 1-概述
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/05/20/%E5%85%B6%E4%BB%96/Git%E5%91%BD%E4%BB%A4/" rel="next" title="Git命令">
+      Git命令 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#RequestMapping%E6%B3%A8%E8%A7%A3-%E5%B0%86%E8%AF%B7%E6%B1%82%E5%92%8C%E6%8E%A7%E5%88%B6%E5%99%A8%E5%85%B3%E8%81%94%E8%B5%B7%E6%9D%A5"><span class="nav-text">@RequestMapping注解:将请求和控制器关联起来</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%B7%E6%B1%82%E8%BF%87%E6%9D%A5%E4%BA%86%E9%82%A3%E5%BD%93%E7%84%B6%E5%B0%B1%E6%98%AF%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E5%8F%82%E6%95%B0%E4%BA%86%EF%BC%9F"><span class="nav-text">请求过来了那当然就是如何获取参数了？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%9F%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%95%B0%E6%8D%AE%E5%85%B1%E4%BA%AB"><span class="nav-text">域对象的数据共享</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SpringMvc%E8%A7%86%E5%9B%BE%E7%9A%84%E6%B8%B2%E6%9F%93"><span class="nav-text">SpringMvc视图的渲染</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%B7%E6%B1%82%E4%BD%93%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="nav-text">请求体的转换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%A6%E6%88%AA%E5%99%A8%E5%92%8C%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E5%99%A8"><span class="nav-text">拦截器和异常处理器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E5%99%A8"><span class="nav-text">异常处理器</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

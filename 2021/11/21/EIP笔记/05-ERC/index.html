@@ -1,0 +1,2215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="ERC最终的   数字 标题 内容    20 代币标准    55 混合大小写校验和地址编码    137 以太坊域名服务 - 规范    162 初始 ENS 哈希注册器    165 标准接口检测 查询合约是否支持某个接口   173 合同所有权标准    181 ENS 支持以太坊地址反向解析    190 以太坊智能合约封装标准    191 签名数据标准    600 确定性钱包的以太">
+<meta property="og:type" content="article">
+<meta property="og:title" content="05-ERC">
+<meta property="og:url" content="https://kongpengyq.com/2021/11/21/EIP%E7%AC%94%E8%AE%B0/05-ERC/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="ERC最终的   数字 标题 内容    20 代币标准    55 混合大小写校验和地址编码    137 以太坊域名服务 - 规范    162 初始 ENS 哈希注册器    165 标准接口检测 查询合约是否支持某个接口   173 合同所有权标准    181 ENS 支持以太坊地址反向解析    190 以太坊智能合约封装标准    191 签名数据标准    600 确定性钱包的以太">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-11-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.581Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="EIP笔记">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2021/11/21/EIP%E7%AC%94%E8%AE%B0/05-ERC/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>05-ERC | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2021/11/21/EIP%E7%AC%94%E8%AE%B0/05-ERC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          05-ERC
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-11-21 00:00:00" itemprop="dateCreated datePublished" datetime="2021-11-21T00:00:00+08:00">2021-11-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/EIP%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">EIP笔记</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="ERC"><a href="#ERC" class="headerlink" title="ERC"></a>ERC</h1><h2 id="最终的"><a href="#最终的" class="headerlink" title="最终的"></a>最终的</h2><table>
+<thead>
+<tr>
+<th>数字</th>
+<th>标题</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-20">20</a></td>
+<td>代币标准</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-55">55</a></td>
+<td>混合大小写校验和地址编码</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-137">137</a></td>
+<td>以太坊域名服务 - 规范</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-162">162</a></td>
+<td>初始 ENS 哈希注册器</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-165">165</a></td>
+<td>标准接口检测</td>
+<td>查询合约是否支持某个接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-173">173</a></td>
+<td>合同所有权标准</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-181">181</a></td>
+<td>ENS 支持以太坊地址反向解析</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-190">190</a></td>
+<td>以太坊智能合约封装标准</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-191">191</a></td>
+<td>签名数据标准</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-600">600</a></td>
+<td>确定性钱包的以太坊用途分配</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-601">601</a></td>
+<td>确定性钱包的以太坊层次结构</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-681">681</a></td>
+<td>交易请求的 URL 格式</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-721">721</a></td>
+<td>不可替代代币标准</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-777">777</a></td>
+<td>代币标准</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-820">820</a></td>
+<td>伪内省注册合约</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1046">1046</a></td>
+<td>tokenURI 互操作性</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1155">1155</a></td>
+<td>多代币标准</td>
+<td>结合了ERC20和ERC721，既可以发行同质化也可以发行非同质化代币，可以批量转移代币资产</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1167">1167</a></td>
+<td>最小代理合同</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1271">1271</a></td>
+<td>合同的标准签名验证方法</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1363">1363</a></td>
+<td>应付代币</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1820">1820</a></td>
+<td>伪内省注册合约</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1967">1967</a></td>
+<td>代理存储插槽</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2098">2098</a></td>
+<td>紧凑的签名表示</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2135">2135</a></td>
+<td>消费接口（门票等）</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2309">2309</a></td>
+<td>ERC-721连续传输扩展</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2535">2535</a></td>
+<td>钻石，多方面代理</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2612">2612</a></td>
+<td>EIP-20 签名批准的许可延期</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2678">2678</a></td>
+<td>修订后的以太坊智能合约打包标准（EthPM v3）</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2771">2771</a></td>
+<td>本机元交易的安全协议</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2981">2981</a></td>
+<td>NFT 版税标准</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3156">3156</a></td>
+<td>闪电贷</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3448">3448</a></td>
+<td>元代理标准</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3475">3475</a></td>
+<td>抽象存储债券</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3525">3525</a></td>
+<td>半同质代币</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3668">3668</a></td>
+<td>CCIP Read：安全的链下数据检索</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4400">4400</a></td>
+<td>EIP-721 消耗品扩展</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4519">4519</a></td>
+<td>与实物资产挂钩的不可替代代币</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4626">4626</a></td>
+<td>代币化金库</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4804">4804</a></td>
+<td>Web3 URL 到 EVM 呼叫消息翻译</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4834">4834</a></td>
+<td>层次结构域</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4906">4906</a></td>
+<td>EIP-721 元数据更新扩展</td>
+<td>将<code>MetadataUpdate</code>事件添加到 EIP-721 令牌</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4907">4907</a></td>
+<td>租赁 NFT，EIP-721 的扩展</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4910">4910</a></td>
+<td>特许权使用费 NFT</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4955">4955</a></td>
+<td>NFT 的供应商元数据扩展</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5006">5006</a></td>
+<td>租赁NFT、NFT用户扩展</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5007">5007</a></td>
+<td>时间 NFT、ERC-721 时间扩展</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5023">5023</a></td>
+<td>可共享的不可替代代币</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5169">5169</a></td>
+<td>令牌合约的客户端脚本 URI</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5192">5192</a></td>
+<td>最小的 Soulbound NFT</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5202">5202</a></td>
+<td>蓝图合同格式</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5219">5219</a></td>
+<td>合同资源请求</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5267">5267</a></td>
+<td>检索 EIP-712 域</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5313">5313</a></td>
+<td>轻型合同所有权</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5375">5375</a></td>
+<td>NFT 作者信息和同意</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5380">5380</a></td>
+<td>ERC-721 权利扩展</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5484">5484</a></td>
+<td>共识灵魂绑定代币</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5489">5489</a></td>
+<td>NFT 超链接扩展</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5507">5507</a></td>
+<td>可退还代币</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5528">5528</a></td>
+<td>可退款的同质代币</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5570">5570</a></td>
+<td>数字收据不可替代代币</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5606">5606</a></td>
+<td>多元宇宙 NFT</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5615">5615</a></td>
+<td>ERC-1155 供应扩展</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5646">5646</a></td>
+<td>令牌状态指纹</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5679">5679</a></td>
+<td>代币铸造和燃烧</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5732">5732</a></td>
+<td>提交接口</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5750">5750</a></td>
+<td>方法行为的一般可扩展性</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5773">5773</a></td>
+<td>上下文相关的多资产代币</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6059">6059</a></td>
+<td>家长管理的可嵌套不可替代代币</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6066">6066</a></td>
+<td>NFT 的签名验证方法</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6105">6105</a></td>
+<td>无中介 NFT 交易协议</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6147">6147</a></td>
+<td>NFT&#x2F;SBT 的守护，ERC-721 的扩展</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6150">6150</a></td>
+<td>分层 NFT</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6220">6220</a></td>
+<td>利用可装备部件的可组合 NFT</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6239">6239</a></td>
+<td>语义灵魂绑定标记</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6381">6381</a></td>
+<td>公共不可替代代币表情存储库</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6454">6454</a></td>
+<td>最小可转移NFT检测接口</td>
+<td></td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6672">6672</a></td>
+<td>可多次赎回的 NFT</td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="最后一次call"><a href="#最后一次call" class="headerlink" title="最后一次call"></a>最后一次call</h2><table>
+<thead>
+<tr>
+<th>数字</th>
+<th>审核结束</th>
+<th>标题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1191">1191</a></td>
+<td>2019-11-18</td>
+<td>将链 ID 添加到混合大小写校验和地址编码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2266">2266</a></td>
+<td>2020-12-31</td>
+<td>基于原子互换的美式看涨期权合约标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5008">5008</a></td>
+<td>2023-08-15</td>
+<td>ERC-721 随机数扩展</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5216">5216</a></td>
+<td>2022-11-12</td>
+<td>EIP-1155 按金额扩展批准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5496">5496</a></td>
+<td>202211月29日</td>
+<td>多权限管理NFT扩展</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6093">6093</a></td>
+<td>2023-08-15</td>
+<td>常用令牌的自定义错误</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6492">6492</a></td>
+<td>2023-08-29</td>
+<td>预部署合同的签名验证</td>
+</tr>
+</tbody></table>
+<h2 id="审查"><a href="#审查" class="headerlink" title="审查"></a>审查</h2><table>
+<thead>
+<tr>
+<th>数字</th>
+<th>标题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-223">223</a></td>
+<td>具有交易处理模型的令牌</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1185">1185</a></td>
+<td>ENS 中 DNS 记录的存储</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1328">1328</a></td>
+<td>WalletConnect URI 格式</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3561">3561</a></td>
+<td>信任最小化可升级代理</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3643">3643</a></td>
+<td>T-REX - 受监管交易所的代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3770">3770</a></td>
+<td>链特定地址</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4361">4361</a></td>
+<td>使用以太坊登录</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4527">4527</a></td>
+<td>钱包二维码传输协议</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4973">4973</a></td>
+<td>账户绑定代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4974">4974</a></td>
+<td>评级</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4987">4987</a></td>
+<td>持有代币接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5005">5005</a></td>
+<td>Zodiac 模块化账户</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5018">5018</a></td>
+<td>类似文件系统的合约接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5114">5114</a></td>
+<td>魂缚徽</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5164">5164</a></td>
+<td>跨链执行</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5252">5252</a></td>
+<td>账户绑定金融</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5269">5269</a></td>
+<td>EIP&#x2F;ERC 检测和发现</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5289">5289</a></td>
+<td>以太坊公证人接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5298">5298</a></td>
+<td>ENS 信托将以 ENS 名义持有 NFT</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5516">5516</a></td>
+<td>Soulbound 多所有者代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5553">5553</a></td>
+<td>代表知识产权及其使用费结构</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5568">5568</a></td>
+<td>恢复所需操作的原因</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5585">5585</a></td>
+<td>ERC-721 NFT授权</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5604">5604</a></td>
+<td>NFT 留置权</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5625">5625</a></td>
+<td>NFT 元数据 JSON 架构 dStorage 扩展</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5639">5639</a></td>
+<td>代表团登记处</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5643">5643</a></td>
+<td>订阅 NFT</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5725">5725</a></td>
+<td>可转让归属NFT</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5805">5805</a></td>
+<td>代表团投票</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5982">5982</a></td>
+<td>基于角色的访问控制</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6065">6065</a></td>
+<td>房地产代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6120">6120</a></td>
+<td>通用令牌路由器</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6357">6357</a></td>
+<td>单合约多委托调用</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6358">6358</a></td>
+<td>跨链代币状态同步</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6372">6372</a></td>
+<td>合约钟</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6551">6551</a></td>
+<td>不可替代的代币绑定账户</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6808">6808</a></td>
+<td>可替代的密钥绑定令牌</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6809">6809</a></td>
+<td>不可替代的密钥绑定令牌</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6982">6982</a></td>
+<td>高效的默认可锁定代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6997">6997</a></td>
+<td>ERC-721 带有交易验证步骤。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7053">7053</a></td>
+<td>可互操作的数字媒体索引</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7066">7066</a></td>
+<td>ERC-721 可锁定扩展件</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7144">7144</a></td>
+<td>ERC-20 具有交易验证步骤。</td>
+</tr>
+</tbody></table>
+<h2 id="草稿"><a href="#草稿" class="headerlink" title="草稿"></a>草稿</h2><table>
+<thead>
+<tr>
+<th>数字</th>
+<th>标题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-725">725</a></td>
+<td>通用数据键&#x2F;值存储和执行</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-998">998</a></td>
+<td>可组合的不可替代代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1202">1202</a></td>
+<td>投票界面</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4337">4337</a></td>
+<td>使用 Alt Mempool 进行账户抽象</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4393">4393</a></td>
+<td>NFT 和多代币的小额支付</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4494">4494</a></td>
+<td>ERC-721 NFT 许可证</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4675">4675</a></td>
+<td>多分数不可替代代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4824">4824</a></td>
+<td>DAO 的通用接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4883">4883</a></td>
+<td>可组合的 SVG NFT</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4944">4944</a></td>
+<td>只包含一个不可替代代币的合约</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4950">4950</a></td>
+<td>纠缠代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4972">4972</a></td>
+<td>名下账户</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5058">5058</a></td>
+<td>可锁定的不可替代代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5115">5115</a></td>
+<td>SY代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5139">5139</a></td>
+<td>远程过程调用提供者列表</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5173">5173</a></td>
+<td>NFT 未来奖励 (nFR)</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5187">5187</a></td>
+<td>通过可出租使用权扩展 EIP-1155</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5218">5218</a></td>
+<td>NFT 版权管理</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5247">5247</a></td>
+<td>智能合约可执行提案接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5334">5334</a></td>
+<td>EIP-721 用户和到期以及级别扩展</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5437">5437</a></td>
+<td>安全接触接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5453">5453</a></td>
+<td>认可 - 任何职能的许可</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5485">5485</a></td>
+<td>合法性、管辖权和主权</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5501">5501</a></td>
+<td>租赁和委托 NFT - EIP-721 扩展</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5521">5521</a></td>
+<td>可参考 NFT</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5539">5539</a></td>
+<td>撤销清单登记处</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5554">5554</a></td>
+<td>NFT 的合法使用、重新利用和重新混合</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5564">5564</a></td>
+<td>隐形地址</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5573">5573</a></td>
+<td>使用以太坊功能登录，回顾</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5630">5630</a></td>
+<td>加密&#x2F;解密的新方法</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5635">5635</a></td>
+<td>NFT 许可协议</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5700">5700</a></td>
+<td>可绑定令牌接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5719">5719</a></td>
+<td>签名替换接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5727">5727</a></td>
+<td>半可替代的 Soulbound 代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5744">5744</a></td>
+<td>潜在的可替代代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5753">5753</a></td>
+<td>EIP-721 可锁定扩展件</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5791">5791</a></td>
+<td>实物支持代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5827">5827</a></td>
+<td>自动更新津贴延期</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5850">5850</a></td>
+<td>存储在“bytes32”类型中的复数</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5851">5851</a></td>
+<td>链上可验证凭证</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5883">5883</a></td>
+<td>通过 Social Recovery 进行代币转移</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5902">5902</a></td>
+<td>智能合约事件挂钩</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6047">6047</a></td>
+<td>ERC-721 通过转账事件进行余额索引</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6123">6123</a></td>
+<td>智能衍生品合约</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6170">6170</a></td>
+<td>跨链消息接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6224">6224</a></td>
+<td>合同依赖注册表</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6268">6268</a></td>
+<td>EIP-1155 的不可转移性指示器</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6315">6315</a></td>
+<td>ERC-2771 账户抽象</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6327">6327</a></td>
+<td>弹性签名</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6353">6353</a></td>
+<td>慈善代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6366">6366</a></td>
+<td>权限令牌</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6384">6384</a></td>
+<td>人类可读的离线签名</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6464">6464</a></td>
+<td>多运营商、每个代币 ERC-721 批准。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6506">6506</a></td>
+<td>P2P 托管治理激励</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6538">6538</a></td>
+<td>隐形元地址注册表</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6596">6596</a></td>
+<td>历史资产元数据 JSON 架构</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6617">6617</a></td>
+<td>基于位的权限</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6662">6662</a></td>
+<td>用于身份验证的 AA 帐户元数据</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6682">6682</a></td>
+<td>NFT 闪贷</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6735">6735</a></td>
+<td>基于 EVM 的地址的 L2 别名</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6785">6785</a></td>
+<td>ERC-721 公用事业信息扩展</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6786">6786</a></td>
+<td>NFT 版税支付登记处</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6787">6787</a></td>
+<td>具有两阶段提款功能的订单簿 DEX</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6806">6806</a></td>
+<td>ERC-721 保持时间跟踪</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6821">6821</a></td>
+<td>支持 Web3 URL 的 ENS 名称</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6823">6823</a></td>
+<td>令牌映射槽检索扩展</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6865">6865</a></td>
+<td>链上 EIP-712 可视化</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6900">6900</a></td>
+<td>模块化智能合约账户和插件</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6909">6909</a></td>
+<td>最小多令牌接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6944">6944</a></td>
+<td>ERC-5219 解决模式</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6956">6956</a></td>
+<td>资产绑定的不可替代代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6960">6960</a></td>
+<td>双层代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-6981">6981</a></td>
+<td>保留所有权帐户</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7007">7007</a></td>
+<td>零知识人工智能生成的内容代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7015">7015</a></td>
+<td>NFT 创建者归属</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7092">7092</a></td>
+<td>金融债券</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7093">7093</a></td>
+<td>社交恢复界面</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7160">7160</a></td>
+<td>ERC-721 多元数据扩展</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7201">7201</a></td>
+<td>命名空间存储布局</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7231">7231</a></td>
+<td>身份聚合 NFT</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7303">7303</a></td>
+<td>代币控制的代币流通</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7401">7401</a></td>
+<td>父级管理的不可替代代币嵌套</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-7444">7444</a></td>
+<td>时间锁定成熟度</td>
+</tr>
+</tbody></table>
+<h2 id="停滞不前"><a href="#停滞不前" class="headerlink" title="停滞不前"></a>停滞不前</h2><table>
+<thead>
+<tr>
+<th>数字</th>
+<th>标题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-205">205</a></td>
+<td>ENS 对合约 ABI 的支持</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-634">634</a></td>
+<td>ENS 中文本记录的存储</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-801">801</a></td>
+<td>金丝雀标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-823">823</a></td>
+<td>代币交换标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-831">831</a></td>
+<td>以太坊的 URI 格式</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-884">884</a></td>
+<td>DGCL 代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-897">897</a></td>
+<td>委托代理</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-900">900</a></td>
+<td>简单的质押界面</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-902">902</a></td>
+<td>令牌验证</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-918">918</a></td>
+<td>可开采代币标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-926">926</a></td>
+<td>地址元数据注册表</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-927">927</a></td>
+<td>通用授权</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1056">1056</a></td>
+<td>以太坊轻量级身份</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1062">1062</a></td>
+<td>将 IPFS 哈希形式化为 ENS（以太坊名称服务）解析器</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1066">1066</a></td>
+<td>状态代码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1077">1077</a></td>
+<td>用于合约调用的气体继电器</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1078">1078</a></td>
+<td>使用 ENS 子域的通用登录&#x2F;注册</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1080">1080</a></td>
+<td>可恢复代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1081">1081</a></td>
+<td>标准赏金</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1129">1129</a></td>
+<td>标准化DAPP公告</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1132">1132</a></td>
+<td>通过代币锁定功能扩展 ERC20</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1175">1175</a></td>
+<td>所有代币的钱包和商店标准 (erc20)</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1178">1178</a></td>
+<td>多类别代币标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1203">1203</a></td>
+<td>ERC-1203 多类代币标准（ERC-20 扩展）</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1207">1207</a></td>
+<td>DAuth 访问委托标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1261">1261</a></td>
+<td>会员验证令牌 (MVT)</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1319">1319</a></td>
+<td>智能合约包注册接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1337">1337</a></td>
+<td>区块链上的订阅</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1386">1386</a></td>
+<td>鉴证管理合同</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1387">1387</a></td>
+<td>启用隐私的默克尔树证明</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1388">1388</a></td>
+<td>证明签发者管理列表</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1417">1417</a></td>
+<td>投票标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1438">1438</a></td>
+<td>dApp 组件（头像）和通用钱包</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1444">1444</a></td>
+<td>使用信号到文本的本地化消息传递</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1450">1450</a></td>
+<td>ERC-1450 一种兼容的安全令牌，用于发行和交易符合 SEC 规定的证券</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1462">1462</a></td>
+<td>基础安全令牌</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1484">1484</a></td>
+<td>数字身份聚合器</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1491">1491</a></td>
+<td>人力成本会计标准（类似于天然气，但针对人类）</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1504">1504</a></td>
+<td>可升级的智能合约</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1523">1523</a></td>
+<td>ERC-721 不可替代代币保险单标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1577">1577</a></td>
+<td>ENS 的 contenthash 字段</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1581">1581</a></td>
+<td>来自 BIP-32 树的密钥的非钱包使用</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1592">1592</a></td>
+<td>地址和符合ERC20的传输规则</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1613">1613</a></td>
+<td>加油站网络</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1616">1616</a></td>
+<td>属性注册标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1620">1620</a></td>
+<td>资金流</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1633">1633</a></td>
+<td>可替换代币标准（RFT）</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1710">1710</a></td>
+<td>Web3 浏览器的 URL 格式</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1753">1753</a></td>
+<td>许可证智能合约接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1761">1761</a></td>
+<td>范围批准接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1775">1775</a></td>
+<td>应用程序密钥，应用程序特定的钱包帐户</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1812">1812</a></td>
+<td>以太坊可验证声明</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1822">1822</a></td>
+<td>通用可升级代理标准 (UUPS)</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1844">1844</a></td>
+<td>ENS 接口发现</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1900">1900</a></td>
+<td>dType - EVM 的分散式系统</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1921">1921</a></td>
+<td>dType 函数扩展</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1922">1922</a></td>
+<td>zk-SNARK验证器标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1923">1923</a></td>
+<td>zk-SNARK 验证器注册标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1948">1948</a></td>
+<td>不可替代的数据代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1973">1973</a></td>
+<td>可扩展的奖励</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1996">1996</a></td>
+<td>可持有代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2009">2009</a></td>
+<td>合规服务</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2018">2018</a></td>
+<td>可清算代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2019">2019</a></td>
+<td>可资助代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2020">2020</a></td>
+<td>电子货币标准代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2021">2021</a></td>
+<td>支付代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2157">2157</a></td>
+<td>dType 存储扩展 - EVM 的去中心化类型系统</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2193">2193</a></td>
+<td>dType 别名扩展 - 去中心化类型系统</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2304">2304</a></td>
+<td>ENS 的多链地址解析</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2333">2333</a></td>
+<td>BLS12-381 密钥生成</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2334">2334</a></td>
+<td>BLS12-381 确定性帐户层次结构</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2335">2335</a></td>
+<td>BLS12-381 密钥库</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2386">2386</a></td>
+<td>以太坊 2 分层确定性钱包商店</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2390">2390</a></td>
+<td>地理电子系统</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2400">2400</a></td>
+<td>交易收据 URI</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2470">2470</a></td>
+<td>辛格尔顿工厂</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2477">2477</a></td>
+<td>令牌元数据完整性</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2494">2494</a></td>
+<td>Baby Jubjub 椭圆曲线</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2520">2520</a></td>
+<td>ENS 的多个内容哈希记录</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2525">2525</a></td>
+<td>ENS登录</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2544">2544</a></td>
+<td>ENS 通配符解析</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2569">2569</a></td>
+<td>在链上保存和显示通用代币的图像</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2615">2615</a></td>
+<td>具有抵押和租赁功能的不可替代代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2645">2645</a></td>
+<td>Layer-2 的分层确定性钱包</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2680">2680</a></td>
+<td>以太坊2钱包布局</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2746">2746</a></td>
+<td>规则引擎标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2767">2767</a></td>
+<td>合同所有权治理</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2770">2770</a></td>
+<td>元交易转发合约</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2848">2848</a></td>
+<td>我自己的消息 (MOM)</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2876">2876</a></td>
+<td>充值合约及地址标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2917">2917</a></td>
+<td>质押奖励计算</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2942">2942</a></td>
+<td>EthPM URI 规范</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-2980">2980</a></td>
+<td>瑞士合规资产代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3000">3000</a></td>
+<td>乐观制定治理标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3005">3005</a></td>
+<td>批量元交易</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3009">3009</a></td>
+<td>授权转让</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3135">3135</a></td>
+<td>独家可领取代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3224">3224</a></td>
+<td>描述数据</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3234">3234</a></td>
+<td>批量闪电贷</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3386">3386</a></td>
+<td>ERC-721 和 ERC-1155 到 ERC-20 包装器</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3440">3440</a></td>
+<td>ERC-721 版本标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3450">3450</a></td>
+<td>BIP-39 助记符的标准化 Shamir 秘密共享方案</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3569">3569</a></td>
+<td>密封的 NFT 元数据标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3589">3589</a></td>
+<td>将资产组装成 NFT</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3722">3722</a></td>
+<td>海报</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3754">3754</a></td>
+<td>普通的不可替代代币标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-3772">3772</a></td>
+<td>压缩整数</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4341">4341</a></td>
+<td>订购 NFT 批量标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4353">4353</a></td>
+<td>NFT 中质押代币的接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4430">4430</a></td>
+<td>交易描述</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4521">4521</a></td>
+<td>721&#x2F;20 兼容传输</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4524">4524</a></td>
+<td>更安全的ERC-20</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4546">4546</a></td>
+<td>打包存款</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4671">4671</a></td>
+<td>非交易代币标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4799">4799</a></td>
+<td>不可替代的代币所有权指定标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4885">4885</a></td>
+<td>订阅 NFT 和多代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4886">4886</a></td>
+<td>代理所有权登记册</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-4931">4931</a></td>
+<td>通用代币升级标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5050">5050</a></td>
+<td>具有模块化环境的交互式 NFT</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5094">5094</a></td>
+<td>以太坊网络切换的 URL 格式</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5095">5095</a></td>
+<td>本金代币</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5131">5131</a></td>
+<td>ENS 的安全认证</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5143">5143</a></td>
+<td>代币化金库的滑点保护</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5185">5185</a></td>
+<td>NFT 可更新元数据扩展</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5189">5189</a></td>
+<td>通过认可操作提取账户</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5409">5409</a></td>
+<td>EIP-1155 不可替代令牌扩展</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5505">5505</a></td>
+<td>EIP-1155 资产支持的 NFT 扩展</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5559">5559</a></td>
+<td>跨链写延迟协议</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5560">5560</a></td>
+<td>可赎回的 NFT</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-5633">5633</a></td>
+<td>可组合的 Soulbound NFT，EIP-1155 扩展</td>
+</tr>
+</tbody></table>
+<h2 id="取消"><a href="#取消" class="headerlink" title="取消"></a>取消</h2><table>
+<thead>
+<tr>
+<th>数字</th>
+<th>标题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-67">67</a></td>
+<td>具有元数据、值和字节码的 URI 方案</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-875">875</a></td>
+<td>具有批处理和本机原子交换的更简单的 NFT 标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1123">1123</a></td>
+<td>修订后的以太坊智能合约打包标准</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1154">1154</a></td>
+<td>甲骨文接口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-1538">1538</a></td>
+<td>透明合约标准</td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2021/11/21/EIP%E7%AC%94%E8%AE%B0/05-ERC/" title="05-ERC">https://kongpengyq.com/2021/11/21/EIP笔记/05-ERC/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/EIP%E7%AC%94%E8%AE%B0/" rel="tag"># EIP笔记</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/17/EIP%E7%AC%94%E8%AE%B0/04-%E6%8E%A5%E5%8F%A3%20Interface/" rel="prev" title="04-接口 Interface">
+      <i class="fa fa-chevron-left"></i> 04-接口 Interface
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/11/25/EIP%E7%AC%94%E8%AE%B0/06-%E5%85%83%20Meta/" rel="next" title="06-元 Meta">
+      06-元 Meta <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ERC"><span class="nav-text">ERC</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%80%E7%BB%88%E7%9A%84"><span class="nav-text">最终的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%80%E5%90%8E%E4%B8%80%E6%AC%A1call"><span class="nav-text">最后一次call</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A1%E6%9F%A5"><span class="nav-text">审查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8D%89%E7%A8%BF"><span class="nav-text">草稿</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%81%9C%E6%BB%9E%E4%B8%8D%E5%89%8D"><span class="nav-text">停滞不前</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%96%E6%B6%88"><span class="nav-text">取消</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

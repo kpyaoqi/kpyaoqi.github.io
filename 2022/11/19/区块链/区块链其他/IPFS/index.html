@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="什么是IPFSIPFS，是点到点的超媒体协议，它让网络更快、更安全、更开放。说简单一点，它就是一个去中心化互联网。说技术一点，它是一个基于分布式哈希表DHT进行内容寻址的，基于git模型版本管理的，基于默克尔对象关联的，基于点对点技术的，基于全球化命名空间IPNS的，基于各种技术的，一种分布式文件系统。 为什么需要IPFS现代社会中互联网对我们非常重要，它是我们生活、工作、学习、消费、娱乐和社交不">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IPFS">
+<meta property="og:url" content="https://kongpengyq.com/2022/11/19/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/IPFS/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="什么是IPFSIPFS，是点到点的超媒体协议，它让网络更快、更安全、更开放。说简单一点，它就是一个去中心化互联网。说技术一点，它是一个基于分布式哈希表DHT进行内容寻址的，基于git模型版本管理的，基于默克尔对象关联的，基于点对点技术的，基于全球化命名空间IPNS的，基于各种技术的，一种分布式文件系统。 为什么需要IPFS现代社会中互联网对我们非常重要，它是我们生活、工作、学习、消费、娱乐和社交不">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/img/v2-9322a329ae16fdafd91325a655a085e9_720w.webp">
+<meta property="og:image" content="https://kongpengyq.com/img/v2-e7ef02c8dff5da578f69cb78c032f63d_720w.webp">
+<meta property="og:image" content="https://kongpengyq.com/img/v2-5ebc25db00f09fe77c3b44c4edda28d0_720w.webp">
+<meta property="og:image" content="https://kongpengyq.com/img/v2-507b54458be1a9478ea84a2023fb4664_720w.webp">
+<meta property="og:image" content="https://kongpengyq.com/img/v2-d642fd2ac7420487fdbeaa75b36e81e7_720w.webp">
+<meta property="og:image" content="https://kongpengyq.com/img/v2-32df01b765b4d68e4fb66a9fcf1a2a82_720w.webp">
+<meta property="og:image" content="https://kongpengyq.com/img/v2-1772e85304355f0f60886ced5d3b2982_720w.webp">
+<meta property="og:image" content="https://kongpengyq.com/img/v2-e8f8780fcfb6ff7d926d3fb817dc0379_720w.webp">
+<meta property="og:image" content="https://kongpengyq.com/img/v2-d8028e2251f3a021644335b3b9e8b1d1_720w.webp">
+<meta property="og:image" content="https://kongpengyq.com/img/v2-3aab9b542c2fc5f4ea5fce896dee957f_720w.webp">
+<meta property="og:image" content="https://kongpengyq.com/img/v2-540fdb1954e1addb14669b116a184f08_720w.webp">
+<meta property="og:image" content="https://kongpengyq.com/img/v2-1a8b0331c622c0434d6a863bf8efffa1_720w.webp">
+<meta property="og:image" content="https://kongpengyq.com/img/v2-f91617bd0b2bfd687d9ad4b6cb92419b_720w.webp">
+<meta property="article:published_time" content="2022-11-18T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.749Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链其他">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/img/v2-9322a329ae16fdafd91325a655a085e9_720w.webp">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/11/19/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/IPFS/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>IPFS | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/11/19/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/IPFS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          IPFS
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-11-19 00:00:00" itemprop="dateCreated datePublished" datetime="2022-11-19T00:00:00+08:00">2022-11-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/" itemprop="url" rel="index">
+                    <span itemprop="name">区块链其他</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="什么是IPFS"><a href="#什么是IPFS" class="headerlink" title="什么是IPFS"></a>什么是IPFS</h2><p>IPFS，是点到点的超媒体协议，它让网络更快、更安全、更开放。说简单一点，它就是一个去中心化互联网。说技术一点，它是一个基于分布式哈希表DHT进行内容寻址的，基于git模型版本管理的，基于默克尔对象关联的，基于点对点技术的，基于全球化命名空间IPNS的，基于各种技术的，一种分布式文件系统。</p>
+<h2 id="为什么需要IPFS"><a href="#为什么需要IPFS" class="headerlink" title="为什么需要IPFS"></a>为什么需要IPFS</h2><p>现代社会中互联网对我们非常重要，它是我们生活、工作、学习、消费、娱乐和社交不可获取的媒介，但当下中心化的互联网有很多问题。</p>
+<p><img src="/./img/v2-9322a329ae16fdafd91325a655a085e9_720w.webp" alt="img"></p>
+<ul>
+<li><em>中心化互联网效率低，成本高，HTTP是一个请求响应式协议，大家从一个中心服务商索取数据，服务器商构建大规模的服务器集群，服务全世界的用户。这，在高峰期，服务阻塞延迟，低峰期，大量资源闲置浪费。IPFS是通过激励，发动大量用户共享存储和带宽，资源分享和获取都在一个闭环的生态。因为网络带宽都被大文件消耗了，比如视频文件，很多都是重复数据，IPFS能有效的去重文件，消除冗余。所以IPFS能更高效的利用带宽，降低成本。</em></li>
+<li><em>目前互联网特别容易丢失数据，IPFS能永远保存有价值的数据。</em></li>
+<li><em>今天的互联网严重依赖主干网，一旦主干网发生故障，就会出现大规模服务中段或延迟，IPFS不依赖主干网，即便是网络不发达的地区，或者发生了灾害的地区，IPFS也能有很好的表现。</em></li>
+<li><em>中心化的网络非常容易引入审查机制，每个government都很容易干掉某个网站或者app。</em></li>
+</ul>
+<p>现在，用户对互联网服务性能要求越来越高，响应快、低延迟、4K无码高清视频，大的中心化公司，能快速集中资金，做出用户体验更好的产品，但这些成本是通过广告费、会员费和竞价搜索排名转嫁到消费者头上。用户是没有选择权的。</p>
+<p><img src="/./img/v2-e7ef02c8dff5da578f69cb78c032f63d_720w.webp" alt="img"></p>
+<p>IPFS希望超越HTTP协议，并构建一个更好的互联网生态。</p>
+<p>从技术角度看，IPFS是一个协议，它借鉴了许多技术，（P2P+BitTorrent+Git+Hash+kademlia DHT+SFS+Merkel  DAG等等）。通过这些技术，IPFS能将网站、应用、文件和各种数据，建立在点对点分布式网络上，并且高效的索引，这种高效的核心在于它是基于内容寻址的。</p>
+<p>互联网上任何一个资源，都需要地址来找到它们，可能是IP地址、域名、文件的系统路径或者Nginx反向代理的路径。</p>
+<p><img src="/./img/v2-5ebc25db00f09fe77c3b44c4edda28d0_720w.webp" alt="img"></p>
+<p>总之得有一个地址，这个地址指向哪个资源，就返回什么资源，如果资源的地址变了，或者给的地址失效了，就无法获取资源。但我们如果真的很需要这个资源，恰好之前有人下载过这个资源，并存在他的电脑上，我们很想找到这个人，因为我们并不在乎资源在什么位置，我们只在乎这个资源的内容是不是我们想要的，那这种基于位置，也就是location的寻址就没用了，我们需要一种新的寻址模式，基于内容content的寻址，IPFS就是基于内容的寻址，它的地址长这样↓</p>
+<p><img src="/./img/v2-507b54458be1a9478ea84a2023fb4664_720w.webp" alt="img"></p>
+<h2 id="IPFS实现内容寻址的工作原理"><a href="#IPFS实现内容寻址的工作原理" class="headerlink" title="IPFS实现内容寻址的工作原理"></a>IPFS实现内容寻址的工作原理</h2><p><strong>第一步：将文件分割成一些小块blocks，并且分别打上hash指纹，hash指纹是一串字符，能够跟它的数据块一一对应，相当于我们每个人和自己指纹的关系。通过这个hash可以找到这个文件数据。</strong></p>
+<p><img src="/./img/v2-d642fd2ac7420487fdbeaa75b36e81e7_720w.webp" alt="img"></p>
+<p><strong>第二步：IPFS去除重复文件，因为每个文件有了对应的哈希值，可以非常方便的找到重复的文件，最终只保留一个对象，当然每个节点都可以保留，这个文件对象的备份。</strong></p>
+<p><img src="/./img/v2-32df01b765b4d68e4fb66a9fcf1a2a82_720w.webp" alt="img"></p>
+<p><strong>第三步：每个IPFS网络节点都去存储它需要的数据，用一个叫DHT的表，来记录每个节点存储了哪些数据。</strong></p>
+<p><img src="/./img/v2-1772e85304355f0f60886ced5d3b2982_720w.webp" alt="img"></p>
+<p>下图左边Key代表文件内容的Hash（CID），右边的Value代表内容所在的节点（PeerID），这一条DHT数据表示，CID是QmCheese的数据块，存在QmRichard这个用户的设备上。</p>
+<p><img src="/./img/v2-e8f8780fcfb6ff7d926d3fb817dc0379_720w.webp" alt="img"></p>
+<p><strong>第四步：当我们寻找或下载一个文件时，我们先计算这个文件的Hash指纹，通过指纹向其他节点寻找文件，当然获取他人的资源是需要成本的，别人给我分享资源也将得到回报，这种激励模式叫BitSwap。</strong></p>
+<p><img src="/./img/v2-d8028e2251f3a021644335b3b9e8b1d1_720w.webp" alt="img"></p>
+<h2 id="IPFS文件时如何存储和共享的"><a href="#IPFS文件时如何存储和共享的" class="headerlink" title="IPFS文件时如何存储和共享的"></a>IPFS文件时如何存储和共享的</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IPFS  object</span><br><span class="line">DATA  &quot;Hello World&quot;</span><br><span class="line">Links []</span><br></pre></td></tr></table></figure>
+
+<p>IPFS的文件都是通过对象的结构来存储的，每个对象包含数据Data项和连接Links数组，Data不超过256K，Data是一串文本“Hello  World”，如果数据大于256K，比如图片或者视频，我们将拆分多个对象，都不超过256K，然后再建立一个更上层的对象，将他们归纳起来，就像一个文件夹，所以IPFS的文件结构，很想UNIX文件系统。</p>
+<p><img src="/./img/v2-3aab9b542c2fc5f4ea5fce896dee957f_720w.webp" alt="img"></p>
+<p>还有一个问题，这些寻址链接都是通过内容查找的，如果一个文件更新了内容，那么Hash就变了，之前的索引就失效了，所以类似区块链一样，IPFS数据是不可变的，为了追踪文件的更新，IPFS引入了版本控制模型，IPFS版本控制模型和Git基本一致，Git是常用的版本控制系统，用来记录、追踪和同步文件的版本更新，每次更新的版本快照我们叫commit。</p>
+<p><img src="/./img/v2-540fdb1954e1addb14669b116a184f08_720w.webp" alt="img"></p>
+<p>IPFS最大大问题是不能保证文件始终有资源，比如一个文件在4个节点有备份，如果这4个节点离线或断开，我们就无法获取这个文件数据，类似BT下载就没有种子了。</p>
+<p>我们有2种方案解决这个问题：</p>
+<ul>
+<li><em>增加激励机制，鼓励节点多多存储文件，并在长期在线分享。</em></li>
+<li><em>主动分发文件，保证一直有足够量的在线备份，这是Filecoin要做的事。</em></li>
+</ul>
+<p>Filecoin和IPFS是同一个团队开发的，他是搭建在IPFS上的一个区块链应用。Filecoin构建了去中心化的存储市场，如果你有空闲的存储空间，可以通过Filecoin分享给别人，赚取收益，Filecoin也用奖励，来激励用户尽可能多的保持节点在线，并且保证文件有足够多的备份。</p>
+<p>IPFS已经建立了相对成熟的技术架构，他是去中心化产品开发者的首选存储技术方案，</p>
+<p><img src="/./img/v2-1a8b0331c622c0434d6a863bf8efffa1_720w.webp" alt="img"></p>
+<p>这些应用都在用IPFS技术，这里大多数是去中心化应用。IPFS还有一个经典案例，2017年土耳其政府block了维基百科，开发者在IPFS上搭建了一个去中心化的维基百科镜像，因为IPFS没有中心服务器，节点就像星星之火分布在世界各地，土耳其政府就无法再墙掉这个网站了。</p>
+<p><img src="/./img/v2-f91617bd0b2bfd687d9ad4b6cb92419b_720w.webp" alt="img"></p>
+<p>IPFS星际文件系统，一个如此带有科幻感和未来感的名字！</p>
+<p>他是一个适合跨越“星际”间使用的文件系统，在星球之间传输信号，延迟是比较大的，比如火星和地球之间，传输信号的时间在4~24分钟，那么我们要是在火星上访问地球上的网页，最快8分钟，最慢48分钟。</p>
+<p>如果有了IPFS系统，火星上查看了地球上的网页后，把网页数据存储下来，可以作为一个节点分享给其他火星人，这样，火星人的上网体验就快多了，所以我们给IPFS起名星际文件系统，一个去中心化的互联网文件分发协议，他会让互联网更快、更安全、更开放！</p>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/11/19/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/IPFS/" title="IPFS">https://kongpengyq.com/2022/11/19/区块链/区块链其他/IPFS/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/" rel="tag"># 区块链其他</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/11/17/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/Dao%E6%B2%BB%E7%90%86/" rel="prev" title="Dao治理">
+      <i class="fa fa-chevron-left"></i> Dao治理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/11/22/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%B6%E4%BB%96/op%E5%BA%93_th%E5%B8%B8%E8%A7%81%E5%91%BD%E4%BB%A4/" rel="next" title="op库_th常见命令">
+      op库_th常见命令 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFIPFS"><span class="nav-text">什么是IPFS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81IPFS"><span class="nav-text">为什么需要IPFS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IPFS%E5%AE%9E%E7%8E%B0%E5%86%85%E5%AE%B9%E5%AF%BB%E5%9D%80%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="nav-text">IPFS实现内容寻址的工作原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IPFS%E6%96%87%E4%BB%B6%E6%97%B6%E5%A6%82%E4%BD%95%E5%AD%98%E5%82%A8%E5%92%8C%E5%85%B1%E4%BA%AB%E7%9A%84"><span class="nav-text">IPFS文件时如何存储和共享的</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

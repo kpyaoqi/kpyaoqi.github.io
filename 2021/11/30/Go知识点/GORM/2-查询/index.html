@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Gorm查询查询123456789101112131415&#x2F;&#x2F; 获取第一条记录，按主键排序db.First(&amp;user)&#x2F;&#x2F;&#x2F;&#x2F; SELECT * FROM users ORDER BY id LIMIT 1;&#x2F;&#x2F; 获取最后一条记录，按主键排序db.Last(&amp;user)&#x2F;&#x2F;&#x2F;&#x2F; SELECT * FROM users ORDER BY id DESC LIMIT 1;&#x2F;&#x2F; 获取所">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2-查询">
+<meta property="og:url" content="https://kongpengyq.com/2021/11/30/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GORM/2-%E6%9F%A5%E8%AF%A2/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="Gorm查询查询123456789101112131415&#x2F;&#x2F; 获取第一条记录，按主键排序db.First(&amp;user)&#x2F;&#x2F;&#x2F;&#x2F; SELECT * FROM users ORDER BY id LIMIT 1;&#x2F;&#x2F; 获取最后一条记录，按主键排序db.Last(&amp;user)&#x2F;&#x2F;&#x2F;&#x2F; SELECT * FROM users ORDER BY id DESC LIMIT 1;&#x2F;&#x2F; 获取所">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-11-29T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.591Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="Go知识点">
+<meta property="article:tag" content="GORM">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2021/11/30/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GORM/2-%E6%9F%A5%E8%AF%A2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>2-查询 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2021/11/30/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GORM/2-%E6%9F%A5%E8%AF%A2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2-查询
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-11-30 00:00:00" itemprop="dateCreated datePublished" datetime="2021-11-30T00:00:00+08:00">2021-11-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/GORM/" itemprop="url" rel="index">
+                    <span itemprop="name">GORM</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Gorm查询"><a href="#Gorm查询" class="headerlink" title="Gorm查询"></a>Gorm查询</h1><h3 id="查询"><a href="#查询" class="headerlink" title="查询"></a>查询</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// 获取第一条记录，按主键排序</span><br><span class="line">db.First(&amp;user)</span><br><span class="line">//// SELECT * FROM users ORDER BY id LIMIT 1;</span><br><span class="line"></span><br><span class="line">// 获取最后一条记录，按主键排序</span><br><span class="line">db.Last(&amp;user)</span><br><span class="line">//// SELECT * FROM users ORDER BY id DESC LIMIT 1;</span><br><span class="line"></span><br><span class="line">// 获取所有记录</span><br><span class="line">db.Find(&amp;users)</span><br><span class="line">//// SELECT * FROM users;</span><br><span class="line"></span><br><span class="line">// 使用主键获取记录</span><br><span class="line">db.First(&amp;user, 10)</span><br><span class="line">//// SELECT * FROM users WHERE id = 10;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Where查询条件-简单SQL"><a href="#Where查询条件-简单SQL" class="headerlink" title="Where查询条件 (简单SQL)"></a>Where查询条件 (简单SQL)</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">// 获取第一个匹配记录</span><br><span class="line">db.Where(&quot;name = ?&quot;, &quot;jinzhu&quot;).First(&amp;user)</span><br><span class="line">//// SELECT * FROM users WHERE name = &#x27;jinzhu&#x27; limit 1;</span><br><span class="line"></span><br><span class="line">// 获取所有匹配记录</span><br><span class="line">db.Where(&quot;name = ?&quot;, &quot;jinzhu&quot;).Find(&amp;users)</span><br><span class="line">//// SELECT * FROM users WHERE name = &#x27;jinzhu&#x27;;</span><br><span class="line"></span><br><span class="line">db.Where(&quot;name &lt;&gt; ?&quot;, &quot;jinzhu&quot;).Find(&amp;users)</span><br><span class="line"></span><br><span class="line">// IN</span><br><span class="line">db.Where(&quot;name in (?)&quot;, []string&#123;&quot;jinzhu&quot;, &quot;jinzhu 2&quot;&#125;).Find(&amp;users)</span><br><span class="line"></span><br><span class="line">// LIKE</span><br><span class="line">db.Where(&quot;name LIKE ?&quot;, &quot;%jin%&quot;).Find(&amp;users)</span><br><span class="line"></span><br><span class="line">// AND</span><br><span class="line">db.Where(&quot;name = ? AND age &gt;= ?&quot;, &quot;jinzhu&quot;, &quot;22&quot;).Find(&amp;users)</span><br><span class="line"></span><br><span class="line">// Time</span><br><span class="line">db.Where(&quot;updated_at &gt; ?&quot;, lastWeek).Find(&amp;users)</span><br><span class="line"></span><br><span class="line">db.Where(&quot;created_at BETWEEN ? AND ?&quot;, lastWeek, today).Find(&amp;users)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Where查询条件-Struct-Map"><a href="#Where查询条件-Struct-Map" class="headerlink" title="Where查询条件 (Struct &amp; Map)"></a>Where查询条件 (Struct &amp; Map)</h3><p>注意：当使用struct查询时，GORM将只查询那些具有值的字段</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// Struct</span><br><span class="line">db.Where(&amp;User&#123;Name: &quot;jinzhu&quot;, Age: 20&#125;).First(&amp;user)</span><br><span class="line">//// SELECT * FROM users WHERE name = &quot;jinzhu&quot; AND age = 20 LIMIT 1;</span><br><span class="line"></span><br><span class="line">// Map</span><br><span class="line">db.Where(map[string]interface&#123;&#125;&#123;&quot;name&quot;: &quot;jinzhu&quot;, &quot;age&quot;: 20&#125;).Find(&amp;users)</span><br><span class="line">//// SELECT * FROM users WHERE name = &quot;jinzhu&quot; AND age = 20;</span><br><span class="line"></span><br><span class="line">// 主键的Slice</span><br><span class="line">db.Where([]int64&#123;20, 21, 22&#125;).Find(&amp;users)</span><br><span class="line">//// SELECT * FROM users WHERE id IN (20, 21, 22);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Not条件查询"><a href="#Not条件查询" class="headerlink" title="Not条件查询"></a>Not条件查询</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">db.Not(&quot;name&quot;, &quot;jinzhu&quot;).First(&amp;user)</span><br><span class="line">//// SELECT * FROM users WHERE name &lt;&gt; &quot;jinzhu&quot; LIMIT 1;</span><br><span class="line"></span><br><span class="line">// Not In</span><br><span class="line">db.Not(&quot;name&quot;, []string&#123;&quot;jinzhu&quot;, &quot;jinzhu 2&quot;&#125;).Find(&amp;users)</span><br><span class="line">//// SELECT * FROM users WHERE name NOT IN (&quot;jinzhu&quot;, &quot;jinzhu 2&quot;);</span><br><span class="line"></span><br><span class="line">// Not In slice of primary keys</span><br><span class="line">db.Not([]int64&#123;1,2,3&#125;).First(&amp;user)</span><br><span class="line">//// SELECT * FROM users WHERE id NOT IN (1,2,3);</span><br><span class="line"></span><br><span class="line">db.Not([]int64&#123;&#125;).First(&amp;user)</span><br><span class="line">//// SELECT * FROM users;</span><br><span class="line"></span><br><span class="line">// Plain SQL</span><br><span class="line">db.Not(&quot;name = ?&quot;, &quot;jinzhu&quot;).First(&amp;user)</span><br><span class="line">//// SELECT * FROM users WHERE NOT(name = &quot;jinzhu&quot;);</span><br><span class="line"></span><br><span class="line">// Struct</span><br><span class="line">db.Not(User&#123;Name: &quot;jinzhu&quot;&#125;).First(&amp;user)</span><br><span class="line">//// SELECT * FROM users WHERE name &lt;&gt; &quot;jinzhu&quot;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="带内联条件的查询"><a href="#带内联条件的查询" class="headerlink" title="带内联条件的查询"></a>带内联条件的查询</h3><p>注意：使用主键查询时，应仔细检查所传递的值是否为有效主键，以避免SQL注入</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">// 按主键获取</span><br><span class="line">db.First(&amp;user, 23)</span><br><span class="line">//// SELECT * FROM users WHERE id = 23 LIMIT 1;</span><br><span class="line"></span><br><span class="line">// 简单SQL</span><br><span class="line">db.Find(&amp;user, &quot;name = ?&quot;, &quot;jinzhu&quot;)</span><br><span class="line">//// SELECT * FROM users WHERE name = &quot;jinzhu&quot;;</span><br><span class="line"></span><br><span class="line">db.Find(&amp;users, &quot;name &lt;&gt; ? AND age &gt; ?&quot;, &quot;jinzhu&quot;, 20)</span><br><span class="line">//// SELECT * FROM users WHERE name &lt;&gt; &quot;jinzhu&quot; AND age &gt; 20;</span><br><span class="line"></span><br><span class="line">// Struct</span><br><span class="line">db.Find(&amp;users, User&#123;Age: 20&#125;)</span><br><span class="line">//// SELECT * FROM users WHERE age = 20;</span><br><span class="line"></span><br><span class="line">// Map</span><br><span class="line">db.Find(&amp;users, map[string]interface&#123;&#125;&#123;&quot;age&quot;: 20&#125;)</span><br><span class="line">//// SELECT * FROM users WHERE age = 20;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Or条件查询"><a href="#Or条件查询" class="headerlink" title="Or条件查询"></a>Or条件查询</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">db.Where(&quot;role = ?&quot;, &quot;admin&quot;).Or(&quot;role = ?&quot;, &quot;super_admin&quot;).Find(&amp;users)</span><br><span class="line">//// SELECT * FROM users WHERE role = &#x27;admin&#x27; OR role = &#x27;super_admin&#x27;;</span><br><span class="line"></span><br><span class="line">// Struct</span><br><span class="line">db.Where(&quot;name = &#x27;jinzhu&#x27;&quot;).Or(User&#123;Name: &quot;jinzhu 2&quot;&#125;).Find(&amp;users)</span><br><span class="line">//// SELECT * FROM users WHERE name = &#x27;jinzhu&#x27; OR name = &#x27;jinzhu 2&#x27;;</span><br><span class="line"></span><br><span class="line">// Map</span><br><span class="line">db.Where(&quot;name = &#x27;jinzhu&#x27;&quot;).Or(map[string]interface&#123;&#125;&#123;&quot;name&quot;: &quot;jinzhu 2&quot;&#125;).Find(&amp;users)</span><br></pre></td></tr></table></figure>
+
+<h3 id="查询链"><a href="#查询链" class="headerlink" title="查询链"></a>查询链</h3><p>Gorm有一个可链接的API，你可以这样使用它</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">db.Where(&quot;name &lt;&gt; ?&quot;,&quot;jinzhu&quot;).Where(&quot;age &gt;= ? and role &lt;&gt; ?&quot;,20,&quot;admin&quot;).Find(&amp;users)</span><br><span class="line">//// SELECT * FROM users WHERE name &lt;&gt; &#x27;jinzhu&#x27; AND age &gt;= 20 AND role &lt;&gt; &#x27;admin&#x27;;</span><br><span class="line"></span><br><span class="line">db.Where(&quot;role = ?&quot;, &quot;admin&quot;).Or(&quot;role = ?&quot;, &quot;super_admin&quot;).Not(&quot;name = ?&quot;, &quot;jinzhu&quot;).Find(&amp;users)</span><br></pre></td></tr></table></figure>
+
+<h3 id="扩展查询选项"><a href="#扩展查询选项" class="headerlink" title="扩展查询选项"></a>扩展查询选项</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 为Select语句添加扩展SQL选项</span><br><span class="line">db.Set(&quot;gorm:query_option&quot;, &quot;FOR UPDATE&quot;).First(&amp;user, 10)</span><br><span class="line">//// SELECT * FROM users WHERE id = 10 FOR UPDATE;</span><br></pre></td></tr></table></figure>
+
+<h3 id="FirstOrInit"><a href="#FirstOrInit" class="headerlink" title="FirstOrInit"></a>FirstOrInit</h3><p>获取第一个匹配的记录，或者使用给定的条件初始化一个新的记录（仅适用于struct，map条件）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// Unfound</span><br><span class="line">db.FirstOrInit(&amp;user, User&#123;Name: &quot;non_existing&quot;&#125;)</span><br><span class="line">//// user -&gt; User&#123;Name: &quot;non_existing&quot;&#125;</span><br><span class="line"></span><br><span class="line">// Found</span><br><span class="line">db.Where(User&#123;Name: &quot;Jinzhu&quot;&#125;).FirstOrInit(&amp;user)</span><br><span class="line">//// user -&gt; User&#123;Id: 111, Name: &quot;Jinzhu&quot;, Age: 20&#125;</span><br><span class="line">db.FirstOrInit(&amp;user, map[string]interface&#123;&#125;&#123;&quot;name&quot;: &quot;jinzhu&quot;&#125;)</span><br><span class="line">//// user -&gt; User&#123;Id: 111, Name: &quot;Jinzhu&quot;, Age: 20&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Attrs"><a href="#Attrs" class="headerlink" title="Attrs"></a>Attrs</h3><p>如果未找到记录，则使用参数初始化结构</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// Unfound</span><br><span class="line">db.Where(User&#123;Name: &quot;non_existing&quot;&#125;).Attrs(User&#123;Age: 20&#125;).FirstOrInit(&amp;user)</span><br><span class="line">//// SELECT * FROM USERS WHERE name = &#x27;non_existing&#x27;;</span><br><span class="line">//// user -&gt; User&#123;Name: &quot;non_existing&quot;, Age: 20&#125;</span><br><span class="line"></span><br><span class="line">db.Where(User&#123;Name: &quot;non_existing&quot;&#125;).Attrs(&quot;age&quot;, 20).FirstOrInit(&amp;user)</span><br><span class="line">//// SELECT * FROM USERS WHERE name = &#x27;non_existing&#x27;;</span><br><span class="line">//// user -&gt; User&#123;Name: &quot;non_existing&quot;, Age: 20&#125;</span><br><span class="line"></span><br><span class="line">// Found</span><br><span class="line">db.Where(User&#123;Name: &quot;Jinzhu&quot;&#125;).Attrs(User&#123;Age: 30&#125;).FirstOrInit(&amp;user)</span><br><span class="line">//// SELECT * FROM USERS WHERE name = jinzhu&#x27;;</span><br><span class="line">//// user -&gt; User&#123;Id: 111, Name: &quot;Jinzhu&quot;, Age: 20&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Assign"><a href="#Assign" class="headerlink" title="Assign"></a>Assign</h3><p>将参数分配给结果，不管它是否被找到</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">db.Where(User&#123;Name: &quot;non_existing&quot;&#125;).Assign(User&#123;Age: 20&#125;).FirstOrInit(&amp;user)</span><br><span class="line">//// user -&gt; User&#123;Name: &quot;non_existing&quot;, Age: 20&#125;</span><br><span class="line"></span><br><span class="line">// Found</span><br><span class="line">db.Where(User&#123;Name: &quot;Jinzhu&quot;&#125;).Assign(User&#123;Age: 30&#125;).FirstOrInit(&amp;user)</span><br><span class="line">//// SELECT * FROM USERS WHERE name = jinzhu&#x27;;</span><br><span class="line">//// user -&gt; User&#123;Id: 111, Name: &quot;Jinzhu&quot;, Age: 30&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="FirstOrCreate"><a href="#FirstOrCreate" class="headerlink" title="FirstOrCreate"></a>FirstOrCreate</h3><p>获取第一个匹配的记录，或创建一个具有给定条件的新记录（仅适用于struct, map条件）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// Unfound</span><br><span class="line">db.FirstOrCreate(&amp;user, User&#123;Name: &quot;non_existing&quot;&#125;)</span><br><span class="line">//// INSERT INTO &quot;users&quot; (name) VALUES (&quot;non_existing&quot;);</span><br><span class="line">//// user -&gt; User&#123;Id: 112, Name: &quot;non_existing&quot;&#125;</span><br><span class="line"></span><br><span class="line">// Found</span><br><span class="line">db.Where(User&#123;Name: &quot;Jinzhu&quot;&#125;).FirstOrCreate(&amp;user)</span><br><span class="line">//// user -&gt; User&#123;Id: 111, Name: &quot;Jinzhu&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Attrs-1"><a href="#Attrs-1" class="headerlink" title="Attrs"></a>Attrs</h3><p>如果未找到记录，则为参数分配结构</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// Unfound</span><br><span class="line">db.Where(User&#123;Name: &quot;non_existing&quot;&#125;).Attrs(User&#123;Age: 20&#125;).FirstOrCreate(&amp;user)</span><br><span class="line">//// SELECT * FROM users WHERE name = &#x27;non_existing&#x27;;</span><br><span class="line">//// INSERT INTO &quot;users&quot; (name, age) VALUES (&quot;non_existing&quot;, 20);</span><br><span class="line">//// user -&gt; User&#123;Id: 112, Name: &quot;non_existing&quot;, Age: 20&#125;</span><br><span class="line"></span><br><span class="line">// Found</span><br><span class="line">db.Where(User&#123;Name: &quot;jinzhu&quot;&#125;).Attrs(User&#123;Age: 30&#125;).FirstOrCreate(&amp;user)</span><br><span class="line">//// SELECT * FROM users WHERE name = &#x27;jinzhu&#x27;;</span><br><span class="line">//// user -&gt; User&#123;Id: 111, Name: &quot;jinzhu&quot;, Age: 20&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Assign-1"><a href="#Assign-1" class="headerlink" title="Assign"></a>Assign</h3><p>将其分配给记录，而不管它是否被找到，并保存回数据库。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// Unfound</span><br><span class="line">db.Where(User&#123;Name: &quot;non_existing&quot;&#125;).Assign(User&#123;Age: 20&#125;).FirstOrCreate(&amp;user)</span><br><span class="line">//// SELECT * FROM users WHERE name = &#x27;non_existing&#x27;;</span><br><span class="line">//// INSERT INTO &quot;users&quot; (name, age) VALUES (&quot;non_existing&quot;, 20);</span><br><span class="line">//// user -&gt; User&#123;Id: 112, Name: &quot;non_existing&quot;, Age: 20&#125;</span><br><span class="line"></span><br><span class="line">// Found</span><br><span class="line">db.Where(User&#123;Name: &quot;jinzhu&quot;&#125;).Assign(User&#123;Age: 30&#125;).FirstOrCreate(&amp;user)</span><br><span class="line">//// SELECT * FROM users WHERE name = &#x27;jinzhu&#x27;;</span><br><span class="line">//// UPDATE users SET age=30 WHERE id = 111;</span><br><span class="line">//// user -&gt; User&#123;Id: 111, Name: &quot;jinzhu&quot;, Age: 30&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Select"><a href="#Select" class="headerlink" title="Select"></a>Select</h3><p>指定要从数据库检索的字段，默认情况下，将选择所有字段;</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">db.Select(&quot;name, age&quot;).Find(&amp;users)</span><br><span class="line">//// SELECT name, age FROM users;</span><br><span class="line"></span><br><span class="line">db.Select([]string&#123;&quot;name&quot;, &quot;age&quot;&#125;).Find(&amp;users)</span><br><span class="line">//// SELECT name, age FROM users;</span><br><span class="line"></span><br><span class="line">db.Table(&quot;users&quot;).Select(&quot;COALESCE(age,?)&quot;, 42).Rows()</span><br><span class="line">//// SELECT COALESCE(age,&#x27;42&#x27;) FROM users;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Order"><a href="#Order" class="headerlink" title="Order"></a>Order</h3><p>在从数据库检索记录时指定顺序，将重排序设置为true以覆盖定义的条件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">db.Order(&quot;age desc, name&quot;).Find(&amp;users)</span><br><span class="line">//// SELECT * FROM users ORDER BY age desc, name;</span><br><span class="line"></span><br><span class="line">// Multiple orders</span><br><span class="line">db.Order(&quot;age desc&quot;).Order(&quot;name&quot;).Find(&amp;users)</span><br><span class="line">//// SELECT * FROM users ORDER BY age desc, name;</span><br><span class="line"></span><br><span class="line">// ReOrder</span><br><span class="line">db.Order(&quot;age desc&quot;).Find(&amp;users1).Order(&quot;age&quot;, true).Find(&amp;users2)</span><br><span class="line">//// SELECT * FROM users ORDER BY age desc; (users1)</span><br><span class="line">//// SELECT * FROM users ORDER BY age; (users2)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Limit"><a href="#Limit" class="headerlink" title="Limit"></a>Limit</h3><p>指定要检索的记录数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">db.Limit(3).Find(&amp;users)</span><br><span class="line">//// SELECT * FROM users LIMIT 3;</span><br><span class="line"></span><br><span class="line">// Cancel limit condition with -1</span><br><span class="line">db.Limit(10).Find(&amp;users1).Limit(-1).Find(&amp;users2)</span><br><span class="line">//// SELECT * FROM users LIMIT 10; (users1)</span><br><span class="line">//// SELECT * FROM users; (users2)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Offset"><a href="#Offset" class="headerlink" title="Offset"></a>Offset</h3><p>指定在开始返回记录之前要跳过的记录数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">db.Offset(3).Find(&amp;users)</span><br><span class="line">//// SELECT * FROM users OFFSET 3;</span><br><span class="line"></span><br><span class="line">// Cancel offset condition with -1</span><br><span class="line">db.Offset(10).Find(&amp;users1).Offset(-1).Find(&amp;users2)</span><br><span class="line">//// SELECT * FROM users OFFSET 10; (users1)</span><br><span class="line">//// SELECT * FROM users; (users2)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Count"><a href="#Count" class="headerlink" title="Count"></a>Count</h3><p>获取模型的记录数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">db.Where(&quot;name = ?&quot;, &quot;jinzhu&quot;).Or(&quot;name = ?&quot;, &quot;jinzhu 2&quot;).Find(&amp;users).Count(&amp;count)</span><br><span class="line">//// SELECT * from USERS WHERE name = &#x27;jinzhu&#x27; OR name = &#x27;jinzhu 2&#x27;; (users)</span><br><span class="line">//// SELECT count(*) FROM users WHERE name = &#x27;jinzhu&#x27; OR name = &#x27;jinzhu 2&#x27;; (count)</span><br><span class="line"></span><br><span class="line">db.Model(&amp;User&#123;&#125;).Where(&quot;name = ?&quot;, &quot;jinzhu&quot;).Count(&amp;count)</span><br><span class="line">//// SELECT count(*) FROM users WHERE name = &#x27;jinzhu&#x27;; (count)</span><br><span class="line"></span><br><span class="line">db.Table(&quot;deleted_users&quot;).Count(&amp;count)</span><br><span class="line">//// SELECT count(*) FROM deleted_users;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Group-Having"><a href="#Group-Having" class="headerlink" title="Group &amp; Having"></a>Group &amp; Having</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">rows, err := db.Table(&quot;orders&quot;).Select(&quot;date(created_at) as date, sum(amount) as total&quot;).Group(&quot;date(created_at)&quot;).Rows()</span><br><span class="line">for rows.Next() &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">rows, err := db.Table(&quot;orders&quot;).Select(&quot;date(created_at) as date, sum(amount) as total&quot;).Group(&quot;date(created_at)&quot;).Having(&quot;sum(amount) &gt; ?&quot;, 100).Rows()</span><br><span class="line">for rows.Next() &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type Result struct &#123;</span><br><span class="line">    Date  time.Time</span><br><span class="line">    Total int64</span><br><span class="line">&#125;</span><br><span class="line">db.Table(&quot;orders&quot;).Select(&quot;date(created_at) as date, sum(amount) as total&quot;).Group(&quot;date(created_at)&quot;).Having(&quot;sum(amount) &gt; ?&quot;, 100).Scan(&amp;results)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Join"><a href="#Join" class="headerlink" title="Join"></a>Join</h3><p>指定连接条件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">rows, err := db.Table(&quot;users&quot;).Select(&quot;users.name, emails.email&quot;).Joins(&quot;left join emails on emails.user_id = users.id&quot;).Rows()</span><br><span class="line">for rows.Next() &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">db.Table(&quot;users&quot;).Select(&quot;users.name, emails.email&quot;).Joins(&quot;left join emails on emails.user_id = users.id&quot;).Scan(&amp;results)</span><br><span class="line"></span><br><span class="line">// 多个连接与参数</span><br><span class="line">db.Joins(&quot;JOIN emails ON emails.user_id = users.id AND emails.email = ?&quot;, &quot;jinzhu@example.org&quot;).Joins(&quot;JOIN credit_cards ON credit_cards.user_id = users.id&quot;).Where(&quot;credit_cards.number = ?&quot;, &quot;411111111111&quot;).Find(&amp;user)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Pluck"><a href="#Pluck" class="headerlink" title="Pluck"></a>Pluck</h3><p>将模型中的单个列作为地图查询，如果要查询多个列，可以使用Scan</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">var ages []int64</span><br><span class="line">db.Find(&amp;users).Pluck(&quot;age&quot;, &amp;ages)</span><br><span class="line"></span><br><span class="line">var names []string</span><br><span class="line">db.Model(&amp;User&#123;&#125;).Pluck(&quot;name&quot;, &amp;names)</span><br><span class="line"></span><br><span class="line">db.Table(&quot;deleted_users&quot;).Pluck(&quot;name&quot;, &amp;names)</span><br><span class="line"></span><br><span class="line">// 要返回多个列，做这样：</span><br><span class="line">db.Select(&quot;name, age&quot;).Find(&amp;users)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Scan"><a href="#Scan" class="headerlink" title="Scan"></a>Scan</h3><p>将结果扫描到另一个结构中。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">type Result struct &#123;</span><br><span class="line">    Name string</span><br><span class="line">    Age  int</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">var result Result</span><br><span class="line">db.Table(&quot;users&quot;).Select(&quot;name, age&quot;).Where(&quot;name = ?&quot;, 3).Scan(&amp;result)</span><br><span class="line"></span><br><span class="line">// Raw SQL</span><br><span class="line">db.Raw(&quot;SELECT name, age FROM users WHERE name = ?&quot;, 3).Scan(&amp;result)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Scopes"><a href="#Scopes" class="headerlink" title="Scopes"></a>Scopes</h3><p>将当前数据库连接传递到<code>func(*DB) *DB</code>，可以用于动态添加条件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">func AmountGreaterThan1000(db *gorm.DB) *gorm.DB &#123;</span><br><span class="line">    return db.Where(&quot;amount &gt; ?&quot;, 1000)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func PaidWithCreditCard(db *gorm.DB) *gorm.DB &#123;</span><br><span class="line">    return db.Where(&quot;pay_mode_sign = ?&quot;, &quot;C&quot;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func PaidWithCod(db *gorm.DB) *gorm.DB &#123;</span><br><span class="line">    return db.Where(&quot;pay_mode_sign = ?&quot;, &quot;C&quot;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func OrderStatus(status []string) func (db *gorm.DB) *gorm.DB &#123;</span><br><span class="line">    return func (db *gorm.DB) *gorm.DB &#123;</span><br><span class="line">        return db.Scopes(AmountGreaterThan1000).Where(&quot;status in (?)&quot;, status)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">db.Scopes(AmountGreaterThan1000, PaidWithCreditCard).Find(&amp;orders)</span><br><span class="line">// 查找所有信用卡订单和金额大于1000</span><br><span class="line"></span><br><span class="line">db.Scopes(AmountGreaterThan1000, PaidWithCod).Find(&amp;orders)</span><br><span class="line">// 查找所有COD订单和金额大于1000</span><br><span class="line"></span><br><span class="line">db.Scopes(OrderStatus([]string&#123;&quot;paid&quot;, &quot;shipped&quot;&#125;)).Find(&amp;orders)</span><br><span class="line">// 查找所有付费，发货订单</span><br></pre></td></tr></table></figure>
+
+<h3 id="指定表名"><a href="#指定表名" class="headerlink" title="指定表名"></a>指定表名</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// 使用User结构定义创建`deleted_users`表</span><br><span class="line">db.Table(&quot;deleted_users&quot;).CreateTable(&amp;User&#123;&#125;)</span><br><span class="line"></span><br><span class="line">var deleted_users []User</span><br><span class="line">db.Table(&quot;deleted_users&quot;).Find(&amp;deleted_users)</span><br><span class="line">//// SELECT * FROM deleted_users;</span><br><span class="line"></span><br><span class="line">db.Table(&quot;deleted_users&quot;).Where(&quot;name = ?&quot;, &quot;jinzhu&quot;).Delete()</span><br><span class="line">//// DELETE FROM deleted_users WHERE name = &#x27;jinzhu&#x27;;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2021/11/30/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GORM/2-%E6%9F%A5%E8%AF%A2/" title="2-查询">https://kongpengyq.com/2021/11/30/Go知识点/GORM/2-查询/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go%E7%9F%A5%E8%AF%86%E7%82%B9/" rel="tag"># Go知识点</a>
+              <a href="/tags/GORM/" rel="tag"># GORM</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/29/EIP%E7%AC%94%E8%AE%B0/07-%E4%BF%A1%E6%81%AF%20Informational/" rel="prev" title="07-信息 Informational">
+      <i class="fa fa-chevron-left"></i> 07-信息 Informational
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/11/30/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GORM/1-%E4%BB%8B%E7%BB%8D/" rel="next" title="1-介绍">
+      1-介绍 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Gorm%E6%9F%A5%E8%AF%A2"><span class="nav-text">Gorm查询</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2"><span class="nav-text">查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Where%E6%9F%A5%E8%AF%A2%E6%9D%A1%E4%BB%B6-%E7%AE%80%E5%8D%95SQL"><span class="nav-text">Where查询条件 (简单SQL)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Where%E6%9F%A5%E8%AF%A2%E6%9D%A1%E4%BB%B6-Struct-Map"><span class="nav-text">Where查询条件 (Struct &amp; Map)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Not%E6%9D%A1%E4%BB%B6%E6%9F%A5%E8%AF%A2"><span class="nav-text">Not条件查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%A6%E5%86%85%E8%81%94%E6%9D%A1%E4%BB%B6%E7%9A%84%E6%9F%A5%E8%AF%A2"><span class="nav-text">带内联条件的查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Or%E6%9D%A1%E4%BB%B6%E6%9F%A5%E8%AF%A2"><span class="nav-text">Or条件查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E9%93%BE"><span class="nav-text">查询链</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A9%E5%B1%95%E6%9F%A5%E8%AF%A2%E9%80%89%E9%A1%B9"><span class="nav-text">扩展查询选项</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FirstOrInit"><span class="nav-text">FirstOrInit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Attrs"><span class="nav-text">Attrs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Assign"><span class="nav-text">Assign</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FirstOrCreate"><span class="nav-text">FirstOrCreate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Attrs-1"><span class="nav-text">Attrs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Assign-1"><span class="nav-text">Assign</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Select"><span class="nav-text">Select</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Order"><span class="nav-text">Order</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Limit"><span class="nav-text">Limit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Offset"><span class="nav-text">Offset</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Count"><span class="nav-text">Count</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Group-Having"><span class="nav-text">Group &amp; Having</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Join"><span class="nav-text">Join</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Pluck"><span class="nav-text">Pluck</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Scan"><span class="nav-text">Scan</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Scopes"><span class="nav-text">Scopes</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E8%A1%A8%E5%90%8D"><span class="nav-text">指定表名</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

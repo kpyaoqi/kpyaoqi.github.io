@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="进程、线程、协程的区别进程：就是二进制可执行文件在计算机内存中的运行实例，进程是操作系统最小的资源分配单位，拥有独立的内存空间和系统资源，为了方便管理，每个进程都有自己的描述符，我们称之为进程控制块，即PCB，进程分类：  用户进程：位于用户空间中，是程序执行的实例 内核进程：位于内核空间中，可以访问硬件  进程在创建后，在执行过程中，其状态一直在变化。分别是：初始态、就绪态、运行态、挂起态（阻塞">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go语言面经">
+<meta property="og:url" content="https://kongpengyq.com/2022/01/14/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/Go%E8%AF%AD%E8%A8%80%E9%9D%A2%E7%BB%8F/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="进程、线程、协程的区别进程：就是二进制可执行文件在计算机内存中的运行实例，进程是操作系统最小的资源分配单位，拥有独立的内存空间和系统资源，为了方便管理，每个进程都有自己的描述符，我们称之为进程控制块，即PCB，进程分类：  用户进程：位于用户空间中，是程序执行的实例 内核进程：位于内核空间中，可以访问硬件  进程在创建后，在执行过程中，其状态一直在变化。分别是：初始态、就绪态、运行态、挂起态（阻塞">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/image-20230530155013217.png">
+<meta property="article:published_time" content="2022-01-13T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:01:34.859Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="Go知识点">
+<meta property="article:tag" content="GO基础知识">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/image-20230530155013217.png">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/01/14/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/Go%E8%AF%AD%E8%A8%80%E9%9D%A2%E7%BB%8F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Go语言面经 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/01/14/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/Go%E8%AF%AD%E8%A8%80%E9%9D%A2%E7%BB%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Go语言面经
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-01-14 00:00:00" itemprop="dateCreated datePublished" datetime="2022-01-14T00:00:00+08:00">2022-01-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:01:34" itemprop="dateModified" datetime="2023-11-09T10:01:34+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" itemprop="url" rel="index">
+                    <span itemprop="name">GO基础知识</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="进程、线程、协程的区别"><a href="#进程、线程、协程的区别" class="headerlink" title="进程、线程、协程的区别"></a>进程、线程、协程的区别</h1><p><strong>进程：</strong>就是二进制可执行文件在计算机内存中的运行实例，<strong>进程是操作系统最小的资源分配单位</strong>，拥有独立的内存空间和系统资源，为了方便管理，每个进程都有自己的描述符，我们称之为<strong>进程控制块</strong>，即PCB，进程分类：</p>
+<ul>
+<li><strong>用户进程：位于用户空间中，是程序执行的实例</strong></li>
+<li><strong>内核进程：位于内核空间中，可以访问硬件</strong></li>
+</ul>
+<p>进程在创建后，在执行过程中，其状态一直在变化。分别是：<strong>初始态、就绪态、运行态、挂起态（阻塞）、终止态</strong></p>
+<p><strong>线程：线程是操作系统最小的调度执行单位</strong>，线程不能独立于进程而存在，其生命周期不可能逾越其所属的进程生命周期，<strong>线程与进程一样拥有独立的PCB，但是没有独立的地址空间，即线程之间共享了地址空间，直接就能通信！！</strong>进程的<strong>大多数资源会被其内部的线程所共享。</strong></p>
+<p><strong>协程：</strong>程与进程、线程相比并不是一个维度的概念，协程不是被操作系统内核所管理的，而是<strong>完全由程序所控制，也就是在用户态执行</strong>。由程序员显式地定义和控制，可以在执行过程中暂停和恢复。这样带来的好处是性能大幅度的提升，因为不会像线程切换那样消耗资源。   </p>
+<p>优点：</p>
+<ul>
+<li>占用小：<strong>协程更加轻量，创建成本更小，降低了内存消耗</strong>，协程一般只占据极小的内存（2~5KB），而线程是1MB左右。虽然线程和协程都是独有栈，但是线程栈是固定的，比如在Java中，基本是2M，假如一个栈只有一个打印方法，还要为此开辟一个2M的栈，就太浪费了。而<strong>Go的的协程具备动态收缩功能</strong>，初始化为2KB，最大可达1GB</li>
+<li><strong>运行效率高：</strong>线程切换需要从用户态-&gt;内核态-&gt;用户态，而协程切换是在用户态上，即用户态-&gt;用户态-&gt;用户态，其切换过程由语言层面的调度器（coroutine）或者语言引擎（goroutine）实现。</li>
+<li>减少了同步锁：协程最终还是运行在线程上，本质上还是单线程运行，没有临界区域的话自然不需要锁的机制。<strong>多协程自然没有竞争关系</strong>。但是，如果存在临界区域，依然需要使用锁，<strong>协程可以减少以往必须使用锁的场景</strong></li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>无法利用多核资源：协程运行在线程上，单线程应用无法很好的利用多核，只能以多进程方式启动。</li>
+<li><strong>协程不能有阻塞操作</strong>：线程是抢占式，线程在遇见IO操作时候，线程从运行态→阻塞态，释放cpu使用权。这是由操作系统调度。<strong>协程是非抢占式，如果遇见IO操作时候，协程是主动释放执行权限的，如果无法主动释放，程序将阻塞，无法往下执行，随之而来是整个线程被阻塞。</strong></li>
+<li>CPU密集型不是长处：假设这个线程中有一个协程是 CPU 密集型的他没有 IO 操作，也就是自己不会主动触发调度器调度的过程，那么就会出现其他协程得不到执行的情况，所以这种情况下需要程序员自己避免。</li>
+</ul>
+<h1 id="Golang协程间如何通信"><a href="#Golang协程间如何通信" class="headerlink" title="Golang协程间如何通信"></a>Golang协程间如何通信</h1><p>Go推荐使用通道（channel）的方式解决数据传递问题，在多个goroutine之间，channel负责传递数据，还能保证整个过程的并发安全性。  </p>
+<h1 id="GMP模型-Go协程调度模型"><a href="#GMP模型-Go协程调度模型" class="headerlink" title="GMP模型(Go协程调度模型)"></a>GMP模型(Go协程调度模型)</h1><p>每个G的执行需要P和M的支持，M与P关联后才会形成一个有效的G运行环境，即 <code>工作线程+上下文环境</code>。  </p>
+<p><img src="/noteimg/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/img/image-20230530155013217.png" alt="image-20230530155013217"> </p>
+<ul>
+<li>G：goroutine，一个G代表一个Go协程</li>
+<li>M：machine，一个M代表一个工作线程，runtime&#x2F;debug 中的 <strong>SetMaxThreads</strong> 函数，设置 M 的最大数量</li>
+<li>P：processor，一个P代表执行一个Go代码段需要的上下文环境，由<strong>启动时环境变量 $GOMAXPROCS 或者是由 runtime 的方法 GOMAXPROCS()</strong> 决定</li>
+</ul>
+<blockquote>
+<p>M 与 P 的数量没有绝对关系，一个 M 阻塞，P 就会去创建或者切换另一个 M，所以，即使 P 的默认数量是 1，也有可能会创建很多个 M 出来。</p>
+</blockquote>
+<p><strong>go func () 调度流程</strong>：</p>
+<p> 1、我们通过 go func () 来创建一个 goroutine；</p>
+<p> 2、有两个存储 G 的队列，一个是局部调度器 P 的本地队列、一个是全局 G 队列。新创建的 G 会先保存在 P 的本地队列中，如果 P 的本地队列已经满了就会保存在全局的队列中；（所有的 M 都可以从全局队列中拉取 G 来执行）</p>
+<p> 3、G 只能运行在 M 中，一个 M 必须持有一个 P，M 和 P 存在一一绑定的关系。M 会从 P 的本地队列弹出一个可执行状态的 G 来执行，如果 P 的本地队列为空，则  M 从全局队列中拉取；如果全局队列也为空，则从其他的 P 中拉取 G</p>
+<p> 4、一个 M 调度 G 执行的过程是一个循环机制；</p>
+<p> 5、当 M 执行某一个 G 时候如果发生了 syscall 或则其余阻塞操作，M 会阻塞，如果当前有一些 G 在执行，runtime  会把这个线程 M 从 P 中摘除 (detach)，然后再创建一个新的操作系统的线程 (如果有空闲的线程可用就复用空闲线程) 来服务于这个 P；</p>
+<p> 6、当 M 系统调用结束时候，这个 G 会尝试获取一个空闲的 P 执行，并放入到这个 P 的本地队列。如果获取不到 P，那么这个线程 M 变成休眠状态， 加入到空闲线程中，然后这个 G 会被放入全局队列中。</p>
+<h1 id="Golang-Map底层"><a href="#Golang-Map底层" class="headerlink" title="Golang Map底层"></a>Golang Map底层</h1><p>Map的底层实现是由哈希表（Hash Table）实现的。</p>
+<p>哈希表是一种基于哈希函数的数据结构，它将键映射到存储位置，从而实现快速的查找。在Go语言中，Map的底层结构是一个哈希表数组，每个元素称为桶（Bucket）。每个桶存储着一个或多个键值对。</p>
+<p>下面是Map底层的几个关键点：</p>
+<ol>
+<li>哈希函数：Map使用哈希函数将键转换为一个索引，用于确定键值对在哈希表数组中的存储位置。哈希函数应该具有良好的散列性，以减少冲突的发生。</li>
+<li>桶（Bucket）：Map底层的哈希表数组由多个桶组成，每个桶存储着一个或多个键值对。当多个键映射到同一个索引位置时，它们会被存储在同一个桶中，形成一个链表或其他数据结构。</li>
+<li>冲突解决：由于哈希函数的有限性，可能会发生不同的键映射到相同的索引位置，这就是哈希冲突。Map使用链表或其他冲突解决方法来处理冲突，确保所有键值对都能正确存储和访问。</li>
+<li>动态调整大小：Map具有自动扩容和收缩的能力，以适应键值对的增加或减少。当Map中的键值对数量达到一定阈值时，Map会自动进行扩容，重新分配更大的哈希表数组。反之，如果键值对数量减少到一定程度，Map会自动进行收缩，释放不必要的内存。</li>
+</ol>
+<p>总结来说，Go语言中的Map底层使用哈希表实现，通过哈希函数将键映射到存储位置，解决键值对的查找、插入和删除操作。哈希冲突通过链表等冲突解决方法来处理。同时，Map具有动态调整大小的能力，以适应键值对的变化。这种底层实现使得Map在大多数情况下能够提供高效的性能和常数时间复杂度的操作。</p>
+<h1 id="如何实现Map的有序查找"><a href="#如何实现Map的有序查找" class="headerlink" title="如何实现Map的有序查找"></a>如何实现Map的有序查找</h1><p>一种常见的方法是使用有序的数据结构，如切片（Slice）或平衡二叉树（Balanced Binary Tree）来维护键值对的有序性。</p>
+<p>使用切片（Slice）：可以将Map的键值对复制到一个切片中，并按照键的顺序排序切片。然后，可以使用二分查找算法在有序的切片中进行查找操作</p>
+<p>使用平衡二叉树（如红黑树）：将Map的键作为树节点的关键字，值作为节点的值，构建一颗平衡二叉树。可以使用平衡二叉树的查找操作来实现有序查找。</p>
+<h1 id="sync包-sync包提供了基本的同步基元"><a href="#sync包-sync包提供了基本的同步基元" class="headerlink" title="sync包(sync包提供了基本的同步基元)"></a>sync包(sync包提供了基本的同步基元)</h1><h4 id="互斥锁-sync-Mutex"><a href="#互斥锁-sync-Mutex" class="headerlink" title="互斥锁 sync.Mutex"></a>互斥锁 sync.Mutex</h4><p><strong>互斥锁</strong>是传统并发程序进行共享资源访问控制的主要方法。Go中由结构体<code>sync.Mutex</code>表示互斥锁，<strong>保证同时只有一个 goroutine 可以访问共享资源</strong>。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mutex sync.Mutex</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *Mutex)</span></span> Lock()</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *Mutex)</span></span> Unlock()</span><br></pre></td></tr></table></figure>
+
+<h4 id="读写锁-sync-RWMutex"><a href="#读写锁-sync-RWMutex" class="headerlink" title="读写锁 sync.RWMutex"></a>读写锁 sync.RWMutex</h4><p>在开发场景中，经常遇到多处并发读取，一次并发写入的情况，Go为了方便这些操作，<strong>在互斥锁基础上，提供了读写锁操作</strong>。  读写锁即针对读写操作的互斥锁，简单来说，就是将数据设定为 写模式（只写）或者读模式（只读）。使用读写锁可以分别针对读操作和写操作进行锁定和解锁操作。  </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> rwm sync.RWMutex</span><br><span class="line"><span class="comment">// 设定为写模式：与互斥锁使用方式一致，一路只写</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(*RWMutex)</span></span> Lock()				<span class="comment">// 锁定写</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(*RWMutex)</span></span> Unlock()			<span class="comment">// 解锁写</span></span><br><span class="line"><span class="comment">// 设定为读模式：对读执行加锁解锁，即多路只读</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(*RWMutex)</span></span> RLock()</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(*RWMutex)</span></span> RUnlock()</span><br><span class="line"><span class="comment">//返回值Locker是实现了接口`sync.Lokcer`的值，该接口同样被 `*sync.Mutex`和`*sync.RWMutex`实现，包含方法：`Lock`和`Unlock`。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rw *RWMutex)</span></span> RLocker() Locker</span><br></pre></td></tr></table></figure>
+
+<h4 id="等待组-sync-WaitGroup"><a href="#等待组-sync-WaitGroup" class="headerlink" title="等待组 sync.WaitGroup"></a>等待组 sync.WaitGroup</h4><p><code>sync.WaitGroup</code>类型的值也是并发安全的，该类型结构体中<strong>内部拥有一个计数器</strong>，计数器的值可以通过方法调用实现计数器的增加和减少 。  </p>
+<p>当我们<strong>添加了 N 个并发任务进行工作时，就将等待组的计数器值增加 N。每个任务完成时，这个值减1</strong>。 同时，在另外一个 goroutine 中等待这个等待组的计数器值为 0 时， 表示所有任务己经完成。  </p>
+<p>等待组常用方法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Add方法向内部计数加上delta，delta可以是负数；如果内部计数器变为0，切记不能减少为负数，会引发崩溃</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(wg *WaitGroup)</span></span> Add(delta <span class="type">int</span>)</span><br><span class="line"><span class="comment">//Done方法减少WaitGroup计数器的值，应在线程的最后执行</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(wg *WaitGroup)</span></span> Done()</span><br><span class="line"><span class="comment">//Wait方法阻塞直到WaitGroup计数器减为0</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(wg *WaitGroup)</span></span> Wait()</span><br></pre></td></tr></table></figure>
+
+<h4 id="条件变量-sync-Cond"><a href="#条件变量-sync-Cond" class="headerlink" title="条件变量 sync.Cond"></a>条件变量 sync.Cond</h4><p>条件变量通常与锁配合使用： </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewCond</span><span class="params">(l locker)</span></span> *Cond        <span class="comment">// 条件变量必须传入一个锁，二者需要配合使用</span></span><br></pre></td></tr></table></figure>
+
+<p><code>*sync.Cond</code>类型有三个方法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Broadcast唤醒所有等待c的线程</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Cond)</span></span> Broadcast()</span><br><span class="line"><span class="comment">//Signal唤醒等待c的一个线程（如果存在）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Cond)</span></span> Signal()</span><br><span class="line"><span class="comment">//该方法会阻塞等待条件变量满足条件。也会对锁进行解锁，一旦收到通知则唤醒，并立即锁定该锁</span></span><br><span class="line"><span class="comment">//Wait自行解锁c.L并阻塞当前线程，在之后线程恢复执行时，Wait方法会在返回前锁定c.L。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Cond)</span></span> Wait()</span><br></pre></td></tr></table></figure>
+
+<h4 id="Once-只执行一次"><a href="#Once-只执行一次" class="headerlink" title="Once 只执行一次"></a>Once 只执行一次</h4><p><code>sync.Once</code>，负责只执行一次，也即全局唯一操作。  使用方式如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> once sync.Once</span><br><span class="line">once.Do(<span class="function"><span class="keyword">func</span><span class="params">()</span></span>&#123;&#125;)           <span class="comment">// Do方法的有效调用次数永远是1</span></span><br></pre></td></tr></table></figure>
+
+<p><code>sync.Once</code>的典型应用场景是只执行一次的任务，如果这样的任务不适合在init函数中执行，该结构体类就会派上用场。  </p>
+<p>sync.Once内部使用了“卫述语句、双重检查锁定、共享标记的原子操作”来实现<code>Once</code>功能。</p>
+<h4 id="对象池-sync-Pool"><a href="#对象池-sync-Pool" class="headerlink" title="对象池 sync.Pool"></a>对象池 sync.Pool</h4><p><code>sync.Pool</code>可以作为临时值的容器，该容器具备自动伸缩、高效特性，同时也是并发安全的，其方法有：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Pool)</span></span> Get() <span class="keyword">interface</span>&#123;&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Pool)</span></span> Put(x <span class="keyword">interface</span>&#123;&#125;)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>如果池子从未Put过，其New字段也没有被赋值一个非nil值，那么Get方法返回结果一定是nil。  </li>
+<li>Get获取的值不一定存在于池中，如果Get到的值存在于池中，则该值Get后会被删除</li>
+</ul>
+<h4 id="原子操作-sync-atomic"><a href="#原子操作-sync-atomic" class="headerlink" title="原子操作 sync&#x2F;atomic"></a>原子操作 sync&#x2F;atomic</h4><p>这些函数可以对一些数据类型进行原子操作这些函数提供的原子操作有5种：增、减、比较并交换、载入、存储、交换。  </p>
+<h5 id="原子运算：增-减"><a href="#原子运算：增-减" class="headerlink" title="原子运算：增&#x2F;减"></a>原子运算：增&#x2F;减</h5><p>增加函数的函数名前缀都是Add开头</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 原子性的把一个int32类型变量 i32 增大3 ，下列函数返回值必定是已经被修改的值</span></span><br><span class="line">newi32 := atomic.AddInt32(&amp;i32, <span class="number">3</span>)      <span class="comment">// 传入指针类型因为该函数需要获得数据的内存位置，以施加特殊的CPU指令</span></span><br></pre></td></tr></table></figure>
+
+<p>常见的增&#x2F;减原子操作函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddInt32</span><span class="params">(addr *<span class="type">int32</span>, delta <span class="type">int32</span>)</span></span> (<span class="built_in">new</span> <span class="type">int32</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddInt64</span><span class="params">(addr *<span class="type">int64</span>, delta <span class="type">int64</span>)</span></span> (<span class="built_in">new</span> <span class="type">int64</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddUint32</span><span class="params">(addr *<span class="type">uint32</span>, delta <span class="type">uint32</span>)</span></span> (<span class="built_in">new</span> <span class="type">uint32</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddUint64</span><span class="params">(addr *<span class="type">uint64</span>, delta <span class="type">uint64</span>)</span></span> (<span class="built_in">new</span> <span class="type">uint64</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddUintptr</span><span class="params">(addr *<span class="type">uintptr</span>, delta <span class="type">uintptr</span>)</span></span> (<span class="built_in">new</span> <span class="type">uintptr</span>)</span><br></pre></td></tr></table></figure>
+
+<p>注意:</p>
+<ul>
+<li>如果需要执行减少操作，可以这样书写 atomic.AddInt32(&amp;i32, -3)</li>
+<li>对uint32执行增加NN（代表负整数，增加NN也可以理解为减少-NN）：atomic.AddUint32(&amp;ui32, ^uint32(-NN-1)) </li>
+<li>不存在atomic.AddPointer的函数，因为unsafe.Poniter类型的值无法被增减</li>
+</ul>
+<h5 id="原子运算：比较与替换"><a href="#原子运算：比较与替换" class="headerlink" title="原子运算：比较与替换"></a>原子运算：比较与替换</h5><p>比较并替换即“Compare And Swap”，简称CAS。该类原子操作名称都以<code>CompareAndSwap</code>为前缀。   </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 参数一：被操作数 参数二和参数三代表被操作数的旧值和新值</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CompareAndSwapInt32</span><span class="params">(addr *<span class="type">int32</span>, old, <span class="built_in">new</span> <span class="type">int32</span>)</span></span> (swapped <span class="type">bool</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CompareAndSwapInt64</span><span class="params">(addr *<span class="type">int64</span>, old, <span class="built_in">new</span> <span class="type">int64</span>)</span></span> (swapped <span class="type">bool</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CompareAndSwapUint32</span><span class="params">(addr *<span class="type">uint32</span>, old, <span class="built_in">new</span> <span class="type">uint32</span>)</span></span> (swapped <span class="type">bool</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CompareAndSwapUint64</span><span class="params">(addr *<span class="type">uint64</span>, old, <span class="built_in">new</span> <span class="type">uint64</span>)</span></span> (swapped <span class="type">bool</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CompareAndSwapUintptr</span><span class="params">(addr *<span class="type">uintptr</span>, old, <span class="built_in">new</span> <span class="type">uintptr</span>)</span></span> (swapped <span class="type">bool</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CompareAndSwapPointer</span><span class="params">(addr *unsafe.Pointer, old, <span class="built_in">new</span> unsafe.Pointer)</span></span> (swapped <span class="type">bool</span>)</span><br></pre></td></tr></table></figure>
+
+<p>CAS的一些特点：</p>
+<ul>
+<li>CAS与锁相比，明显不同是它总是假设操作值未被改变，一旦确认这个假设为真，立即进行替换。所以锁的做法趋于悲观，CAS的做法趋于乐观。  </li>
+<li>CAS的优势：可以在不创建互斥量和不形成临界区的情况下，完成并发安全的值替换操作，可以大大减少性能损耗。  </li>
+<li>CAS的劣势：在被操作之被频繁变更的情况下，CAS操作容易失败，有时候需要for循环判断返回结构的bool来进行多次尝试 </li>
+<li>CAS操作不会阻塞协程，但是仍可能使流程执行暂时停滞（这种停滞极短）</li>
+</ul>
+<p>应用场景：并发安全的更新一些类型的值，可以优先选择CAS操作。  </p>
+<h5 id="原子读取：载入"><a href="#原子读取：载入" class="headerlink" title="原子读取：载入"></a>原子读取：载入</h5><p>为了原子的读取数值，Go提供了一系列载入函数，名称以<code>Load</code>为前缀。   </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LoadInt32</span><span class="params">(addr *<span class="type">int32</span>)</span></span> (val <span class="type">int32</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LoadInt64</span><span class="params">(addr *<span class="type">int64</span>)</span></span> (val <span class="type">int64</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LoadUint32</span><span class="params">(addr *<span class="type">uint32</span>)</span></span> (val <span class="type">uint32</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LoadUint64</span><span class="params">(addr *<span class="type">uint64</span>)</span></span> (val <span class="type">uint64</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LoadUintptr</span><span class="params">(addr *<span class="type">uintptr</span>)</span></span> (val <span class="type">uintptr</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LoadPointer</span><span class="params">(addr *unsafe.Pointer)</span></span> (val unsafe.Pointer)</span><br></pre></td></tr></table></figure>
+
+<p>CAS与载入的配合示例：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// value 增加 num</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">addValue</span><span class="params">(value,num <span class="type">int32</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        v := atomic.LoadInt32(&amp;value)</span><br><span class="line">        <span class="keyword">if</span> atomic.ComapreAndSwapInt32(&amp;value, v, (v + num)) &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="原子写入：存储"><a href="#原子写入：存储" class="headerlink" title="原子写入：存储"></a>原子写入：存储</h5><p>在原子存储时，任何CPU都不会进行针对同一个值的读写操作，此时不会出现并发时候，别人读取到了修改了一半的值。</p>
+<p>Go的<code>sync/atomic</code>包提供的存储函数都是以<code>Store</code>为前缀。  </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StoreInt32</span><span class="params">(addr *<span class="type">int32</span>, val <span class="type">int32</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StoreInt64</span><span class="params">(addr *<span class="type">int64</span>, val <span class="type">int64</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StoreUint32</span><span class="params">(addr *<span class="type">uint32</span>, val <span class="type">uint32</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StoreUint64</span><span class="params">(addr *<span class="type">uint64</span>, val <span class="type">uint64</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StoreUintptr</span><span class="params">(addr *<span class="type">uintptr</span>, val <span class="type">uintptr</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StorePointer</span><span class="params">(addr *unsafe.Pointer, val unsafe.Pointer)</span></span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 参数一为被操作数据的指针 参数二是要存储的新值</span></span><br><span class="line">atomic.StoreInt32(i *int3, v <span class="type">int32</span>)     </span><br></pre></td></tr></table></figure>
+
+<p>Go原子存储的特点：存储操作总会成功，因为不关心被操作值的旧值是什么，这与CAS有明显区别。  </p>
+<h5 id="交换"><a href="#交换" class="headerlink" title="交换"></a>交换</h5><p>交换与CAS操作相似，但是交换不关心被操作数据的旧值，而是直接设置新值，不过会返回被操作值的旧值。交换操作比CAS操作的约束更少，且比载入操作功能更强。 在Go中，交换操作都以<code>Swap</code>为前缀，示例：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SwapInt32</span><span class="params">(addr *<span class="type">int32</span>, <span class="built_in">new</span> <span class="type">int32</span>)</span></span> (old <span class="type">int32</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SwapInt64</span><span class="params">(addr *<span class="type">int64</span>, <span class="built_in">new</span> <span class="type">int64</span>)</span></span> (old <span class="type">int64</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SwapUint32</span><span class="params">(addr *<span class="type">uint32</span>, <span class="built_in">new</span> <span class="type">uint32</span>)</span></span> (old <span class="type">uint32</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SwapUint64</span><span class="params">(addr *<span class="type">uint64</span>, <span class="built_in">new</span> <span class="type">uint64</span>)</span></span> (old <span class="type">uint64</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SwapUintptr</span><span class="params">(addr *<span class="type">uintptr</span>, <span class="built_in">new</span> <span class="type">uintptr</span>)</span></span> (old <span class="type">uintptr</span>)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SwapPointer</span><span class="params">(addr *unsafe.Pointer, <span class="built_in">new</span> unsafe.Pointer)</span></span> (old unsafe.Pointer)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 参数一是被操作值指针  参数二是新值  返回值为旧值</span></span><br><span class="line">atomic.SwapInt32(i *<span class="type">int32</span>, v <span class="type">int32</span>)         </span><br></pre></td></tr></table></figure>
+
+<h1 id="怎么实现Map的并发安全-sync-Map，底层实际上用了一个Map缓存"><a href="#怎么实现Map的并发安全-sync-Map，底层实际上用了一个Map缓存" class="headerlink" title="怎么实现Map的并发安全(sync.Map，底层实际上用了一个Map缓存)"></a>怎么实现Map的并发安全(sync.Map，底层实际上用了一个Map缓存)</h1><p><code>sync.Map</code>类型提供了一种并发安全的键值对映射，它可以在多个goroutine之间安全地读取和写入数据</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建一个并发安全的Map</span></span><br><span class="line"><span class="keyword">var</span> m sync.Map</span><br><span class="line"><span class="comment">// 添加键值对</span></span><br><span class="line">m.Store(<span class="string">&quot;key1&quot;</span>, <span class="string">&quot;value1&quot;</span>)</span><br><span class="line">m.Store(<span class="string">&quot;key2&quot;</span>, <span class="string">&quot;value2&quot;</span>)</span><br><span class="line"><span class="comment">// 从Map中获取值</span></span><br><span class="line">value1, ok1 := m.Load(<span class="string">&quot;key1&quot;</span>)</span><br><span class="line">value2, ok2 := m.Load(<span class="string">&quot;key2&quot;</span>)</span><br><span class="line"><span class="comment">// 删除键值对</span></span><br><span class="line">m.Delete(<span class="string">&quot;key2&quot;</span>)</span><br><span class="line"><span class="comment">// 遍历Map</span></span><br><span class="line">m.Range(<span class="function"><span class="keyword">func</span><span class="params">(key, value <span class="keyword">interface</span>&#123;&#125;)</span></span> <span class="type">bool</span> &#123;</span><br><span class="line">    fmt.Println(<span class="string">&quot;Key:&quot;</span>, key, <span class="string">&quot;Value:&quot;</span>, value)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p><code>sync.Map</code>内部被<strong>分成了多个分片（shard）</strong>，每个分片都包含了一个独立的映射，<strong>以及一个互斥锁用于保护该分片的读写操作</strong>。默认情况下，分<strong>片的数量是32，可以通过调整<code>runtime.GOMAXPROCS()</code>来改变分片的数量。</strong>当<strong>需要读取或写入映射时，<code>sync.Map</code>会根据键的哈希值选择一个特定的分片</strong>。对于读操作，只需要获取对应分片的互斥锁，并直接进行读取操作，不会对其他分片产生影响。<strong>对于写操作，需要先获取对应分片的互斥锁，然后执行写入操作，并最后释放互斥锁。</strong>这样就实现了对分片的并发访问控制，从而保证了并发安全性。</p>
+<p>此外，<code>sync.Map</code>还使用了一种特殊的技术，即<strong>当读操作遇到正在进行的写操作时，读操作会等待写操作完成，并重新加载最新的数据。</strong>这种技术可以避免读操作读取到过期的数据，并确保读取的数据是最新的。</p>
+<p>需要注意的是，<strong>由于<code>sync.Map</code>采用了分片锁的机制，因此在高并发的情况下，对于频繁的写操作可能会导致锁的争用，进而影响性能</strong>。因此，如果需要高性能的并发映射，可以<strong>考虑使用其他第三方的并发安全映射库</strong>，如<code>concurrent-map</code>、<code>go-cache</code>等，它们可能会采用更高效的底层实现方式。</p>
+<h1 id="defer函数的使用场景（延迟Close、recover-panic）"><a href="#defer函数的使用场景（延迟Close、recover-panic）" class="headerlink" title="defer函数的使用场景（延迟Close、recover panic）"></a>defer函数的使用场景（延迟Close、recover panic）</h1><ol>
+<li><strong>解锁互斥锁</strong>：在使用互斥锁进行临界区保护时，为了避免忘记解锁而导致死锁，可以<strong>使用defer函数来确保在函数执行完毕后解锁互斥锁</strong>。</li>
+<li>延迟<strong>执行资源清理</strong>：在函数执行过程中，如果需要进行一些<strong>资源清理操作</strong>，可以使用defer函数来延迟执行清理操作，确保无论函数执行的逻辑分支如何，都能够进行资源清理.(文件、数据库连接、网络连接)</li>
+<li><strong>恢复错误</strong>：在处理可能发生错误的代码段时，可以<strong>使用defer函数来捕获和处理错误</strong>，<strong>避免错误传播到调用栈的更高层。</strong></li>
+<li><strong>确保函数调用顺序：</strong>当在函数中有多个函数调用的顺序很重要时，可以使用<strong>defer函数来确保它们按照正确的顺序执行</strong>。</li>
+</ol>
+<h1 id="Map可以用数组作为Key吗（数组可以，切片不可以）"><a href="#Map可以用数组作为Key吗（数组可以，切片不可以）" class="headerlink" title="Map可以用数组作为Key吗（数组可以，切片不可以）"></a>Map可以用数组作为Key吗（数组可以，切片不可以）</h1><p>Go 语言中只要是可比较的类型都可以作为 key。除开 <strong>slice，map，functions</strong> 这几种类型，其他类型都是 OK 的。具体包括：布尔值、数字、字符串、指针、通道、接口类型、结构体、只包含上述类型的数组。</p>
+<h1 id="Channel的阻塞和非阻塞（顺带问了select用法）"><a href="#Channel的阻塞和非阻塞（顺带问了select用法）" class="headerlink" title="Channel的阻塞和非阻塞（顺带问了select用法）"></a>Channel的阻塞和非阻塞（顺带问了select用法）</h1><ol>
+<li>阻塞通道：<strong>默认情况下，通道是阻塞</strong>的。<strong>当发送方尝试将数据发送到通道时，如果通道已满（接收方没有准备好接收），发送方将被阻塞，直到有空间可用。类似地，当接收方尝试从通道中接收数据时，如果通道为空（发送方没有准备好发送），接收方将被阻塞，直到有数据可用</strong>。这种阻塞行为使得通道成为一种有效的同步机制。</li>
+<li>非阻塞通道： 非阻塞通道的特点是在数据传输期间不会发生暂停，发送方和接收方可以继续执行其他操作。在 Go 中，<strong>可以使用<code>select</code>语句结合<code>default</code>分支来实现非阻塞的通道操作</strong>。<code>select</code>语句用于同时监视多个通道的状态，并执行相应的操作。</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="type">int</span>) <span class="comment">// 创建一个整数类型的通道</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 发送方（非阻塞）</span></span><br><span class="line"><span class="keyword">select</span> &#123;</span><br><span class="line"><span class="keyword">case</span> ch &lt;- <span class="number">42</span>: <span class="comment">// 尝试发送数据到通道</span></span><br><span class="line">    <span class="comment">// 发送成功时执行的代码</span></span><br><span class="line"><span class="keyword">default</span>:</span><br><span class="line">    <span class="comment">// 通道已满时执行的代码或其他操作</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 接收方（非阻塞）</span></span><br><span class="line"><span class="keyword">select</span> &#123;</span><br><span class="line"><span class="keyword">case</span> x := &lt;-ch: <span class="comment">// 尝试从通道接收数据</span></span><br><span class="line">    <span class="comment">// 接收到数据时执行的代码</span></span><br><span class="line"><span class="keyword">default</span>:</span><br><span class="line">    <span class="comment">// 通道为空时执行的代码或其他操作</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="实现一个接口C在指定时间内最大次数并发调用接口A与接口B"><a href="#实现一个接口C在指定时间内最大次数并发调用接口A与接口B" class="headerlink" title="实现一个接口C在指定时间内最大次数并发调用接口A与接口B"></a>实现一个接口C在指定时间内最大次数并发调用接口A与接口B</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">duration := <span class="number">5</span> * time.Second  <span class="comment">// 指定时间段</span></span><br><span class="line">startTime := time.Now()</span><br><span class="line"><span class="comment">// 循环调用接口A和接口B，直到达到指定时间或最大调用次数</span></span><br><span class="line"><span class="keyword">for</span> time.Since(startTime) &lt; duration&#123;</span><br><span class="line">	wg.Add(<span class="number">1</span>)</span><br><span class="line">		<span class="comment">// 并发调用接口A和接口B</span></span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			<span class="keyword">defer</span> wg.Done()</span><br><span class="line">			a := InterfaceA&#123;&#125;</span><br><span class="line">			b := InterfaceB&#123;&#125;</span><br><span class="line">			a.CallA()</span><br><span class="line">			b.CallB()</span><br><span class="line">		&#125;()</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 等待所有调用完成</span></span><br><span class="line">wg.Wait()</span><br></pre></td></tr></table></figure>
+
+<h1 id="语法糖"><a href="#语法糖" class="headerlink" title="语法糖"></a>语法糖</h1><p>在<code>Ethereum.StartMining()</code>函数中，出现了<code>if c, ok := s.engine.(*clique.Clique); ok</code> 的写法。这中写法是 Golang 中的语法糖，称为<strong>类型断言</strong>。具体的语法是 <code>value, ok := element.(T)</code>，它的含义是如果 <code>element</code> 是 <code>T</code> 类型的话，那么ok等于<code>True</code>, <code>value</code> 等于 <code>element</code> 的值。在 <code>if c, ok := s.engine.(*clique.Clique); ok</code> 语句中，就是在判断 <code>s.engine</code> 的是否为 <code>*clique.Clique</code> 类型。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cli *clique.Clique</span><br><span class="line"><span class="keyword">if</span> c, ok := s.engine.(*clique.Clique); ok &#123;</span><br><span class="line"> cli = c</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> cl, ok := s.engine.(*beacon.Beacon); ok &#123;</span><br><span class="line"> <span class="keyword">if</span> c, ok := cl.InnerEngine().(*clique.Clique); ok &#123;</span><br><span class="line">  cli = c</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/01/14/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/Go%E8%AF%AD%E8%A8%80%E9%9D%A2%E7%BB%8F/" title="Go语言面经">https://kongpengyq.com/2022/01/14/Go知识点/GO基础知识/Go语言面经/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go%E7%9F%A5%E8%AF%86%E7%82%B9/" rel="tag"># Go知识点</a>
+              <a href="/tags/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" rel="tag"># GO基础知识</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/01/13/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/8-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/" rel="prev" title="8-垃圾回收器">
+      <i class="fa fa-chevron-left"></i> 8-垃圾回收器
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/01/20/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GO%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/Go%E9%9D%A2%E8%AF%95%E9%A2%98/" rel="next" title="Go面试题">
+      Go面试题 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E3%80%81%E7%BA%BF%E7%A8%8B%E3%80%81%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-text">进程、线程、协程的区别</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Golang%E5%8D%8F%E7%A8%8B%E9%97%B4%E5%A6%82%E4%BD%95%E9%80%9A%E4%BF%A1"><span class="nav-text">Golang协程间如何通信</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GMP%E6%A8%A1%E5%9E%8B-Go%E5%8D%8F%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%A8%A1%E5%9E%8B"><span class="nav-text">GMP模型(Go协程调度模型)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Golang-Map%E5%BA%95%E5%B1%82"><span class="nav-text">Golang Map底层</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0Map%E7%9A%84%E6%9C%89%E5%BA%8F%E6%9F%A5%E6%89%BE"><span class="nav-text">如何实现Map的有序查找</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#sync%E5%8C%85-sync%E5%8C%85%E6%8F%90%E4%BE%9B%E4%BA%86%E5%9F%BA%E6%9C%AC%E7%9A%84%E5%90%8C%E6%AD%A5%E5%9F%BA%E5%85%83"><span class="nav-text">sync包(sync包提供了基本的同步基元)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%92%E6%96%A5%E9%94%81-sync-Mutex"><span class="nav-text">互斥锁 sync.Mutex</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%BB%E5%86%99%E9%94%81-sync-RWMutex"><span class="nav-text">读写锁 sync.RWMutex</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AD%89%E5%BE%85%E7%BB%84-sync-WaitGroup"><span class="nav-text">等待组 sync.WaitGroup</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F-sync-Cond"><span class="nav-text">条件变量 sync.Cond</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Once-%E5%8F%AA%E6%89%A7%E8%A1%8C%E4%B8%80%E6%AC%A1"><span class="nav-text">Once 只执行一次</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E6%B1%A0-sync-Pool"><span class="nav-text">对象池 sync.Pool</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C-sync-atomic"><span class="nav-text">原子操作 sync&#x2F;atomic</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E8%BF%90%E7%AE%97%EF%BC%9A%E5%A2%9E-%E5%87%8F"><span class="nav-text">原子运算：增&#x2F;减</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E8%BF%90%E7%AE%97%EF%BC%9A%E6%AF%94%E8%BE%83%E4%B8%8E%E6%9B%BF%E6%8D%A2"><span class="nav-text">原子运算：比较与替换</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E8%AF%BB%E5%8F%96%EF%BC%9A%E8%BD%BD%E5%85%A5"><span class="nav-text">原子读取：载入</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E5%86%99%E5%85%A5%EF%BC%9A%E5%AD%98%E5%82%A8"><span class="nav-text">原子写入：存储</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BA%A4%E6%8D%A2"><span class="nav-text">交换</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E5%AE%9E%E7%8E%B0Map%E7%9A%84%E5%B9%B6%E5%8F%91%E5%AE%89%E5%85%A8-sync-Map%EF%BC%8C%E5%BA%95%E5%B1%82%E5%AE%9E%E9%99%85%E4%B8%8A%E7%94%A8%E4%BA%86%E4%B8%80%E4%B8%AAMap%E7%BC%93%E5%AD%98"><span class="nav-text">怎么实现Map的并发安全(sync.Map，底层实际上用了一个Map缓存)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#defer%E5%87%BD%E6%95%B0%E7%9A%84%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%EF%BC%88%E5%BB%B6%E8%BF%9FClose%E3%80%81recover-panic%EF%BC%89"><span class="nav-text">defer函数的使用场景（延迟Close、recover panic）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Map%E5%8F%AF%E4%BB%A5%E7%94%A8%E6%95%B0%E7%BB%84%E4%BD%9C%E4%B8%BAKey%E5%90%97%EF%BC%88%E6%95%B0%E7%BB%84%E5%8F%AF%E4%BB%A5%EF%BC%8C%E5%88%87%E7%89%87%E4%B8%8D%E5%8F%AF%E4%BB%A5%EF%BC%89"><span class="nav-text">Map可以用数组作为Key吗（数组可以，切片不可以）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Channel%E7%9A%84%E9%98%BB%E5%A1%9E%E5%92%8C%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%88%E9%A1%BA%E5%B8%A6%E9%97%AE%E4%BA%86select%E7%94%A8%E6%B3%95%EF%BC%89"><span class="nav-text">Channel的阻塞和非阻塞（顺带问了select用法）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E6%8E%A5%E5%8F%A3C%E5%9C%A8%E6%8C%87%E5%AE%9A%E6%97%B6%E9%97%B4%E5%86%85%E6%9C%80%E5%A4%A7%E6%AC%A1%E6%95%B0%E5%B9%B6%E5%8F%91%E8%B0%83%E7%94%A8%E6%8E%A5%E5%8F%A3A%E4%B8%8E%E6%8E%A5%E5%8F%A3B"><span class="nav-text">实现一个接口C在指定时间内最大次数并发调用接口A与接口B</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%AD%E6%B3%95%E7%B3%96"><span class="nav-text">语法糖</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

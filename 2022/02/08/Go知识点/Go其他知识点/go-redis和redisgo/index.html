@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="总结go-redis和redigo底层是通过调用的万能 Do 方法实现, 但是 redigo:  由于输入是万能类型所以必须记住每个命令的参数和返回值情况, 使用起来非常的不友好， 参数类型是万能类型导致在编译阶段无法检查参数类型, 每个命令都需要花时间记录使用方法，参数个数等，使用成本高；  go-redis:  细化了每个redis每个命令的功能, 我们只需记住命令，具体的用法直接查看接口的申">
+<meta property="og:type" content="article">
+<meta property="og:title" content="go-redis和redisgo">
+<meta property="og:url" content="https://kongpengyq.com/2022/02/08/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E5%85%B6%E4%BB%96%E7%9F%A5%E8%AF%86%E7%82%B9/go-redis%E5%92%8Credisgo/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="总结go-redis和redigo底层是通过调用的万能 Do 方法实现, 但是 redigo:  由于输入是万能类型所以必须记住每个命令的参数和返回值情况, 使用起来非常的不友好， 参数类型是万能类型导致在编译阶段无法检查参数类型, 每个命令都需要花时间记录使用方法，参数个数等，使用成本高；  go-redis:  细化了每个redis每个命令的功能, 我们只需记住命令，具体的用法直接查看接口的申">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ask.qcloudimg.com/developer-images/article/7380026/ooeifbs9by.png">
+<meta property="article:published_time" content="2022-02-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.615Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="Go知识点">
+<meta property="article:tag" content="Go其他知识点">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ask.qcloudimg.com/developer-images/article/7380026/ooeifbs9by.png">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/02/08/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E5%85%B6%E4%BB%96%E7%9F%A5%E8%AF%86%E7%82%B9/go-redis%E5%92%8Credisgo/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>go-redis和redisgo | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/02/08/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E5%85%B6%E4%BB%96%E7%9F%A5%E8%AF%86%E7%82%B9/go-redis%E5%92%8Credisgo/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          go-redis和redisgo
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-02-08 00:00:00" itemprop="dateCreated datePublished" datetime="2022-02-08T00:00:00+08:00">2022-02-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go%E5%85%B6%E4%BB%96%E7%9F%A5%E8%AF%86%E7%82%B9/" itemprop="url" rel="index">
+                    <span itemprop="name">Go其他知识点</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p><a href="https://cloud.tencent.com/developer/tools/blog-entry?target=https://github.com/go-redis/redis">go-redis</a>和<a href="https://cloud.tencent.com/developer/tools/blog-entry?target=https://github.com/gomodule/redigo">redigo</a>底层是通过调用的万能 Do 方法实现, 但是</p>
+<p><a href="https://cloud.tencent.com/developer/tools/blog-entry?target=https://github.com/gomodule/redigo">redigo</a>:</p>
+<ul>
+<li>由于输入是万能类型所以必须记住每个命令的参数和返回值情况, 使用起来非常的不友好，</li>
+<li>参数类型是万能类型导致在编译阶段无法检查参数类型,</li>
+<li>每个命令都需要花时间记录使用方法，参数个数等，使用成本高；</li>
+</ul>
+<p><a href="https://cloud.tencent.com/developer/tools/blog-entry?target=https://github.com/go-redis/redis">go-redis</a>:</p>
+<ul>
+<li>细化了每个redis每个命令的功能, 我们只需记住命令，具体的用法直接查看接口的申请就可以了，使用成本低；</li>
+<li>其次它对数据类型按照redis底层的类型进行统一，编译时就可以帮助检查参数类型</li>
+<li>并且它的响应统一采用 Result 的接口返回，确保了返回参数类型的正确性，对用户更加友好；</li>
+</ul>
+<h1 id="Redigo库"><a href="#Redigo库" class="headerlink" title="Redigo库"></a>Redigo库</h1><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p><a href="https://cloud.tencent.com/developer/tools/blog-entry?target=https://github.com/gomodule/redigo">redigo</a> 是<a href="https://cloud.tencent.com/developer/tools/blog-entry?target=http://redis.io/">Redis</a><a target="_blank" rel="noopener" href="https://cloud.tencent.com/solution/database?from_column=20065&from=20065">数据库</a>的<a href="https://cloud.tencent.com/developer/tools/blog-entry?target=http://golang.org/">Go</a>客户端, 操作Redis基本和commands一样. Redigo命令基本都是通过Do方法来实现的.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Do</span>(ctx context.<span class="property">Context</span>, cmd string, args ...interface&#123;&#125;) (interface&#123;&#125;, error)</span><br></pre></td></tr></table></figure>
+
+<p>复制</p>
+<p>虽然调用<code>Do</code>函数万能参数可以实现所有的功能，但是使用起来非常的不友好，参数类型是万能类型，所以在编译阶段无法检查参数类型, 其次每个命令都需要花时间记录使用方法，参数个数等，使用成本高；</p>
+<h2 id="演示"><a href="#演示" class="headerlink" title="演示"></a>演示</h2><p>演示基本的<strong>连接池建立, ping, string操作, hash操作, list操作, expire</strong>等操作</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">&quot;fmt&quot;</span></span><br><span class="line">   <span class="string">&quot;github.com/gomodule/redigo/redis&quot;</span></span><br><span class="line">)</span><br><span class="line">func <span class="title function_">main</span>(<span class="params"></span>) &#123;</span><br><span class="line">   <span class="comment">// 新建一个连接池</span></span><br><span class="line">   <span class="keyword">var</span> pool *redis.<span class="property">Pool</span></span><br><span class="line">   pool = &amp;amp;redis.<span class="property">Pool</span>&#123;</span><br><span class="line">      <span class="title class_">MaxIdle</span>:     <span class="number">10</span>,  <span class="comment">//最初的连接数量</span></span><br><span class="line">      <span class="title class_">MaxActive</span>:   <span class="number">0</span>,   <span class="comment">//连接池最大连接数量,（0表示自动定义），按需分配</span></span><br><span class="line">      <span class="title class_">IdleTimeout</span>: <span class="number">300</span>, <span class="comment">//连接关闭时间 300秒 （300秒不使用自动关闭）</span></span><br><span class="line">      <span class="title class_">Dial</span>: <span class="title function_">func</span>() (redis.<span class="property">Conn</span>, error) &#123; <span class="comment">//要连接的redis数据库</span></span><br><span class="line">         <span class="keyword">return</span> redis.<span class="title class_">Dial</span>(<span class="string">&quot;tcp&quot;</span>, <span class="string">&quot;localhost:6379&quot;</span>)</span><br><span class="line">      &#125;,</span><br><span class="line">   &#125;</span><br><span class="line">   conn := pool.<span class="title class_">Get</span>() <span class="comment">//从连接池，取一个链接</span></span><br><span class="line">   defer conn.<span class="title class_">Close</span>()</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 0. ping正常返回pong， 异常res is nil, err not nil</span></span><br><span class="line">   res, err := conn.<span class="title class_">Do</span>(<span class="string">&quot;ping&quot;</span>)</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;ping res=%v\n&quot;</span>, res)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;ping err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// string操作</span></span><br><span class="line">   <span class="comment">// set</span></span><br><span class="line">   res, err = conn.<span class="title class_">Do</span>(<span class="string">&quot;set&quot;</span>, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;测试001&quot;</span>)</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;set res=%v\n&quot;</span>, res)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;set err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// get</span></span><br><span class="line">   res, err = redis.<span class="title class_">String</span>(conn.<span class="title class_">Do</span>(<span class="string">&quot;get&quot;</span>, <span class="string">&quot;name&quot;</span>))</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;get res=%v\n&quot;</span>, res)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;get err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// MSet   MGet</span></span><br><span class="line">   res, err = conn.<span class="title class_">Do</span>(<span class="string">&quot;MSet&quot;</span>, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;测试001&quot;</span>, <span class="string">&quot;age&quot;</span>, <span class="number">18</span>)</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;MSet res=%v\n&quot;</span>, res)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;MSet err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   r, err := redis.<span class="title class_">Strings</span>(conn.<span class="title class_">Do</span>(<span class="string">&quot;MGet&quot;</span>, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;age&quot;</span>))</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;MGet res=%v\n&quot;</span>, r)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;MGet err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// expire</span></span><br><span class="line">   res, err = conn.<span class="title class_">Do</span>(<span class="string">&quot;expire&quot;</span>, <span class="string">&quot;name&quot;</span>, <span class="number">5</span>)</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;expire res=%v\n&quot;</span>, r)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;expire err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// list操作</span></span><br><span class="line">   <span class="comment">// lpush lpop</span></span><br><span class="line">   res, err = conn.<span class="title class_">Do</span>(<span class="string">&quot;lpush&quot;</span>, <span class="string">&quot;hobby&quot;</span>, <span class="string">&quot;篮球&quot;</span>, <span class="string">&quot;足球&quot;</span>, <span class="string">&quot;乒乓球&quot;</span>)</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;lpush res=%v\n&quot;</span>, r)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;lpush err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// lpop</span></span><br><span class="line">   rs, er := conn.<span class="title class_">Do</span>(<span class="string">&quot;lpop&quot;</span>, <span class="string">&quot;hobby&quot;</span>)</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;lpop res=%v\n&quot;</span>, rs)</span><br><span class="line">   <span class="keyword">if</span> er != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;lpop err=%v\n&quot;</span>, er.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// hash 操作</span></span><br><span class="line">   <span class="comment">// hset</span></span><br><span class="line">   res, err = conn.<span class="title class_">Do</span>(<span class="string">&quot;HSet&quot;</span>, <span class="string">&quot;userinfo&quot;</span>, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;lqz&quot;</span>)</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;HSet res=%v\n&quot;</span>, r)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;HSet err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// hget</span></span><br><span class="line">   r4, er4 := conn.<span class="title class_">Do</span>(<span class="string">&quot;HGet&quot;</span>, <span class="string">&quot;userinfo&quot;</span>, <span class="string">&quot;name&quot;</span>)</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;HGet res=%v\n&quot;</span>, r4)</span><br><span class="line">   <span class="keyword">if</span> er4 != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;HGet err=%v\n&quot;</span>, er4.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="go-redis组件介绍和使用"><a href="#go-redis组件介绍和使用" class="headerlink" title="go-redis组件介绍和使用"></a>go-redis组件介绍和使用</h1><h2 id="介绍-1"><a href="#介绍-1" class="headerlink" title="介绍"></a>介绍</h2><p><a href="https://cloud.tencent.com/developer/tools/blog-entry?target=https://github.com/go-redis/redis">go-redis</a>提供了三种对应服务端的客户端模式，集群，哨兵，和单机模式，三种模式在连接池这一块都是公用的, 同时还提供了灵活的Hook机制, 其底层实际也是调用的万能 Do 方法.</p>
+<p><img src="https://ask.qcloudimg.com/developer-images/article/7380026/ooeifbs9by.png" alt="img"></p>
+<p>但go-redis细化了每个redis每个命令的功能, 我们只需记住命令，具体的用法直接查看接口的申请就可以了，使用成本低；其次它对数据类型按照redis底层的类型进行统一，编译时就可以帮助检查参数类型, 并且它的响应统一采用 Result 的接口返回，确保了返回参数类型的正确性，对用户更加友好；</p>
+<h2 id="演示-1"><a href="#演示-1" class="headerlink" title="演示"></a>演示</h2><p>演示基本的<strong>连接池建立, ping, string操作, hash操作, list操作, expire</strong>等操作</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">func <span class="title function_">main</span>(<span class="params"></span>) &#123;</span><br><span class="line">   <span class="keyword">var</span> rdb = redis2.<span class="title class_">NewClient</span>(</span><br><span class="line">      &amp;amp;redis2.<span class="property">Options</span>&#123;</span><br><span class="line">         <span class="title class_">Addr</span>:     <span class="string">&quot;localhost:6379&quot;</span>,</span><br><span class="line">         <span class="title class_">Password</span>: <span class="string">&quot;&quot;</span>, <span class="attr">DB</span>: <span class="number">1</span>,</span><br><span class="line">         <span class="title class_">MinIdleConns</span>: <span class="number">1</span>,</span><br><span class="line">         <span class="title class_">PoolSize</span>:     <span class="number">1000</span>,</span><br><span class="line">      &#125;)</span><br><span class="line"></span><br><span class="line">   ctx := context.<span class="title class_">Background</span>()</span><br><span class="line">   res, err = rdb.<span class="title class_">Ping</span>(ctx).<span class="title class_">Result</span>()</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;ping res=%v\n&quot;</span>, res)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;ping err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// string操作</span></span><br><span class="line">   <span class="comment">// set</span></span><br><span class="line">   res, err = rdb.<span class="title class_">Set</span>(ctx, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;测试001&quot;</span>, <span class="number">0</span>).<span class="title class_">Result</span>()</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;set res=%v\n&quot;</span>, res)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;set err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// get</span></span><br><span class="line">   res, err = rdb.<span class="title class_">Get</span>(ctx, <span class="string">&quot;name&quot;</span>).<span class="title class_">Result</span>()</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;get res=%v\n&quot;</span>, res)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;get err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// MSet   MGet</span></span><br><span class="line">   res, err = rdb.<span class="title class_">MSet</span>(ctx, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;测试001&quot;</span>, <span class="string">&quot;age&quot;</span>, <span class="string">&quot;18&quot;</span>).<span class="title class_">Result</span>()</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;MSet res=%v\n&quot;</span>, res)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;MSet err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">var</span> ret []interface&#123;&#125;</span><br><span class="line">   ret, err = rdb.<span class="title class_">MGet</span>(ctx, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;age&quot;</span>).<span class="title class_">Result</span>()</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;MGet res=%v\n&quot;</span>, ret)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;MGet err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// expire</span></span><br><span class="line">   res, err = rdb.<span class="title class_">Expire</span>(ctx, <span class="string">&quot;name&quot;</span>, time.<span class="property">Second</span>).<span class="title class_">Result</span>()</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;expire res=%v\n&quot;</span>, res)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;expire err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// list操作</span></span><br><span class="line">   <span class="comment">// lpush lpop</span></span><br><span class="line">   res, err = rdb.<span class="title class_">LPush</span>(ctx, <span class="string">&quot;hobby&quot;</span>, <span class="string">&quot;篮球&quot;</span>, <span class="string">&quot;足球&quot;</span>, <span class="string">&quot;乒乓球&quot;</span>).<span class="title class_">Result</span>()</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;lpush res=%v\n&quot;</span>, res)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;lpush err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// lpop</span></span><br><span class="line">   rs, err = rdb.<span class="title class_">LPop</span>(ctx, <span class="string">&quot;hobby&quot;</span>).<span class="title class_">Result</span>()</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;lpop res=%v\n&quot;</span>, rs)</span><br><span class="line">   <span class="keyword">if</span> er != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;lpop err=%v\n&quot;</span>, er.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// hash 操作</span></span><br><span class="line">   <span class="comment">// hset</span></span><br><span class="line">   res, err = rdb.<span class="title class_">HSet</span>(ctx, <span class="string">&quot;userinfo&quot;</span>, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;lqz&quot;</span>).<span class="title class_">Result</span>()</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;HSet res=%v\n&quot;</span>, r)</span><br><span class="line">   <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;HSet err=%v\n&quot;</span>, err.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// hget</span></span><br><span class="line">   r4, er4 = rdb.<span class="title class_">HGet</span>(ctx, <span class="string">&quot;userinfo&quot;</span>, <span class="string">&quot;name&quot;</span>).<span class="title class_">Result</span>()</span><br><span class="line">   fmt.<span class="title class_">Printf</span>(<span class="string">&quot;HGet res=%v\n&quot;</span>, r4)</span><br><span class="line">   <span class="keyword">if</span> er4 != nil &#123;</span><br><span class="line">      fmt.<span class="title class_">Printf</span>(<span class="string">&quot;HGet err=%v\n&quot;</span>, er4.<span class="title class_">Error</span>())</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/02/08/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E5%85%B6%E4%BB%96%E7%9F%A5%E8%AF%86%E7%82%B9/go-redis%E5%92%8Credisgo/" title="go-redis和redisgo">https://kongpengyq.com/2022/02/08/Go知识点/Go其他知识点/go-redis和redisgo/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go%E7%9F%A5%E8%AF%86%E7%82%B9/" rel="tag"># Go知识点</a>
+              <a href="/tags/Go%E5%85%B6%E4%BB%96%E7%9F%A5%E8%AF%86%E7%82%B9/" rel="tag"># Go其他知识点</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/03/Go%E7%9F%A5%E8%AF%86%E7%82%B9/GRPC/2-%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B/" rel="prev" title="2-基础教程">
+      <i class="fa fa-chevron-left"></i> 2-基础教程
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/13/Go%E7%9F%A5%E8%AF%86%E7%82%B9/Go%E5%85%B6%E4%BB%96%E7%9F%A5%E8%AF%86%E7%82%B9/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F%E4%B8%8Ego-redis%E8%AE%BE%E8%AE%A1/" rel="next" title="命令模式与go-redis设计">
+      命令模式与go-redis设计 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Redigo%E5%BA%93"><span class="nav-text">Redigo库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%94%E7%A4%BA"><span class="nav-text">演示</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#go-redis%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D%E5%92%8C%E4%BD%BF%E7%94%A8"><span class="nav-text">go-redis组件介绍和使用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D-1"><span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%94%E7%A4%BA-1"><span class="nav-text">演示</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

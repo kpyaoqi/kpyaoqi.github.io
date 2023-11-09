@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="go-ethereum 的代码库结构为了更好的从整体工作流的角度来理解 Ethereum，根据主要的业务功能，我们可以把 go-ethereum 划分成如下几个模块。  Geth Client 模块 Core 数据结构模块 State Management 模块 StateDB 模块 Trie 数据结构模块 State Optimization (Pruning)   Mining 模块 EVM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="00-geth">
+<meta property="og:url" content="https://kongpengyq.com/2022/10/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/00-geth/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="go-ethereum 的代码库结构为了更好的从整体工作流的角度来理解 Ethereum，根据主要的业务功能，我们可以把 go-ethereum 划分成如下几个模块。  Geth Client 模块 Core 数据结构模块 State Management 模块 StateDB 模块 Trie 数据结构模块 State Optimization (Pruning)   Mining 模块 EVM">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-10-13T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.738Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="以太坊源码">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/10/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/00-geth/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>00-geth | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/10/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/00-geth/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          00-geth
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-10-14 00:00:00" itemprop="dateCreated datePublished" datetime="2022-10-14T00:00:00+08:00">2022-10-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/" itemprop="url" rel="index">
+                    <span itemprop="name">以太坊源码</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>14k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>13 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="go-ethereum-的代码库结构"><a href="#go-ethereum-的代码库结构" class="headerlink" title="go-ethereum 的代码库结构"></a>go-ethereum 的代码库结构</h1><p>为了更好的从整体工作流的角度来理解 Ethereum，根据主要的业务功能，我们可以把 <code>go-ethereum</code> 划分成如下几个模块。</p>
+<ul>
+<li>Geth Client 模块</li>
+<li>Core 数据结构模块</li>
+<li>State Management 模块<ul>
+<li>StateDB 模块</li>
+<li>Trie 数据结构模块</li>
+<li>State Optimization (Pruning)</li>
+</ul>
+</li>
+<li>Mining 模块</li>
+<li>EVM 模块</li>
+<li>P2P 网络模块<ul>
+<li>节点数据同步<ul>
+<li>交易数据</li>
+<li>区块数据</li>
+<li>区块链数据</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Storage 模块<ul>
+<li>抽象数据库层</li>
+<li>LevelDB 调用</li>
+</ul>
+</li>
+<li>…</li>
+</ul>
+<p>目前，go-ethereum 代码库中的主要目录结构如下所示:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">cmd/ 以太坊基金会官方开发的一些 Command-line 程序。该目录下的每个子目录都是一个单独运行的 CLI 程序。</span><br><span class="line">   |── clef/ 以太坊官方推出的账户管理程序.</span><br><span class="line">   |── geth/ 以太坊官方的节点客户端。</span><br><span class="line">core/   以太坊核心模块，包括核心数据结构，statedb，EVM 等核心数据结构以及算法实现</span><br><span class="line">   |── rawdb/ db 相关函数的高层封装(在 ethdb 和更底层的 leveldb 之上的封装)</span><br><span class="line">      ├──accessors_state.go 从 Disk Level 读取/写入与 State 相关的数据结构。</span><br><span class="line">   |── state/</span><br><span class="line">      ├── statedb.go  StateDB 是管理以太坊 World State 最核心的代码，用于管理链上所有的 State 相关操作。</span><br><span class="line">      ├── state_object.go state_object 是以太坊账户(包括 EOA &amp; Contract)在 StateDB 具体的实现。</span><br><span class="line">   |── txpool        Transaction Pool 相关的代码。</span><br><span class="line">      |── txpool.go  Transaction Pool 的具体实现。</span><br><span class="line">   |── types/  以太坊中最核心的数据结构</span><br><span class="line">      |── block.go   以太坊 Block 的的数据结构定义与相关函数实现</span><br><span class="line">      |── bloom9.go  以太坊使用的一个 Bloom Filter 的实现</span><br><span class="line">      |── transaction.go 以太坊 Transaction 的数据结构定义与相关函数实现。</span><br><span class="line">      |── transaction_signing.go 用于对 Transaction 进行签名的函数的实现。</span><br><span class="line">      |── receipt.go  以太坊交易收据的实现，用于记录以太坊 Transaction 执行的结果</span><br><span class="line">   |── vm/            以太坊的核心中核心 EVM 相关的一些的数据结构的定义。</span><br><span class="line">      |── evm.go            EVM 数据结构和方法的定义</span><br><span class="line">      |── instructions.go   EVM 指令的具体的定义，核心中的核心中的核心文件。</span><br><span class="line">      |── logger.go   用于追踪 EVM 执行交易过程的日志接口的定义。具体的实现在eth/tracers/logger/logger.go 文件中。</span><br><span class="line">      |── opcode.go   EVM 指令和数值的对应关系。</span><br><span class="line">   |── genesis.go     创世区块相关的函数。每个 geth 客户端/以太坊节点初始化的都需要调用这个模块。</span><br><span class="line">   |── state_processor.go EVM 执行交易的核心代码模块。 </span><br><span class="line">console/</span><br><span class="line">   |── bridge.go</span><br><span class="line">   |── console.go  Geth Web3 控制台的入口</span><br><span class="line">eth/      Ethereum 节点/后端/客户端具体功能定义和实现。例如节点的启动关闭，P2P 网络中交易和区块的同步。</span><br><span class="line">ethdb/    Ethereum 本地存储的相关实现, 包括 leveldb 的调用</span><br><span class="line">   |── leveldb/   Go-Ethereum使用的与 Bitcoin Core version一样的Leveldb作为本机存储用的数据库</span><br><span class="line">internal/ 一些内部使用的工具库的集合，比如在测试用例中模拟 cmd 的工具。在构建 Ethereum 生态相关的工具时值得注意这个文件夹。</span><br><span class="line">miner/</span><br><span class="line">   |── miner.go   矿工模块的实现。</span><br><span class="line">   |── worker.go  Block generation 的实现，包括打包 transaction，计算合法的 Block</span><br><span class="line">p2p/     Ethereum 的P2P模块</span><br><span class="line">   |── params    Ethereum 的一些参数的配置，例如: bootnode 的 enode 地址</span><br><span class="line">   |── bootnodes.go  bootnode 的 enode 地址 like: aws 的一些节点，azure 的一些节点，Ethereum Foundation 的节点和 Rinkeby 测试网的节点</span><br><span class="line">rlp/     RLP的 Encode与 Decode的相关</span><br><span class="line">rpc/     Ethereum RPC客户端的实现</span><br><span class="line">les/     Ethereum light client 轻节点的实现</span><br><span class="line">trie/    Ethereum 中至关重要的数据结构 Merkle Patrica Trie(MPT) 的实现</span><br><span class="line">   |── committer.go    Trie 向 Memory Database 提交数据的工具函数。</span><br><span class="line">   |── database.go     Memory Database，是 Trie 数据和 Disk Database 提交的中间层。同时还实现了 Trie 剪枝的功能。**非常重要**</span><br><span class="line">   |── node.go         MPT中的节点的定义以及相关的函数。</span><br><span class="line">   |── secure_trie.go  基于 Trie 的封装的结构。与 trie 中的函数功能相同，不过secure_trie中的 key 是经过hashKey()函数hash过的，无法通过路径获得原始的 key值 </span><br><span class="line">   |── stack_trie.go   Block 中使用的 Transaction/Receipt Trie 的实现</span><br><span class="line">   |── trie.go         MPT 具体功能的函数实现。</span><br></pre></td></tr></table></figure>
+
+<h2 id="如何启动Geth节点"><a href="#如何启动Geth节点" class="headerlink" title="如何启动Geth节点"></a>如何启动Geth节点</h2><h3 id="前奏-Geth-Console"><a href="#前奏-Geth-Console" class="headerlink" title="前奏: Geth Console"></a>前奏: Geth Console</h3><p>当我们想要部署一个 Ethereum 节点的时候，最直接的方式就是下载官方提供的发行版的 geth 客户端程序。<code>geth</code>是一个基于 CLI 的应用，启动 <code>geth</code> 和 调用 <code>geth</code> 的功能性 API 需要使用对应的指令来操作。<code>geth</code> 提供了一个相对友好的 console 来方便用户调用各种指令。当我第一次阅读 Ethereum 的文档的时候，我曾经有过这样的疑问，为什么<code>geth</code>是由 Go 语言编写的，但是在官方文档中的 Web3 的API却是基于 Javascript 的调用？</p>
+<p>这是因为 <code>geth</code> 内置了一个 Javascript 的解释器: <em>Goja</em> (interpreter)，来作为用户与 <code>geth</code> 交互的 CLI Console。我们可以在<code>console/console.go</code> 中找到它的定义。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// console/console.go</span></span><br><span class="line"><span class="comment">//控制台是一个JavaScript解释的运行时环境。它是一个完全成熟的JavaScript控制台，通过外部或进程内RPC客户端连接到正在运行的节点。</span></span><br><span class="line"><span class="keyword">type</span> Console <span class="keyword">struct</span> &#123;</span><br><span class="line">	client   *rpc.Client         <span class="comment">// RPC client to execute Ethereum requests through</span></span><br><span class="line">	jsre     *jsre.JSRE          <span class="comment">// JavaScript runtime environment running the interpreter</span></span><br><span class="line">	prompt   <span class="type">string</span>              <span class="comment">// Input prompt prefix string</span></span><br><span class="line">	prompter prompt.UserPrompter <span class="comment">// Input prompter to allow interactive user feedback</span></span><br><span class="line">	histPath <span class="type">string</span>              <span class="comment">// Absolute path to the console scrollback history</span></span><br><span class="line">	history  []<span class="type">string</span>            <span class="comment">// Scroll history maintained by the console</span></span><br><span class="line">	printer  io.Writer           <span class="comment">// Output writer to serialize any display strings to</span></span><br><span class="line"></span><br><span class="line">	interactiveStopped <span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line">	stopInteractiveCh  <span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line">	signalReceived     <span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line">	stopped            <span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line">	wg                 sync.WaitGroup</span><br><span class="line">	stopOnce           sync.Once</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="geth-节点的启动流程"><a href="#geth-节点的启动流程" class="headerlink" title="geth 节点的启动流程"></a>geth 节点的启动流程</h3><p>了解 Ethereum，我们首先要了解 Ethereum 客户端 Geth 是怎么运行的。 geth 程序的启动点位于 <code>cmd/geth/main.go/main()</code> 函数处，如下所示。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// cmd/geth/main.go</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"> <span class="keyword">if</span> err := app.Run(os.Args); err != <span class="literal">nil</span> &#123;</span><br><span class="line">  fmt.Fprintln(os.Stderr, err)</span><br><span class="line">  os.Exit(<span class="number">1</span>)</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们可以看到 <code>main()</code> 函数非常的简短，其主要功能就是<strong>启动一个解析 command line命令的工具</strong>: <code>gopkg.in/urfave/cli.v1</code>。继续深入，我们会发现<strong>在 cli app 初始化的时候会调用 <code>app.Action = geth</code></strong> ，来调用 <code>geth()</code> 函数。而 <code>geth()</code> 函数就是用于启动 Ethereum 节点的顶层函数，其代码如下所示。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//如果不运行特殊的子命令，geth是进入系统的主要入口点。</span></span><br><span class="line"><span class="comment">//它根据命令行参数创建一个默认节点，并以阻塞模式运行它，等待它被关闭。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">geth</span><span class="params">(ctx *cli.Context)</span></span> <span class="type">error</span> &#123;</span><br><span class="line">	<span class="keyword">if</span> args := ctx.Args().Slice(); <span class="built_in">len</span>(args) &gt; <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> fmt.Errorf(<span class="string">&quot;invalid command: %q&quot;</span>, args[<span class="number">0</span>])</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	prepare(ctx)</span><br><span class="line">	stack, backend := makeFullNode(ctx)</span><br><span class="line">	<span class="keyword">defer</span> stack.Close()</span><br><span class="line"></span><br><span class="line">	startNode(ctx, stack, backend, <span class="literal">false</span>)</span><br><span class="line">	stack.Wait()</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>在 <code>geth()</code> 函数中，有三个比较重要的函数调用，分别是：<code>prepare()</code>，<code>makeFullNode()</code>，以及 <code>startNode()</code>。</strong></p>
+<p><strong><code>prepare()</code> 函数</strong>的实现就在当前的 <code>main.go</code> 文件中。它主要<strong>用于设置一些节点初始化需要的配置</strong>。比如，我们在节点启动时看到的这句话: <em>Starting Geth on Ethereum mainnet…</em> 就是在 <code>prepare()</code> 函数中被打印出来的。</p>
+<p><strong><code>makeFullNode()</code> 函数</strong>的实现位于 <code>cmd/geth/config.go</code> 文件中。它会<strong>将 Geth 启动时的命令的上下文加载到配置中，并生成 <code>stack</code> 和<code>backend</code> 这两个实例</strong>。其中 <strong><code>stack</code> 是一个 Node 类型的实例</strong>，它是<strong>通过 <code>makeFullNode()</code> 函数调用 <code>makeConfigNode()</code> 函数来初始化</strong>的。**<code>Node</code> 是 geth 生命周期中最顶级的实例，它负责管理节点中的 P2P Server, Http Server, Database 等业务非直接相关的高级抽象**。关于 Node 类型的定义位于<code>node/node.go</code>文件中。</p>
+<p>这里的 <strong><code>backend</code> 是一个 <code>ethapi.Backend</code> 类型的接口</strong>，<strong>提供了获取以太坊执行层运行时，所需要的基本函数功能</strong>。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// internal/ethapi/backend.go</span></span><br><span class="line"><span class="keyword">type</span> Backend <span class="keyword">interface</span> &#123;</span><br><span class="line">	<span class="comment">// General Ethereum APIs对外提供了查询区块链节点管理对象的接口，例如 `ChainDb()` 返回当前节点的 DB 实例, `AccountManager()`; </span></span><br><span class="line">	SyncProgress() ethereum.SyncProgress</span><br><span class="line"></span><br><span class="line">	SuggestGasTipCap(ctx context.Context) (*big.Int, <span class="type">error</span>)</span><br><span class="line">	FeeHistory(ctx context.Context, blockCount <span class="type">uint64</span>, lastBlock rpc.BlockNumber, rewardPercentiles []<span class="type">float64</span>) (*big.Int, [][]*big.Int, []*big.Int, []<span class="type">float64</span>, <span class="type">error</span>)</span><br><span class="line">	ChainDb() ethdb.Database</span><br><span class="line">	AccountManager() *accounts.Manager</span><br><span class="line">	ExtRPCEnabled() <span class="type">bool</span></span><br><span class="line">	RPCGasCap() <span class="type">uint64</span>            <span class="comment">// global gas cap for eth_call over rpc: DoS protection</span></span><br><span class="line">	RPCEVMTimeout() time.Duration <span class="comment">// global timeout for eth_call over rpc: DoS protection</span></span><br><span class="line">	RPCTxFeeCap() <span class="type">float64</span>         <span class="comment">// global tx fee cap for all transaction related APIs</span></span><br><span class="line">	UnprotectedAllowed() <span class="type">bool</span>     <span class="comment">// allows only for EIP155 transactions.</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//Blockchain 相关的 APIs, 例如链上数据的查询(Block &amp; Transaction), `CurrentHeader(), BlockByNumber(), GetTransaction()`; </span></span><br><span class="line">	SetHead(number <span class="type">uint64</span>)</span><br><span class="line">	HeaderByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Header, <span class="type">error</span>)</span><br><span class="line">	HeaderByHash(ctx context.Context, hash common.Hash) (*types.Header, <span class="type">error</span>)</span><br><span class="line">	HeaderByNumberOrHash(ctx context.Context, blockNrOrHash rpc.BlockNumberOrHash) (*types.Header, <span class="type">error</span>)</span><br><span class="line">	CurrentHeader() *types.Header</span><br><span class="line">	CurrentBlock() *types.Header</span><br><span class="line">	BlockByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Block, <span class="type">error</span>)</span><br><span class="line">	BlockByHash(ctx context.Context, hash common.Hash) (*types.Block, <span class="type">error</span>)</span><br><span class="line">	BlockByNumberOrHash(ctx context.Context, blockNrOrHash rpc.BlockNumberOrHash) (*types.Block, <span class="type">error</span>)</span><br><span class="line">	StateAndHeaderByNumber(ctx context.Context, number rpc.BlockNumber) (*state.StateDB, *types.Header, <span class="type">error</span>)</span><br><span class="line">	StateAndHeaderByNumberOrHash(ctx context.Context, blockNrOrHash rpc.BlockNumberOrHash) (*state.StateDB, *types.Header, <span class="type">error</span>)</span><br><span class="line">	PendingBlockAndReceipts() (*types.Block, types.Receipts)</span><br><span class="line">	GetReceipts(ctx context.Context, hash common.Hash) (types.Receipts, <span class="type">error</span>)</span><br><span class="line">	GetTd(ctx context.Context, hash common.Hash) *big.Int</span><br><span class="line">	GetEVM(ctx context.Context, msg *core.Message, state *state.StateDB, header *types.Header, vmConfig *vm.Config, blockCtx *vm.BlockContext) (*vm.EVM, <span class="function"><span class="keyword">func</span><span class="params">()</span></span> <span class="type">error</span>)</span><br><span class="line">	SubscribeChainEvent(ch <span class="keyword">chan</span>&lt;- core.ChainEvent) event.Subscription</span><br><span class="line">	SubscribeChainHeadEvent(ch <span class="keyword">chan</span>&lt;- core.ChainHeadEvent) event.Subscription</span><br><span class="line">	SubscribeChainSideEvent(ch <span class="keyword">chan</span>&lt;- core.ChainSideEvent) event.Subscription</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Transaction Pool 相关的APIs, 例如发送交易到本节点的 Transaction Pool, 以及查询交易池中的 Transactions, `GetPoolTransaction`。</span></span><br><span class="line">	SendTx(ctx context.Context, signedTx *types.Transaction) <span class="type">error</span></span><br><span class="line">	GetTransaction(ctx context.Context, txHash common.Hash) (*types.Transaction, common.Hash, <span class="type">uint64</span>, <span class="type">uint64</span>, <span class="type">error</span>)</span><br><span class="line">	GetPoolTransactions() (types.Transactions, <span class="type">error</span>)</span><br><span class="line">	GetPoolTransaction(txHash common.Hash) *types.Transaction</span><br><span class="line">	GetPoolNonce(ctx context.Context, addr common.Address) (<span class="type">uint64</span>, <span class="type">error</span>)</span><br><span class="line">	Stats() (pending <span class="type">int</span>, queued <span class="type">int</span>)</span><br><span class="line">	TxPoolContent() (<span class="keyword">map</span>[common.Address][]*types.Transaction, <span class="keyword">map</span>[common.Address][]*types.Transaction)</span><br><span class="line">	TxPoolContentFrom(addr common.Address) ([]*types.Transaction, []*types.Transaction)</span><br><span class="line">	SubscribeNewTxsEvent(<span class="keyword">chan</span>&lt;- core.NewTxsEvent) event.Subscription</span><br><span class="line"></span><br><span class="line">	ChainConfig() *params.ChainConfig</span><br><span class="line">	Engine() consensus.Engine</span><br><span class="line"></span><br><span class="line">	<span class="comment">// This is copied from filters.Backend eth/filters needs to be initialized from this backend type, so methods needed by</span></span><br><span class="line">	<span class="comment">// it must also be included here.</span></span><br><span class="line">	GetBody(ctx context.Context, hash common.Hash, number rpc.BlockNumber) (*types.Body, <span class="type">error</span>)</span><br><span class="line">	GetLogs(ctx context.Context, blockHash common.Hash, number <span class="type">uint64</span>) ([][]*types.Log, <span class="type">error</span>)</span><br><span class="line">	SubscribeRemovedLogsEvent(ch <span class="keyword">chan</span>&lt;- core.RemovedLogsEvent) event.Subscription</span><br><span class="line">	SubscribeLogsEvent(ch <span class="keyword">chan</span>&lt;- []*types.Log) event.Subscription</span><br><span class="line">	SubscribePendingLogsEvent(ch <span class="keyword">chan</span>&lt;- []*types.Log) event.Subscription</span><br><span class="line">	BloomStatus() (<span class="type">uint64</span>, <span class="type">uint64</span>)</span><br><span class="line">	ServiceFilter(ctx context.Context, session *bloombits.MatcherSession)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>目前 Geth 代码库中，有两个 <code>ethapi.Backend</code> 接口的实现，分别是: 1. 位于 <code>eth\api_backend</code> 中的 <code>EthAPIBackend</code>; 2. 位于 <code>les\api_backend</code> 的 <code>LesApiBackend</code>; 顾名思义，**<code>EthAPIBackend</code> 提供了针对全节点的 Backend API 服务, 而 <code>LesApiBackend</code> 提供了轻节点的 Backend API 服务**。总结的来说，如果读者想定制一些新的 RPC API，可以在 <code>ethapi.Backend</code> 接口中定义函数，并给 <code>EthAPIBackend</code> 添加具体的实现。</p>
+<p>读者可能会发现，<code>ethapi.Backend</code> 接口所提供的函数功能，主要读写本地的维护的数据结构(i.e. Transaction Pool, Blockchain)的为主。那么作为一个有网络连接的 Backend, 以太坊的 Backend 或者说 Node 是怎么管理以太坊执行层节点的网络连接，共识等功能模块的呢？</p>
+<p>我们深入 <code>makeFullNode()</code> 函数可以发现，<strong>生成<code>ethapi.Backend</code> 接口的语句 <code>backend, eth := utils.RegisterEthService(stack, &amp;cfg.Eth)</code>, 还返回了另一个 <code>Ethereum</code> 类型的实例 <code>eth</code>。 这个 <code>Ethereum</code> 类型才是以太坊节点数结构中核心中的核心，它实现了以太坊全节点所需要的所有的 Service。</strong>它负责提供更为具体的以太坊的功能性 Service, 负责与以太坊业务直接相关的抽象，比如维护 Blockchain 的更新，共识算法，从 P2P 网络中同步区块，同步P2P节点远端的交易并放到交易池中，等业务功能。我们会在后续详细讲解 <code>Ethereum</code> 类型具体提供的服务。</p>
+<p><code>Ethereum</code> 实例根据上下文的配置信息在调用 <code>utils.RegisterEthService()</code> 函数生成。<strong>在<code>utils.RegisterEthService()</code>函数中，首先会根据当前的config来判断需要生成的Ethereum backend 的类型，是 light node backend 还是 full node backend。</strong>我们可以在 <code>eth/backend/new()</code> 函数和 <code>les/client.go/new()</code> 中找到这两种 Ethereum backend 的实例是如何初始化的。Ethereum backend 的实例定义了一些更底层的配置，比如chainid，链使用的共识算法的类型等。这两种后端服务的一个典型的区别是 light node backend 不能启动 Mining 服务。<strong>在 <code>utils.RegisterEthService()</code> 函数的最后，调用了 <code>Nodes.RegisterAPIs()</code> 函数，将刚刚生成的 backend 实例注册到 <code>stack</code> 实例中。</strong></p>
+<p>总结的说，**<code>api_backend</code> 主要是用于对外提供查询，或者与后端功能性生命周期无关的函数<strong>，</strong><code>Ethereum</code> 这类的节点层的后端，主要用于管理&#x2F;控制节点后端的生命周期**。</p>
+<p>最后一个关键函数，**<code>startNode()</code> 的作用是正式的启动一个以太坊执行层的节点<strong>。它通过</strong>调用 <code>utils.StartNode()</code> 函数来触发 <code>stack.Start()</code> 函数来启动<code>Stack</code>实例(Node)<strong>。</strong>在 <code>stack.Start()</code> 函数中，会遍历 <code>Node.lifecycles</code> 中注册的后端实例，并启动它们<strong>。此外，在 <code>startNode()</code> 函数中，还是</strong>调用了<code>unlockAccounts()</code> 函数，并将解锁的钱包注册到 <code>stack</code> 中，以及通过 <code>stack.Attach()</code> 函数创建了与 local Geth 交互的 RPClient 模块。**</p>
+<p><strong>在 <code>geth()</code> 函数的最后，函数通过执行 <code>stack.Wait()</code>，使得主线程进入了阻塞状态，其他的功能模块的服务被分散到其他的子协程中进行维护。</strong></p>
+<h3 id="Node-节点"><a href="#Node-节点" class="headerlink" title="Node 节点"></a>Node 节点</h3><p>正如我们前面提到的，Node 类型在 geth 的生命周期性中属于顶级实例，它负责作为与外部通信的高级抽象模块的管理员，比如管理 rpc server，http server，Web Socket，以及 P2P Server外 部接口。同时，Node 中维护了节点运行所需要的后端的实例和服务 (<code>lifecycles  []Lifecycle</code>)，例如我们上面提到的负责具体 Service 的<code>Ethereum</code> 类型。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// node/node.go</span></span><br><span class="line"><span class="comment">// Node是一个可以注册服务的容器。</span></span><br><span class="line"><span class="keyword">type</span> Node <span class="keyword">struct</span> &#123;</span><br><span class="line">	eventmux      *event.TypeMux</span><br><span class="line">	config        *Config</span><br><span class="line">	accman        *accounts.Manager</span><br><span class="line">	log           log.Logger</span><br><span class="line">	keyDir        <span class="type">string</span>            <span class="comment">//密钥存储目录</span></span><br><span class="line">	keyDirTemp    <span class="type">bool</span>              <span class="comment">//如果为true, key目录将被Stop删除</span></span><br><span class="line">	dirLock       fileutil.Releaser <span class="comment">//防止并发使用实例目录</span></span><br><span class="line">	stop          <span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;     <span class="comment">//通道等待终止通知</span></span><br><span class="line">	server        *p2p.Server       <span class="comment">//当前运行的P2P网络层</span></span><br><span class="line">	startStopLock sync.Mutex        <span class="comment">//启动/停止由一个额外的锁保护</span></span><br><span class="line">	state         <span class="type">int</span>               <span class="comment">//跟踪节点生命周期的状态</span></span><br><span class="line"></span><br><span class="line">	lock          sync.Mutex</span><br><span class="line">	lifecycles    []Lifecycle <span class="comment">//所有有生命周期的注册后端、服务和辅助服务</span></span><br><span class="line">	rpcAPIs       []rpc.API   <span class="comment">//节点当前提供的API列表</span></span><br><span class="line">	http          *httpServer <span class="comment">//</span></span><br><span class="line">	ws            *httpServer <span class="comment">//</span></span><br><span class="line">	httpAuth      *httpServer <span class="comment">//</span></span><br><span class="line">	wsAuth        *httpServer <span class="comment">//</span></span><br><span class="line">	ipc           *ipcServer  <span class="comment">//保存ipc http服务器信息</span></span><br><span class="line">	inprocHandler *rpc.Server <span class="comment">//进程内RPC请求处理程序处理API请求</span></span><br><span class="line"></span><br><span class="line">	databases <span class="keyword">map</span>[*closeTrackingDB]<span class="keyword">struct</span>&#123;&#125; <span class="comment">//所有打开的数据库</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="关闭节点"><a href="#关闭节点" class="headerlink" title="关闭节点"></a>关闭节点</h4><p>在前面我们提到，整个程序的主线程因为调用了 <code>stack.Wait()</code> 而进入了阻塞状态。我们可以看到 <strong>Node 结构中声明了一个叫做 <code>stop</code> 的 channel。由于这个 Channel 一直没有被赋值，所以整个 geth 的主进程才进入了阻塞状态，持续并发的执行其他的业务协程。</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 等待阻塞，直到节点关闭。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(n *Node)</span></span> Wait() &#123;</span><br><span class="line"> &lt;-n.stop</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>当 <code>n.stop</code> 这个 Channel 被赋予值的时候，<code>geth</code> 主函数就会停止当前的阻塞状态，并开始执行相应的一系列的资源释放的操作</strong>。</p>
+<p>值得注意的是，在目前的 go-ethereum 的 codebase 中，并没有直接通过给 <code>stop</code> 这个 channel 赋值方式来结束主进程的阻塞状态，而是使用一种更简洁粗暴的方式: 调用 <code>close()</code> 函数直接关闭 Channel。我们可以在 <code>node.doClose()</code> 找到相关的实现。<code>close()</code> 是 go 语言的原生函数，用于关闭 Channel 时使用。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// doClose释放New()获取的资源，收集错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(n *Node)</span></span> doClose(errs []<span class="type">error</span>) <span class="type">error</span> &#123;</span><br><span class="line">	.....</span><br><span class="line">	<span class="comment">// 解锁n.wait</span></span><br><span class="line">	<span class="built_in">close</span>(n.stop)</span><br><span class="line">	.....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Ethereum-后端设计"><a href="#Ethereum-后端设计" class="headerlink" title="Ethereum 后端设计"></a>Ethereum 后端设计</h3><p>我们可以在 <code>eth/backend.go</code> 中找到 <code>Ethereum</code> 这个结构体的定义。这个结构体包含的成员变量以及接收的方法实现了一个 Ethereum full node 所需要的全部功能和数据结构。我们可以在下面的代码定义中看到，Ethereum结构体中包含 <code>TxPool</code>，<code>Blockchain</code>，<code>consensus.Engine</code>，<code>miner</code>等最核心的几个数据结构作为成员变量，我们会在后面的章节中详细的讲述这些核心数据结构的主要功能，以及它们的实现的方法。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 实现以太坊全节点服务</span></span><br><span class="line"><span class="keyword">type</span> Ethereum <span class="keyword">struct</span> &#123;</span><br><span class="line">	config *ethconfig.Config</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Handlers</span></span><br><span class="line">	txPool *txpool.TxPool</span><br><span class="line"></span><br><span class="line">	blockchain         *core.BlockChain</span><br><span class="line">	handler            *handler</span><br><span class="line">	ethDialCandidates  enode.Iterator</span><br><span class="line">	snapDialCandidates enode.Iterator</span><br><span class="line">	merger             *consensus.Merger</span><br><span class="line"></span><br><span class="line">	<span class="comment">// DB interfaces</span></span><br><span class="line">	chainDb ethdb.Database <span class="comment">// Block chain database</span></span><br><span class="line"></span><br><span class="line">	eventMux       *event.TypeMux</span><br><span class="line">	engine         consensus.Engine</span><br><span class="line">	accountManager *accounts.Manager</span><br><span class="line"></span><br><span class="line">	bloomRequests     <span class="keyword">chan</span> <span class="keyword">chan</span> *bloombits.Retrieval <span class="comment">//接收bloom数据检索请求的通道</span></span><br><span class="line">	bloomIndexer      *core.ChainIndexer             <span class="comment">//在块导入期间运行Bloom索引器</span></span><br><span class="line">	closeBloomHandler <span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">	APIBackend *EthAPIBackend</span><br><span class="line"></span><br><span class="line">	miner     *miner.Miner</span><br><span class="line">	gasPrice  *big.Int</span><br><span class="line">	etherbase common.Address</span><br><span class="line"></span><br><span class="line">	networkID     <span class="type">uint64</span></span><br><span class="line">	netRPCService *ethapi.NetAPI</span><br><span class="line"></span><br><span class="line">	p2pServer *p2p.Server</span><br><span class="line"></span><br><span class="line">	lock sync.RWMutex <span class="comment">//保护可变字段(例如gas price和etherbase)</span></span><br><span class="line">	shutdownTracker *shutdowncheck.ShutdownTracker <span class="comment">//跟踪节点是否正常关闭以及何时关闭</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>节点启动和停止 Mining 的就是通过调用 <code>Ethereum.StartMining()</code> 和 <code>Ethereum.StopMining()</code> 实现的。设置 Mining 的收益账户是通过调用 <code>Ethereum.SetEtherbase()</code> 实现的。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// StartMining使用给定的CPU线程数启动miner。如果挖矿已经在运行，该方法会调整允许使用的线程数，并更新事务池所需的最小价格</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Ethereum)</span></span> StartMining() <span class="type">error</span> &#123;</span><br><span class="line">   ...</span><br><span class="line">     <span class="comment">//如果矿工没有运行，初始化它</span></span><br><span class="line">     <span class="keyword">if</span> !s.IsMining() &#123;</span><br><span class="line">          ...</span><br><span class="line">      <span class="keyword">go</span> s.miner.Start(eb)</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里我们额外关注一下 <code>handler</code> 这个成员变量。<code>handler</code> 的定义在 <code>eth/handler.go</code> 中。</p>
+<p>我们从从宏观角度来看，一个节点的主工作流需要: 1.从网络中获取&#x2F;同步 Transaction 和 Block 的数据 2. 将网络中获取到 Block 添加到 Blockchain 中。而 <strong><code>handler</code> 就负责提供中同步区块和交易数据的功能</strong>，例如，**<code>downloader.Downloader</code> 负责从网络中同步 Block ，<code>fetcher.TxFetcher</code> 负责从网络中同步交易**。关于这些方法的具体实现，我们会在后续章节：数据同步中详细介绍。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> handler <span class="keyword">struct</span> &#123;</span><br><span class="line">	networkID  <span class="type">uint64</span></span><br><span class="line">	forkFilter forkid.Filter <span class="comment">// Fork ID filter, constant across the lifetime of the node</span></span><br><span class="line"></span><br><span class="line">	snapSync  atomic.Bool <span class="comment">// Flag whether snap sync is enabled (gets disabled if we already have blocks)</span></span><br><span class="line">	acceptTxs atomic.Bool <span class="comment">// Flag whether we&#x27;re considered synchronised (enables transaction processing)</span></span><br><span class="line"></span><br><span class="line">	database ethdb.Database</span><br><span class="line">	txpool   txPool</span><br><span class="line">	chain    *core.BlockChain</span><br><span class="line">	maxPeers <span class="type">int</span></span><br><span class="line"></span><br><span class="line">	downloader   *downloader.Downloader</span><br><span class="line">	blockFetcher *fetcher.BlockFetcher</span><br><span class="line">	txFetcher    *fetcher.TxFetcher</span><br><span class="line">	peers        *peerSet</span><br><span class="line">	merger       *consensus.Merger</span><br><span class="line"></span><br><span class="line">	eventMux      *event.TypeMux</span><br><span class="line">	txsCh         <span class="keyword">chan</span> core.NewTxsEvent</span><br><span class="line">	txsSub        event.Subscription</span><br><span class="line">	minedBlockSub *event.TypeMuxSubscription</span><br><span class="line"></span><br><span class="line">	requiredBlocks <span class="keyword">map</span>[<span class="type">uint64</span>]common.Hash</span><br><span class="line"></span><br><span class="line">	<span class="comment">// channels for fetcher, syncer, txsyncLoop</span></span><br><span class="line">	quitSync <span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">	chainSync *chainSyncer</span><br><span class="line">	wg        sync.WaitGroup</span><br><span class="line">	peerWG    sync.WaitGroup</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>到此，我们就介绍了 <code>geth</code> 及其所需要的基本模块如何启动的和关闭。我们接下来将视角转入到各个模块中，用细粒度的角度深入探索 Ethereum 的具体实现。</p>
+<h3 id="Appendix"><a href="#Appendix" class="headerlink" title="Appendix"></a>Appendix</h3><p>这里补充一个Go语言的语法知识: <strong>类型断言</strong>。在<code>Ethereum.StartMining()</code>函数中，出现了<code>if c, ok := s.engine.(*clique.Clique); ok</code> 的写法。这中写法是 Golang 中的语法糖，称为类型断言。具体的语法是 <code>value, ok := element.(T)</code>，它的含义是如果 <code>element</code> 是 <code>T</code> 类型的话，那么ok等于<code>True</code>, <code>value</code> 等于 <code>element</code> 的值。在 <code>if c, ok := s.engine.(*clique.Clique); ok</code> 语句中，就是在判断 <code>s.engine</code> 的是否为 <code>*clique.Clique</code> 类型。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cli *clique.Clique</span><br><span class="line"><span class="keyword">if</span> c, ok := s.engine.(*clique.Clique); ok &#123;</span><br><span class="line"> cli = c</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> cl, ok := s.engine.(*beacon.Beacon); ok &#123;</span><br><span class="line"> <span class="keyword">if</span> c, ok := cl.InnerEngine().(*clique.Clique); ok &#123;</span><br><span class="line">  cli = c</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/10/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/00-geth/" title="00-geth">https://kongpengyq.com/2022/10/14/区块链/以太坊源码/00-geth/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A%E6%BA%90%E7%A0%81/" rel="tag"># 以太坊源码</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/10/09/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A/09-%E6%9D%83%E7%9B%8A%E8%AF%81%E6%98%8EPOS/" rel="prev" title="09-权益证明POS">
+      <i class="fa fa-chevron-left"></i> 09-权益证明POS
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/10/14/%E5%8C%BA%E5%9D%97%E9%93%BE/%E4%BB%A5%E5%A4%AA%E5%9D%8A/12-%E5%8F%8D%E6%80%9D/" rel="next" title="12-反思">
+      12-反思 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#go-ethereum-%E7%9A%84%E4%BB%A3%E7%A0%81%E5%BA%93%E7%BB%93%E6%9E%84"><span class="nav-text">go-ethereum 的代码库结构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%90%AF%E5%8A%A8Geth%E8%8A%82%E7%82%B9"><span class="nav-text">如何启动Geth节点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E5%A5%8F-Geth-Console"><span class="nav-text">前奏: Geth Console</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#geth-%E8%8A%82%E7%82%B9%E7%9A%84%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B"><span class="nav-text">geth 节点的启动流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Node-%E8%8A%82%E7%82%B9"><span class="nav-text">Node 节点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B3%E9%97%AD%E8%8A%82%E7%82%B9"><span class="nav-text">关闭节点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Ethereum-%E5%90%8E%E7%AB%AF%E8%AE%BE%E8%AE%A1"><span class="nav-text">Ethereum 后端设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Appendix"><span class="nav-text">Appendix</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

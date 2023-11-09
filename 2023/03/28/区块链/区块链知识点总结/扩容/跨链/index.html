@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="链桥随着一层网络区块链和二层网络扩容解决方案的激增，以及越来越多的去中心化应用程序跨链，跨链通信和资产转移需求已成为网络基础设施的重要组成部分。 存在不同类型的链桥就是为了帮助解决这种需求。 对链桥的需求链桥的存在是为了连接区块链网络。 它们实现了区块链之间的连通性和互操作性。 区块链存在于孤立的环境中，这意味着区块链之间本来就无法进行交易和通信。 因此，虽然某个生态系统内可能存在大量的活动和创新">
+<meta property="og:type" content="article">
+<meta property="og:title" content="跨链">
+<meta property="og:url" content="https://kongpengyq.com/2023/03/28/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/%E8%B7%A8%E9%93%BE/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="链桥随着一层网络区块链和二层网络扩容解决方案的激增，以及越来越多的去中心化应用程序跨链，跨链通信和资产转移需求已成为网络基础设施的重要组成部分。 存在不同类型的链桥就是为了帮助解决这种需求。 对链桥的需求链桥的存在是为了连接区块链网络。 它们实现了区块链之间的连通性和互操作性。 区块链存在于孤立的环境中，这意味着区块链之间本来就无法进行交易和通信。 因此，虽然某个生态系统内可能存在大量的活动和创新">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-03-27T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.813Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="区块链知识点总结">
+<meta property="article:tag" content="扩容">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2023/03/28/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/%E8%B7%A8%E9%93%BE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>跨链 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2023/03/28/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/%E8%B7%A8%E9%93%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          跨链
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-03-28 00:00:00" itemprop="dateCreated datePublished" datetime="2023-03-28T00:00:00+08:00">2023-03-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%89%A9%E5%AE%B9/" itemprop="url" rel="index">
+                    <span itemprop="name">扩容</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="链桥"><a href="#链桥" class="headerlink" title="链桥"></a>链桥</h1><p>随着一层网络区块链和二层网络扩容解决方案的激增，以及越来越多的去中心化应用程序跨链，跨链通信和资产转移需求已成为网络基础设施的重要组成部分。 存在不同类型的链桥就是为了帮助解决这种需求。</p>
+<h2 id="对链桥的需求"><a href="#对链桥的需求" class="headerlink" title="对链桥的需求"></a>对链桥的需求</h2><p>链桥的存在是为了连接区块链网络。 它们实现了区块链之间的连通性和互操作性。</p>
+<p>区块链存在于孤立的环境中，这意味着区块链之间本来就无法进行交易和通信。 因此，虽然某个生态系统内可能存在大量的活动和创新，但它会由于缺乏与其他生态系统的连通性和互操作性而受到限制。</p>
+<p>链桥提供了一种让孤立的区块链环境相互连通的途径。 它们在区块链之间建立了一条传输路线，让代币、信息、任意数据甚至智能合约调用都可以从一条区块链转移到另一条。</p>
+<h2 id="链桥是如何工作的？"><a href="#链桥是如何工作的？" class="headerlink" title="链桥是如何工作的？"></a>链桥是如何工作的？</h2><p>虽然链桥设计多种多样，但以下三种方便资产跨链转移的方法脱颖而出：</p>
+<ul>
+<li><strong>锁定并铸币 –</strong> 锁定源链上的资产并在目标链上铸币。</li>
+<li><strong>销毁并铸币 –</strong> 销毁源链上的资产并在目标链上铸币。</li>
+<li><strong>原子交换 –</strong> 通过第三方将源链上的资产与目标链上的资产交换。</li>
+</ul>
+<h2 id="链桥类型"><a href="#链桥类型" class="headerlink" title="链桥类型"></a>链桥类型</h2><p>链桥通常可以分为以下几类之一：</p>
+<ul>
+<li><strong>原生链桥 –</strong> 这些链桥通常用于加强特定区块链上的流动性，使用户更容易将资金转移到生态系统。 例如，<a target="_blank" rel="noopener" href="https://bridge.arbitrum.io/">Arbitrum 链桥(opens in a new tab)↗</a>的目的就是为了方便用户从以太坊主网桥接到 Arbitrum。 其他此链类桥包括 Polygon PoS 链桥、<a target="_blank" rel="noopener" href="https://app.optimism.io/bridge">Optimism 网关(opens in a new tab)↗</a>等。</li>
+<li><strong>基于验证者或预言机的链桥 –</strong> 这些链桥依赖于外部验证者组或预言机来验证跨链转移。 例如：Multichain 与 Across。</li>
+<li><strong>通用信息传递链桥 –</strong> 这些链桥可以跨链传输资产、信息和任意数据。 例如：Nomad 与 LayerZero。</li>
+<li><strong>流动性网络 –</strong> 这些链桥主要是通过原子交换将资产从一条链转移到另一条链。 一般来讲，它们不支持跨链信息传递。 例如：Connext 与 Hop。</li>
+</ul>
+<h2 id="桥梁类型"><a href="#桥梁类型" class="headerlink" title="桥梁类型"></a>桥梁类型</h2><p>桥梁具有各种设计和复杂程度。 一般来说，桥梁分为两类：需信任桥梁和免信任桥梁。</p>
+<table>
+<thead>
+<tr>
+<th>需信任桥梁</th>
+<th>免信任桥梁</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>需信任桥梁依赖于中心实体或系统的运作。</td>
+<td>免信任桥梁使用智能合约和算法运行。</td>
+</tr>
+<tr>
+<td>他们对资金的保管和桥梁的安全性有信任假设。 用户大多依赖桥梁运营商的声誉。</td>
+<td>这种桥梁免于信任，即桥梁的安全性与底层区块链的安全性相同。</td>
+</tr>
+<tr>
+<td>用户需要放弃对其加密资产的控制。</td>
+<td>通过智能合约，免信任桥梁使用户能够继续控制他们的资金。</td>
+</tr>
+</tbody></table>
+<p>简而言之，我们可以说需信任桥梁具有信任假设，而免信任桥梁对信任的依赖非常小，因此不会在基础域之外出现新的信任假设。 上述术语的解释如下：</p>
+<ul>
+<li><strong>免信任</strong>：与底层域具有同等的安全性。 如 <a target="_blank" rel="noopener" href="https://medium.com/connext/the-interoperability-trilemma-657c2cf69f17">Arjun Bhuptani 在本文中所述。(opens in a new tab)↗</a></li>
+<li><strong>信任假设</strong>：通过在系统中添加外部验证者来摆脱底层域的安全性，从加密经济学的角度来说，这降低了安全性。</li>
+</ul>
+<p>为了更好地理解这两种方法之间的主要区别，我们来举个例子：</p>
+<p>想象一下，你在机场安检站。 有两种检查站：</p>
+<ol>
+<li>手动检查站 — 由工作人员手动检查你的机票和身份证明的所有详细信息，然后再交出登机牌。</li>
+<li>自助值机 — 由一台机器操作，你可以在其中输入航班的详细信息，如果一切检查完毕，你就会收到登机牌。</li>
+</ol>
+<p>手动检查站类似于需信任模式，因为它依赖于第三方（即工作人员）进行操作。 作为用户，你相信工作人员会做出正确的决定并正确使用你的私人信息。</p>
+<p>自助值机类似于免信任模式，因为它不再需要操作员，而是利用技术进行操作。 用户始终可以控制他们的数据，并且不必信任第三方来处理他们的私人信息。</p>
+<p>许多桥梁解决方案采用的模式介于这两个极端之间，具有不同的免信任度。</p>
+<h2 id="权衡利弊"><a href="#权衡利弊" class="headerlink" title="权衡利弊"></a>权衡利弊</h2><p>没有完美的链桥解决方案。 有的只是为了实现目的而进行的权衡利弊。 开发者和用户可以根据以下因素评估链桥：</p>
+<ul>
+<li><strong>安全性 –</strong> <strong>谁来验证系统？</strong> 通常，由外部验证者保护的链桥不如由区块链验证者在本地保护的链桥安全。</li>
+<li><strong>便利性 –</strong> <strong>完成一笔交易需要多长时间</strong>，用户需要签署多少笔交易? 对于开发者来说，集成一个链桥需要多长时间，这个过程有多复杂?</li>
+<li><strong>连通性 –</strong> 一个链桥<strong>可以连接哪些不同的目标链</strong>（卷叠、侧链、其他一层网络区块链等），集成一条新区块链有多难?</li>
+<li><strong>传递更复杂数据的能力 –</strong> <strong>链桥能够跨链传输信息和更复杂的任意数据，还是只支持跨链资产转移？</strong></li>
+<li><strong>成本效益 –</strong> 通过链桥<strong>跨链转移资产的成本是多少？</strong> 通常情况下，链桥收取固定或变动的费用，具体取决于燃料成本和特定路线的流动性。 根据确保链桥安全所需的资本来评估链桥的成本效益也是至关重要的。</li>
+</ul>
+<h2 id="链桥相关风险"><a href="#链桥相关风险" class="headerlink" title="链桥相关风险"></a>链桥相关风险</h2><p>去中心化金融领域中最大的三次黑客攻击都是链桥造成的，而且链桥目前仍处于开发阶段早期。 使用任何链桥都有以下风险：</p>
+<ul>
+<li><strong>智能合约风险 –</strong> 虽然许多链桥已经成功通过了审计，但只需智能合约中的一个缺陷就会使资产暴露在黑客攻击中。</li>
+<li><strong>系统性金融风险</strong> – 许多链桥使用包装资产在新的链上铸造规范化的原始资产。 这使生态系统面临系统性风险，正如我们所看到的那样，包装代币遭到利用。</li>
+<li><strong>交易对手风险 –</strong> 一些链桥采用可信设计，这要求用户依靠一种假设，即验证者不会串通起来窃取用户的资金。 用户需要信任这些第三方参与者，这使他们面临一些风险，比如跑路、审查和其他恶意活动。</li>
+<li><strong>未解决的问题 –</strong> 考虑到链桥处于发展阶段初期，还有许多关于链桥在不同市场条件下如何表现的问题都尚未解决，如网络拥塞期和在发生网络级攻击或状态回滚等不可预见的事件时。 这种不确定性带来了一定的风险，且风险程度目前仍然未知。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2023/03/28/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/%E8%B7%A8%E9%93%BE/" title="跨链">https://kongpengyq.com/2023/03/28/区块链/区块链知识点总结/扩容/跨链/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" rel="tag"># 区块链知识点总结</a>
+              <a href="/tags/%E6%89%A9%E5%AE%B9/" rel="tag"># 扩容</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/03/25/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/%E6%89%A9%E5%AE%B9/%E7%8A%B6%E6%80%81%E9%80%9A%E9%81%93/" rel="prev" title="状态通道">
+      <i class="fa fa-chevron-left"></i> 状态通道
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/30/%E5%8C%BA%E5%9D%97%E9%93%BE/%E5%8C%BA%E5%9D%97%E9%93%BE%E9%A1%B9%E7%9B%AE/%E6%8E%8C%E4%B8%8A%E9%92%B1%E5%8C%85/" rel="next" title="掌上钱包">
+      掌上钱包 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%93%BE%E6%A1%A5"><span class="nav-text">链桥</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E9%93%BE%E6%A1%A5%E7%9A%84%E9%9C%80%E6%B1%82"><span class="nav-text">对链桥的需求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%93%BE%E6%A1%A5%E6%98%AF%E5%A6%82%E4%BD%95%E5%B7%A5%E4%BD%9C%E7%9A%84%EF%BC%9F"><span class="nav-text">链桥是如何工作的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%93%BE%E6%A1%A5%E7%B1%BB%E5%9E%8B"><span class="nav-text">链桥类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A1%A5%E6%A2%81%E7%B1%BB%E5%9E%8B"><span class="nav-text">桥梁类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%83%E8%A1%A1%E5%88%A9%E5%BC%8A"><span class="nav-text">权衡利弊</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%93%BE%E6%A1%A5%E7%9B%B8%E5%85%B3%E9%A3%8E%E9%99%A9"><span class="nav-text">链桥相关风险</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

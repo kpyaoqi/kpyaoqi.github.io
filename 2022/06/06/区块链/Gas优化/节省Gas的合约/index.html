@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="使用短路模式排序Solidity操作短路（short-circuiting）是一种使用或&#x2F;与逻辑来排序不同成本操作的solidity合约 开发模式，它将低gas成本的操作放在前面，高gas成本的操作放在后面，这样如果前面的低成本操作可行，就可以跳过（短路）后面的高成本以太坊虚拟机操作了。 123456&#x2F;&#x2F; f(x) 是低gas成本的操作&#x2F;&#x2F; g(y) 是高gas成本的操作&#x2F;&#x2F; 按如下排序">
+<meta property="og:type" content="article">
+<meta property="og:title" content="节省Gas的合约">
+<meta property="og:url" content="https://kongpengyq.com/2022/06/06/%E5%8C%BA%E5%9D%97%E9%93%BE/Gas%E4%BC%98%E5%8C%96/%E8%8A%82%E7%9C%81Gas%E7%9A%84%E5%90%88%E7%BA%A6/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="使用短路模式排序Solidity操作短路（short-circuiting）是一种使用或&#x2F;与逻辑来排序不同成本操作的solidity合约 开发模式，它将低gas成本的操作放在前面，高gas成本的操作放在后面，这样如果前面的低成本操作可行，就可以跳过（短路）后面的高成本以太坊虚拟机操作了。 123456&#x2F;&#x2F; f(x) 是低gas成本的操作&#x2F;&#x2F; g(y) 是高gas成本的操作&#x2F;&#x2F; 按如下排序">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/Gas%E4%BC%98%E5%8C%96/img/MGf38d9w.png">
+<meta property="article:published_time" content="2022-06-05T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-09T02:01:35.409Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="Gas优化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kongpengyq.com/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/Gas%E4%BC%98%E5%8C%96/img/MGf38d9w.png">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/06/06/%E5%8C%BA%E5%9D%97%E9%93%BE/Gas%E4%BC%98%E5%8C%96/%E8%8A%82%E7%9C%81Gas%E7%9A%84%E5%90%88%E7%BA%A6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>节省Gas的合约 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/06/06/%E5%8C%BA%E5%9D%97%E9%93%BE/Gas%E4%BC%98%E5%8C%96/%E8%8A%82%E7%9C%81Gas%E7%9A%84%E5%90%88%E7%BA%A6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          节省Gas的合约
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-06 00:00:00" itemprop="dateCreated datePublished" datetime="2022-06-06T00:00:00+08:00">2022-06-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-09 10:01:35" itemprop="dateModified" datetime="2023-11-09T10:01:35+08:00">2023-11-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Gas%E4%BC%98%E5%8C%96/" itemprop="url" rel="index">
+                    <span itemprop="name">Gas优化</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="使用短路模式排序Solidity操作"><a href="#使用短路模式排序Solidity操作" class="headerlink" title="使用短路模式排序Solidity操作"></a>使用短路模式排序Solidity操作</h1><p>短路（short-circuiting）是一种使用或&#x2F;与逻辑来排序不同成本操作的solidity合约 开发模式，它<strong>将低gas成本的操作放在前面</strong>，高gas成本的操作放在后面，这样如果前面的低成本操作可行，就可以跳过（短路）后面的高成本以太坊虚拟机操作了。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// f(x) 是低gas成本的操作</span></span><br><span class="line"><span class="comment">// g(y) 是高gas成本的操作</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 按如下排序不同gas成本的操作</span></span><br><span class="line"><span class="built_in">f</span>(x) || <span class="built_in">g</span>(y)</span><br><span class="line"><span class="built_in">f</span>(x) &amp;&amp; <span class="built_in">g</span>(y)</span><br></pre></td></tr></table></figure>
+
+<h1 id="删减不必要的Solidity库"><a href="#删减不必要的Solidity库" class="headerlink" title="删减不必要的Solidity库"></a>删减不必要的Solidity库</h1><p>在开发Solidity智能合约时，我们引入的库<strong>通常只需要用到其中的部分功能</strong>，这意味着其中可能会包含大量对于你的智能合约而言其实是冗余的solidity代码。如果可以在你自己的合约里安全有效地实现所依赖的库功能，那么就能够达到优化solidity合约的gas利用的目的。</p>
+<p>例如，在下面的solidity代码中，我们的以太坊合约只是用到了SafeMath库的<code>add</code>方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">import &#x27;./SafeMath.sol&#x27; as SafeMath;</span><br><span class="line"></span><br><span class="line">contract SafeAddition &#123;</span><br><span class="line"> function safeAdd(uint a, uint b) public pure returns(uint) &#123;</span><br><span class="line"> return SafeMath.add(a, b);</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过参考SafeMath的这部分代码的实现，可以把对这个solidity库的依赖剔除掉：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">contract SafeAddition &#123;</span><br><span class="line"> function safeAdd(uint a, uint b) public pure returns(uint) &#123;</span><br><span class="line"> uint c = a + b;</span><br><span class="line"> require(c &gt;= a, &quot;Addition overflow&quot;);</span><br><span class="line"> return c;</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="精确声明Solidity合约函数的可见性"><a href="#精确声明Solidity合约函数的可见性" class="headerlink" title="精确声明Solidity合约函数的可见性"></a>精确声明Solidity合约函数的可见性</h1><p>在Solidity合约开发中，显式声明函数的可见性不仅可以提高智能合约的安全性， 同时也有利于优化合约执行的gas成本。例如，通过显式地标记函数为外部函数（External），可以强制将函数参数的存储位置设置为<code>calldata</code>，这会节约每次函数执行时所需的以太坊gas成本。</p>
+<blockquote>
+<p>External 可见性比 public 消耗gas 少</p>
+</blockquote>
+<h1 id="使用适合的数据类型"><a href="#使用适合的数据类型" class="headerlink" title="使用适合的数据类型"></a>使用适合的数据类型</h1><p>在Solidity中，有些数据类型要比另外一些数据类型的gas成本高。有必要 了解可用数据类型的gas利用情况，以便根据你的需求选择效率最高的那种。 下面是关于solidity数据类型gas消耗情况的一些规则：</p>
+<ul>
+<li>在任何可以使用<code>uint</code>类型的情况下，不要使用<code>string</code>类型</li>
+<li>存储uint256要比存储uint8的gas成本低，为什么？点击这里查看<a target="_blank" rel="noopener" href="https://ethereum.stackexchange.com/questions/3067/why-does-uint8-cost-more-gas-than-uint256">原文</a></li>
+<li>当可以使用<code>bytes</code>类型时，不要在solidity合约种使用<code>byte[]</code>类型</li>
+<li>如果<code>bytes</code>的长度有可以预计的上限，那么尽可能改用bytes1~bytes32这些具有固定长度的solidity类型</li>
+<li>bytes32所需的gas成本要低于string类型</li>
+</ul>
+<h1 id="避免Solidity智能合约中的死代码"><a href="#避免Solidity智能合约中的死代码" class="headerlink" title="避免Solidity智能合约中的死代码"></a>避免Solidity智能合约中的死代码</h1><p>死代码（Dead code）是指那些永远也不会执行的Solidity代码，例如那些执行条件永远也不可能满足的代码，就像下面的两个自相矛盾的条件判断里的Solidity代码块，消耗了以太坊gas资源但没有任何作用：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">function deadCode(uint x) public pure &#123;</span><br><span class="line"> if(x &lt; 1) &#123;</span><br><span class="line">    if(x &gt; 2) &#123;</span><br><span class="line">        return x;</span><br><span class="line">    &#125;</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="避免使用不必要的条件判断"><a href="#避免使用不必要的条件判断" class="headerlink" title="避免使用不必要的条件判断"></a>避免使用不必要的条件判断</h1><p>有些条件断言的结果不需要Solidity代码的执行就可以知道结果，那么这样的条件判断就可以精简掉。例如下面的Solidity合约代码中的两级判断条件，内层的判断是在浪费宝贵的以太坊gas资源：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">function opaquePredicate(uint x) public pure &#123;</span><br><span class="line"> if(x &lt; 1) &#123;</span><br><span class="line">    if(x &lt; 0 ) &#123;  // uint 不可能小于0</span><br><span class="line">    return x;</span><br><span class="line">    &#125;</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="避免在循环中执行gas成本高的操作"><a href="#避免在循环中执行gas成本高的操作" class="headerlink" title="避免在循环中执行gas成本高的操作"></a>避免在循环中执行gas成本高的操作</h1><p>由于<code>SLOAD</code>和<code>SSTORE</code>操作码的成本高昂，因此管理storage变量的gas成本 要远远高于内存变量，所以要避免在循环中操作storage变量。例如下面的 solidity 代码中，<code>num</code>变量是一个storage变量，那么未知循环次数的若干次操作，很可能会造成solidity开发者意料之外的以太坊gas消耗黑洞：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">uint num = 0;</span><br><span class="line"></span><br><span class="line">function expensiveLoop(uint x) public &#123;</span><br><span class="line">  for(uint i = 0; i &lt; x; i++) &#123;</span><br><span class="line">    num += 1;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>解决上述以太坊合约代码问题的方法，是创建一个solidity临时变量 来代替上述全局变量参与循环，然后在循环结束后重新将临时变量的值赋给全局状态变量：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">uint num = 0;</span><br><span class="line"></span><br><span class="line">function lessExpensiveLoop(uint x) public &#123;</span><br><span class="line">  uint temp = num;</span><br><span class="line">  for(uint i = 0; i &lt; x; i++) &#123;</span><br><span class="line">    temp += 1;</span><br><span class="line">  &#125;</span><br><span class="line">  num = temp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="避免使用常量结果的循环"><a href="#避免使用常量结果的循环" class="headerlink" title="避免使用常量结果的循环"></a>避免使用常量结果的循环</h1><p>如果一个循环计算的结果是无需编译执行Solidity代码就可以预测的，那么 就不要使用循环，这可以可观地节省gas。例如下面的以太坊合约代码就可以 直接设置num变量的值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">function constantOutcome() public pure returns(uint) &#123;</span><br><span class="line">  uint num = 0;</span><br><span class="line">  for(uint i = 0; i &lt; 100; i++) &#123;</span><br><span class="line">    num += 1;</span><br><span class="line">  &#125;</span><br><span class="line">  return num;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="合并循环"><a href="#合并循环" class="headerlink" title="合并循环"></a>合并循环</h1><p>有时候在Solidity智能合约中，你会发现两个循环的判断条件一致，那么在这种情况下就没有理由不合并它们。例如下面的以太坊合约代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">function loopFusion(uint x, uint y) public pure returns(uint) &#123;</span><br><span class="line">  for(uint i = 0; i &lt; 100; i++) &#123;</span><br><span class="line">    x += 1;</span><br><span class="line">  &#125;</span><br><span class="line">  for(uint i = 0; i &lt; 100; i++) &#123;</span><br><span class="line">    y += 1;</span><br><span class="line">  &#125;</span><br><span class="line">  return x + y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="避免循环中的重复计算"><a href="#避免循环中的重复计算" class="headerlink" title="避免循环中的重复计算"></a>避免循环中的重复计算</h1><p>如果循环中的某个Solidity表达式在每次迭代都产生同样的结果，那么就可以将其 移出循环先行计算，从而节省掉循环中额外的gas成本。如果表达式中使用的变量是storage变量， 这就更重要了。例如下面的智能合约代码中表达式<code>a*b</code>的值，并不需要每次迭代重新计算：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">uint a = 4;</span><br><span class="line">uint b = 5;</span><br><span class="line">function repeatedComputations(uint x) public returns(uint) &#123;</span><br><span class="line">  uint sum = 0;</span><br><span class="line">  for(uint i = 0; i &lt;= x; i++) &#123;</span><br><span class="line">    sum = sum + a * b;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="去除循环中的比较运算"><a href="#去除循环中的比较运算" class="headerlink" title="去除循环中的比较运算"></a>去除循环中的比较运算</h1><p>如果在循环的每个迭代中执行比较运算，但每次的比较结果都相同，则应将其从循环中删除。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">function unilateralOutcome(uint x) public returns(uint) &#123;</span><br><span class="line">  uint sum = 0;</span><br><span class="line">  for(uint i = 0; i &lt;= 100; i++) &#123;</span><br><span class="line">    if(x &gt; 1) &#123;</span><br><span class="line">      sum += 1;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  return sum;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<h1 id="不要存储不必要的数据"><a href="#不要存储不必要的数据" class="headerlink" title="不要存储不必要的数据"></a>不要存储不必要的数据</h1><p>这听起来似乎很明显，但是非常值得一提。编写智能合约时，你应该只存储交易验证所需的内容。与合约逻辑无关的交易记录或详细说明之类的数据可能不需要保存在合约存储中。</p>
+<h1 id="将多个小变量打包到单个字中"><a href="#将多个小变量打包到单个字中" class="headerlink" title="将多个小变量打包到单个字中"></a>将多个小变量打包到单个字中</h1><blockquote>
+<p>译者注：标题中的”字”, 也称为字长，表示每个指令操作的数据长度。</p>
+</blockquote>
+<p>EVM在32字节字长存储模型下运行。可以将小于32个字节的多个变量打包到一个存储槽中，以最大程度地减少<code>SSTORE</code>操作码的数量。尽管Solidity <a target="_blank" rel="noopener" href="https://learnblockchain.cn/docs/solidity/internals/layout_in_storage.html">自动尝试将小的基本类型打包到同一插槽中</a>，但是糟糕的结构体成员排序可能会阻止编译器执行此操作。考虑下面的<code>Good</code>和<code>Bad</code>结构体。</p>
+<p><img src="/noteimg/%E5%8C%BA%E5%9D%97%E9%93%BE/Gas%E4%BC%98%E5%8C%96/img/MGf38d9w.png" alt="Image for post"></p>
+<p>第一个<code>doBad()</code>函数调用执行消耗约60,000 Gas，而<code>doGood()</code>仅消耗约40,000 Gas。注意是一个字长存储的差异(20,000 Gas)，因为<code>Good</code>结构将两个uint128打包为一个字。</p>
+<h1 id="在合约的字节码中存储值"><a href="#在合约的字节码中存储值" class="headerlink" title="在合约的字节码中存储值"></a>在合约的字节码中存储值</h1><p>一种相对便宜的存储和读取信息的方法是，将信息部署在区块链上时，直接将其包含在智能合约的字节码中。不利之处是此值以后不能更改。但是，用于加载和存储数据的 gas 消耗将大大减少。有两种可能的实现方法：</p>
+<ol>
+<li>将变量声明为 <em>constant</em> 常量 (声明为 <a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/1059">immutable</a> 同样也可以降低 gas)</li>
+<li>在你要使用的任何地方对其进行硬编码。</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uint256 public v1;</span><br><span class="line">uint256 public constant v2;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">calculate</span>(<span class="params"></span>) returns (uint256 result) &#123;</span><br><span class="line">    <span class="keyword">return</span> v1 * v2 * <span class="number">10000</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>变量<em>v1</em> 是合约状态的一部分，而<em>v2</em>和<em>1000</em>是合约字节码的一部分。</p>
+<h1 id="带有-数字的变量，读取时候花费-gas-更少"><a href="#带有-数字的变量，读取时候花费-gas-更少" class="headerlink" title="带有_数字的变量，读取时候花费 gas 更少"></a>带有<code>_</code>数字的变量，读取时候花费 gas 更少</h1>
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/06/06/%E5%8C%BA%E5%9D%97%E9%93%BE/Gas%E4%BC%98%E5%8C%96/%E8%8A%82%E7%9C%81Gas%E7%9A%84%E5%90%88%E7%BA%A6/" title="节省Gas的合约">https://kongpengyq.com/2022/06/06/区块链/Gas优化/节省Gas的合约/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/Gas%E4%BC%98%E5%8C%96/" rel="tag"># Gas优化</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/05/31/%E5%85%B6%E4%BB%96/%E9%A9%BC%E5%B3%B0%E5%91%BD%E5%90%8D/" rel="prev" title="驼峰命名">
+      <i class="fa fa-chevron-left"></i> 驼峰命名
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/06/%E5%8C%BA%E5%9D%97%E9%93%BE/Gas%E4%BC%98%E5%8C%96/%E6%8E%A7%E5%88%B6Gas%E6%88%90%E6%9C%AC/" rel="next" title="控制Gas成本">
+      控制Gas成本 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E7%9F%AD%E8%B7%AF%E6%A8%A1%E5%BC%8F%E6%8E%92%E5%BA%8FSolidity%E6%93%8D%E4%BD%9C"><span class="nav-text">使用短路模式排序Solidity操作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%A0%E5%87%8F%E4%B8%8D%E5%BF%85%E8%A6%81%E7%9A%84Solidity%E5%BA%93"><span class="nav-text">删减不必要的Solidity库</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B2%BE%E7%A1%AE%E5%A3%B0%E6%98%8ESolidity%E5%90%88%E7%BA%A6%E5%87%BD%E6%95%B0%E7%9A%84%E5%8F%AF%E8%A7%81%E6%80%A7"><span class="nav-text">精确声明Solidity合约函数的可见性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E9%80%82%E5%90%88%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-text">使用适合的数据类型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%81%BF%E5%85%8DSolidity%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E4%B8%AD%E7%9A%84%E6%AD%BB%E4%BB%A3%E7%A0%81"><span class="nav-text">避免Solidity智能合约中的死代码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%81%BF%E5%85%8D%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BF%85%E8%A6%81%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD"><span class="nav-text">避免使用不必要的条件判断</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%81%BF%E5%85%8D%E5%9C%A8%E5%BE%AA%E7%8E%AF%E4%B8%AD%E6%89%A7%E8%A1%8Cgas%E6%88%90%E6%9C%AC%E9%AB%98%E7%9A%84%E6%93%8D%E4%BD%9C"><span class="nav-text">避免在循环中执行gas成本高的操作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%81%BF%E5%85%8D%E4%BD%BF%E7%94%A8%E5%B8%B8%E9%87%8F%E7%BB%93%E6%9E%9C%E7%9A%84%E5%BE%AA%E7%8E%AF"><span class="nav-text">避免使用常量结果的循环</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%88%E5%B9%B6%E5%BE%AA%E7%8E%AF"><span class="nav-text">合并循环</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%81%BF%E5%85%8D%E5%BE%AA%E7%8E%AF%E4%B8%AD%E7%9A%84%E9%87%8D%E5%A4%8D%E8%AE%A1%E7%AE%97"><span class="nav-text">避免循环中的重复计算</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8E%BB%E9%99%A4%E5%BE%AA%E7%8E%AF%E4%B8%AD%E7%9A%84%E6%AF%94%E8%BE%83%E8%BF%90%E7%AE%97"><span class="nav-text">去除循环中的比较运算</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8D%E8%A6%81%E5%AD%98%E5%82%A8%E4%B8%8D%E5%BF%85%E8%A6%81%E7%9A%84%E6%95%B0%E6%8D%AE"><span class="nav-text">不要存储不必要的数据</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B0%86%E5%A4%9A%E4%B8%AA%E5%B0%8F%E5%8F%98%E9%87%8F%E6%89%93%E5%8C%85%E5%88%B0%E5%8D%95%E4%B8%AA%E5%AD%97%E4%B8%AD"><span class="nav-text">将多个小变量打包到单个字中</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9C%A8%E5%90%88%E7%BA%A6%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81%E4%B8%AD%E5%AD%98%E5%82%A8%E5%80%BC"><span class="nav-text">在合约的字节码中存储值</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%A6%E6%9C%89-%E6%95%B0%E5%AD%97%E7%9A%84%E5%8F%98%E9%87%8F%EF%BC%8C%E8%AF%BB%E5%8F%96%E6%97%B6%E5%80%99%E8%8A%B1%E8%B4%B9-gas-%E6%9B%B4%E5%B0%91"><span class="nav-text">带有_数字的变量，读取时候花费 gas 更少</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

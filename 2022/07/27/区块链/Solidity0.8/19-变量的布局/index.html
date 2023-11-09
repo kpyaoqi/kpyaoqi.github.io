@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="状态变量在 storge 中的布局合约的状态变量以一种紧凑的方式存储在区块链存储中，以这样的方式，有时多个值会使用同一个存储槽。 除了动态大小的数组和 mapping，数据的存储方式是从位置 0 开始连续放置在 storage 中。对于每个变量，根据其类型确定字节大小。 存储大小少于 32 字节的多个变量会被打包到一个存储插槽(storage slot)中，规则如下：  存储插槽的第一项会以低位对">
+<meta property="og:type" content="article">
+<meta property="og:title" content="19-变量的布局">
+<meta property="og:url" content="https://kongpengyq.com/2022/07/27/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/19-%E5%8F%98%E9%87%8F%E7%9A%84%E5%B8%83%E5%B1%80/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="状态变量在 storge 中的布局合约的状态变量以一种紧凑的方式存储在区块链存储中，以这样的方式，有时多个值会使用同一个存储槽。 除了动态大小的数组和 mapping，数据的存储方式是从位置 0 开始连续放置在 storage 中。对于每个变量，根据其类型确定字节大小。 存储大小少于 32 字节的多个变量会被打包到一个存储插槽(storage slot)中，规则如下：  存储插槽的第一项会以低位对">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-26T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.695Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="Solidity0.8.17">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/07/27/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/19-%E5%8F%98%E9%87%8F%E7%9A%84%E5%B8%83%E5%B1%80/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>19-变量的布局 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/07/27/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/19-%E5%8F%98%E9%87%8F%E7%9A%84%E5%B8%83%E5%B1%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          19-变量的布局
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-27 00:00:00" itemprop="dateCreated datePublished" datetime="2022-07-27T00:00:00+08:00">2022-07-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Solidity0-8-17/" itemprop="url" rel="index">
+                    <span itemprop="name">Solidity0.8.17</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="状态变量在-storge-中的布局"><a href="#状态变量在-storge-中的布局" class="headerlink" title="状态变量在 storge 中的布局"></a>状态变量在 storge 中的布局</h1><p>合约的状态变量以一种紧凑的方式存储在区块链存储中，以这样的方式，<strong>有时多个值会使用同一个存储槽</strong>。</p>
+<p>除了动态大小的数组和 mapping，数据的存储方式是从位置 <code>0</code> 开始连续放置在 storage 中。对于每个变量，根据其类型确定字节大小。</p>
+<p>存储大小少于 32 字节的多个变量会被打包到一个存储插槽(storage slot)中，规则如下：</p>
+<ul>
+<li>存储插槽的第一项会以低位对齐的方式储存。</li>
+<li>值类型仅使用存储它们所需的字节。</li>
+<li>如果存储插槽中的剩余空间不足以储存一个值类型，那么它会被存入下一个存储插槽。</li>
+<li>结构体（struct）和数组数据总是会开启一个新插槽（但结构体或数组中的各元素，则按规则紧密打包）。</li>
+<li>结构体和数组之后的数据也或开启一个新插槽。</li>
+</ul>
+<p>对于使用继承的合约，状态变量的排序由 C3 线性化合约顺序（顺序从最基类合约开始）确定。如果上述规则成立，那么来自不同的合约的状态变量会共享一个存储插槽。</p>
+<p>结构体和数组中的成员变量会存储在一起，就像它们单独声明时一样。</p>
+<h2 id="1-1-使用时候的注意"><a href="#1-1-使用时候的注意" class="headerlink" title="1.1 使用时候的注意"></a>1.1 使用时候的注意</h2><p>⚠️ 注意: 在使用小于 32 字节的变量时，合约的 gas 使用量可能会高于使用 32 字节的元素。这是因为 EVM 每次操作 32 个字节，所以如果元素比 32 字节小，EVM 必须执行额外的操作以便将其大小缩减到到所需的大小。</p>
+<p>当我们在处理状态变量时，利用编译器会将多个元素（变量）缩减的存储大小打包到一个 存储插槽中，也许是有益，因为可以合并多次读写为单个操作。如果你不是在同一时间读或写一个槽中的所有值，这可能会适得其反。当一个值被写入一个多值存储槽时，必须先读取该存储槽，然后将其与新值合并，避免破坏同一槽中的其他数据，再写入。</p>
+<p>当处理函数参数或 memory(内存)中的值时，因为编译器不会打包这些值，所以没有什么额外的益处。</p>
+<h2 id="1-2-书写时的注意"><a href="#1-2-书写时的注意" class="headerlink" title="1.2 书写时的注意"></a>1.2 书写时的注意</h2><p>最后，为了允许 evm 对此进行优化，请确保 storage 中的变量和 <code>struct</code> 成员的书写顺序允许它们被紧密地打包。例如，应该按照 <code>uint128，uint128，uint256</code> 的顺序来声明状态变量，而不是使用 <code>uint128，uint256，uint128</code>，因为前者只占用两个存储插槽，而后者将占用三个。</p>
+<p>⚠️ 注意: storage 中状态变量的布局被认为是 solidity 外部接口的一部分， 因此 storage 变量指针可以传递给库（library）函数。这意味着，本节所述规则的任何变更均被视为语言破坏性变更，并且由于其关键性质，在执行之前应该非常仔细地考虑，在发生这种破坏性变化的情况下，我们希望发布一种兼容模式，在这种模式下，编译器将生成支持旧布局的字节码。</p>
+<h2 id="1-3-mapping-和动态数组"><a href="#1-3-mapping-和动态数组" class="headerlink" title="1.3 mapping 和动态数组"></a>1.3 mapping 和动态数组</h2><p>由于 mapping 和动态数组不可预知大小，不能在状态变量之间存储他们。相反，他们自身根据以上规则仅占用 32 个字节，然后他们包含的元素的存储的起始位置，则是通过 Keccak-256 哈希计算来确定。</p>
+<h2 id="1-4-起始位置"><a href="#1-4-起始位置" class="headerlink" title="1.4 起始位置"></a>1.4 起始位置</h2><p>假设 mapping 或动态数组根据上述存储规则最终可确定某个位置 <code>p</code> 。</p>
+<ul>
+<li>对于动态数组，此插槽中会存储数组中元素的数量（字节数组和字符串除外，见下文）。</li>
+<li>对于 mapping，该插槽未被使用（为空），但它仍是需要的，以确保两个彼此挨着 mapping，他们的内容在不同的位置上。</li>
+</ul>
+<p>数组的元素会从 <code>keccak256(p)</code> 开始；它的布局方式与静态大小的数组相同。一个元素接着一个元素，如果元素的长度不超过 16 字节，就有可能共享存储槽。</p>
+<p>动态数组的数组会递归地应用这一规则，例如，如何确定 <code>x[i][j]</code>元素的位置，其中 <code>x</code> 的类型是 <code>uint24[][]</code>，计算方法如下（假设<code>x</code>本身存储在槽 <code>p</code>）: 槽位于 <code>keccak256(keccak256(p) + i) + floor(j / floor(256 / 24))</code>，且可以从槽数据 <code>v</code>得到元素内容，使用 <code>(v &gt;&gt; ((j % floor(256 / 24)) * 24)) &amp; type(uint24).max</code>.</p>
+<p>mapping 中的键 <code>k</code> 所对应的槽会位于 <code>keccak256(h(k) . p)</code> ，其中 <code>.</code>是连接符， <code>h</code> 是一个函数，根据键的类型：</p>
+<ul>
+<li>值类型， <code>h</code> 与在内存中存储值的方式相同的方式将值填充为 32 字节。</li>
+<li>对于字符串和字节数组， <code>h(k)</code> 只是未填充的数据。</li>
+</ul>
+<p>如果映射值是一个非值类型，计算槽位置标志着数据的开始位置。例如，如果值是结构类型，你必须添加一个与结构成员相对应的偏移量才能到达该成员。</p>
+<h4 id="例子说明"><a href="#例子说明" class="headerlink" title="例子说明"></a>例子说明</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity 0.8.17;</span><br><span class="line"></span><br><span class="line">contract C &#123;</span><br><span class="line">    struct S &#123;</span><br><span class="line">        uint16 a;</span><br><span class="line">        uint16 b;</span><br><span class="line">        uint256 c;</span><br><span class="line">    &#125;</span><br><span class="line">    uint256 x;</span><br><span class="line">    mapping(uint256 =&gt; mapping(uint256 =&gt; S)) data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>让我们计算一下 <code>data[4][9].c</code> 的存储位置。映射本身的位置是 <code>1</code>（前面有 32 字节变量 <code>x</code> ）。 因此 <code>data[4]</code> 存储在<code>keccak256(uint256(4) . uint256(1))</code>。 <code>data[4]</code> 的类型又是一个映射，<code>data[4][9]</code> 的数据开始于槽位<code>keccak256(uint256(9). keccak256(uint256(4). uint256(1))</code>。</p>
+<p>在结构 <code>S</code> 的成员 <code>c</code> 中的槽位偏移是 <code>1</code>，因为 <code>a</code> 和<code>b</code>被装在一个槽位中。 最后 <code>data[4][9].c</code> 的插槽位置是<code>keccak256(uint256(9) . keccak256(uint256(4) . uint256(1)) + 1</code>.该值的类型是 <code>uint256</code>，所以它使用一个槽。</p>
+<h2 id="1-5-bytes-和-string"><a href="#1-5-bytes-和-string" class="headerlink" title="1.5 bytes 和 string"></a>1.5 <code>bytes</code> 和 <code>string</code></h2><p><code>bytes</code> 和 <code>string</code> 编码是一样的。</p>
+<p>一般来说，编码与 <code>bytes1[]</code>类似，即有一个槽用于存放数组本身同时还有一个数据区，数据区位置使用槽的<br><code>keccak256</code> hash 计算。然而，对于短字节数组（短于 32 字节），数组元素与长度一起存储在同一个槽中。</p>
+<p>具体地说：如果数据长度小于等于 <code>31</code>字节，则元素存储在高位字节（左对齐），最低位字节存储值 <code>length * 2</code>。如果数据长度大于等于 32 字节，则在主插槽 <code>p</code> 存储 <code>length * 2 + 1</code>，数据照常存储在 <code>keccak256(p)</code> 中。因此，可以通过检查是否设置了最低位：短（未设置最低位）和长（设置最低位）来区分短数组和长数组。</p>
+<p>⚠️ 注意: 目前不支持处理无效编码的插槽，但可能在将来添加。如果你通过 IR 编译，读取一个无效的编码槽会导致 <code>Panic(0x22)</code> 错误。</p>
+<h2 id="1-6-JSON-输出"><a href="#1-6-JSON-输出" class="headerlink" title="1.6 JSON 输出"></a>1.6 JSON 输出</h2><p>合约的存储布局可以通过 standard JSON interface 获取到。 输出 JSON 对象包含 2 个字段 <code>storage</code> 和 <code>types</code> 。<code>storage</code> 对象是一个数组。</p>
+<p>文件： <code>fileA</code> 合约： <code>contract A &#123; uint x; &#125;</code>存储布局，它的每个元素有如下的形式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;astId&quot;: 2,</span><br><span class="line">    &quot;contract&quot;: &quot;fileA:A&quot;,</span><br><span class="line">    &quot;label&quot;: &quot;x&quot;,</span><br><span class="line">    &quot;offset&quot;: 0,</span><br><span class="line">    &quot;slot&quot;: &quot;0&quot;,</span><br><span class="line">    &quot;type&quot;: &quot;t_uint256&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每个字段说明如下：</p>
+<ul>
+<li><code>astId</code> 是状态变量声明的 AST 节点的 id。</li>
+<li><code>contract</code> 是合约的名称，包括其路径作为前缀。</li>
+<li><code>label</code> 是状态变量的名称。</li>
+<li><code>offset</code> 是根据编码在存储槽内以字节为单位的偏移量。</li>
+<li><code>slot</code> 是状态变量所在或开始的存储槽。这个数字可能非常大，因此它的 JSON 值被表示为一个字符串。</li>
+<li><code>type</code> 是一个标识符，作为变量类型信息的关键(如下所述)。</li>
+</ul>
+<p>给定的 <code>type</code>，在本例中 <code>t_uint256</code> 代表 <code>types</code>中的一个元素，其形式为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;encoding&quot;: &quot;inplace&quot;,</span><br><span class="line">    &quot;label&quot;: &quot;uint256&quot;,</span><br><span class="line">    &quot;numberOfBytes&quot;: &quot;32&quot;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而</p>
+<ul>
+<li><pre><code>encoding
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">   </span><br><span class="line"></span><br><span class="line">  数据在存储中如何编码，可能的数值是：</span><br><span class="line"></span><br><span class="line">  - `inplace`: 数据在存储中连续排列 (见 前面状态变量储存结构`).</span><br><span class="line">  - `mapping`: Keccak-256 基于哈希的方法 (见 前面前面映射和动态数组`).</span><br><span class="line">  - `dynamic_array`: Keccak-256 基于哈希的方法 (见 前面映射和动态数组`).</span><br><span class="line">  - `bytes`: 单槽或基于 Keccak-256 哈希的方法，取决于数据大小 (见 前面 bytes).</span><br><span class="line"></span><br><span class="line">- `label` 是规范的类型名称 。</span><br><span class="line"></span><br><span class="line">- `numberOfBytes` 是使用的字节数(十进制字符串) 注意，如果`numberOfBytes&gt;32` 意味着使用了一个以上的槽。</span><br><span class="line"></span><br><span class="line">除了上述四个外，有些类型还有额外的信息。映射包含其 `key` 和 `value`类型(再次引用该类型映射中元素类型)，数组有其 `base` 类型，结构以与顶层`storage` 相同的格式列出其 `members` (见:ref:`前面JSON 输出`).</span><br><span class="line"></span><br><span class="line">⚠️ 注意: 合约的存储布局的 JSON 输出格式仍被认为是实验性的，即使在 Solidity 的非突破性版本更新中也可能会发生变化。</span><br><span class="line"></span><br><span class="line">#### 例子</span><br><span class="line"></span><br><span class="line">下面的例子显示了一个合约和它的存储布局，包含值类型和引用类型、被编码打包的类型和嵌套类型。</span><br><span class="line"></span><br><span class="line">```solidity</span><br><span class="line">// SPDX-License-Identifier: GPL-3.0</span><br><span class="line">pragma solidity &gt;=0.4.0 &lt;0.9.0;</span><br><span class="line">contract A &#123;</span><br><span class="line">    struct S &#123;</span><br><span class="line">        uint128 a;</span><br><span class="line">        uint128 b;</span><br><span class="line">        uint[2] staticArray;</span><br><span class="line">        uint[] dynArray;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    uint x;</span><br><span class="line">    uint y;</span><br><span class="line">    S s;</span><br><span class="line">    address addr;</span><br><span class="line">    mapping (uint =&gt; mapping (address =&gt; bool)) map;</span><br><span class="line">    uint[] array;</span><br><span class="line">    string s1;</span><br><span class="line">    bytes b1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</code></pre>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">	<span class="attr">&quot;storage&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">		<span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;astId&quot;</span><span class="punctuation">:</span> <span class="number">15</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;contract&quot;</span><span class="punctuation">:</span> <span class="string">&quot;fileA:A&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;x&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;offset&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;slot&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_uint256&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;astId&quot;</span><span class="punctuation">:</span> <span class="number">17</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;contract&quot;</span><span class="punctuation">:</span> <span class="string">&quot;fileA:A&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;y&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;offset&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;slot&quot;</span><span class="punctuation">:</span> <span class="string">&quot;1&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_uint256&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;astId&quot;</span><span class="punctuation">:</span> <span class="number">20</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;contract&quot;</span><span class="punctuation">:</span> <span class="string">&quot;fileA:A&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;s&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;offset&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;slot&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_struct(S)13_storage&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;astId&quot;</span><span class="punctuation">:</span> <span class="number">22</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;contract&quot;</span><span class="punctuation">:</span> <span class="string">&quot;fileA:A&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;addr&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;offset&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;slot&quot;</span><span class="punctuation">:</span> <span class="string">&quot;6&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_address&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;astId&quot;</span><span class="punctuation">:</span> <span class="number">28</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;contract&quot;</span><span class="punctuation">:</span> <span class="string">&quot;fileA:A&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;map&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;offset&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;slot&quot;</span><span class="punctuation">:</span> <span class="string">&quot;7&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_mapping(t_uint256,t_mapping(t_address,t_bool))&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;astId&quot;</span><span class="punctuation">:</span> <span class="number">31</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;contract&quot;</span><span class="punctuation">:</span> <span class="string">&quot;fileA:A&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;array&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;offset&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;slot&quot;</span><span class="punctuation">:</span> <span class="string">&quot;8&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_array(t_uint256)dyn_storage&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;astId&quot;</span><span class="punctuation">:</span> <span class="number">33</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;contract&quot;</span><span class="punctuation">:</span> <span class="string">&quot;fileA:A&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;s1&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;offset&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;slot&quot;</span><span class="punctuation">:</span> <span class="string">&quot;9&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_string_storage&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;astId&quot;</span><span class="punctuation">:</span> <span class="number">35</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;contract&quot;</span><span class="punctuation">:</span> <span class="string">&quot;fileA:A&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;b1&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;offset&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;slot&quot;</span><span class="punctuation">:</span> <span class="string">&quot;10&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_bytes_storage&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span></span><br><span class="line">	<span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">	<span class="attr">&quot;types&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">		<span class="attr">&quot;t_address&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;encoding&quot;</span><span class="punctuation">:</span> <span class="string">&quot;inplace&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;address&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;numberOfBytes&quot;</span><span class="punctuation">:</span> <span class="string">&quot;20&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="attr">&quot;t_array(t_uint256)2_storage&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;base&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_uint256&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;encoding&quot;</span><span class="punctuation">:</span> <span class="string">&quot;inplace&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;uint256[2]&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;numberOfBytes&quot;</span><span class="punctuation">:</span> <span class="string">&quot;64&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="attr">&quot;t_array(t_uint256)dyn_storage&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;base&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_uint256&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;encoding&quot;</span><span class="punctuation">:</span> <span class="string">&quot;dynamic_array&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;uint256[]&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;numberOfBytes&quot;</span><span class="punctuation">:</span> <span class="string">&quot;32&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="attr">&quot;t_bool&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;encoding&quot;</span><span class="punctuation">:</span> <span class="string">&quot;inplace&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;bool&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;numberOfBytes&quot;</span><span class="punctuation">:</span> <span class="string">&quot;1&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="attr">&quot;t_bytes_storage&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;encoding&quot;</span><span class="punctuation">:</span> <span class="string">&quot;bytes&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;bytes&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;numberOfBytes&quot;</span><span class="punctuation">:</span> <span class="string">&quot;32&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="attr">&quot;t_mapping(t_address,t_bool)&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;encoding&quot;</span><span class="punctuation">:</span> <span class="string">&quot;mapping&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;key&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_address&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;mapping(address =&gt; bool)&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;numberOfBytes&quot;</span><span class="punctuation">:</span> <span class="string">&quot;32&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_bool&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="attr">&quot;t_mapping(t_uint256,t_mapping(t_address,t_bool))&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;encoding&quot;</span><span class="punctuation">:</span> <span class="string">&quot;mapping&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;key&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_uint256&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;mapping(uint256 =&gt; mapping(address =&gt; bool))&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;numberOfBytes&quot;</span><span class="punctuation">:</span> <span class="string">&quot;32&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_mapping(t_address,t_bool)&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="attr">&quot;t_string_storage&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;encoding&quot;</span><span class="punctuation">:</span> <span class="string">&quot;bytes&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;string&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;numberOfBytes&quot;</span><span class="punctuation">:</span> <span class="string">&quot;32&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="attr">&quot;t_struct(S)13_storage&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;encoding&quot;</span><span class="punctuation">:</span> <span class="string">&quot;inplace&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;struct A.S&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;members&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">				<span class="punctuation">&#123;</span></span><br><span class="line">					<span class="attr">&quot;astId&quot;</span><span class="punctuation">:</span> <span class="number">3</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;contract&quot;</span><span class="punctuation">:</span> <span class="string">&quot;fileA:A&quot;</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;a&quot;</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;offset&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;slot&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0&quot;</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_uint128&quot;</span></span><br><span class="line">				<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">				<span class="punctuation">&#123;</span></span><br><span class="line">					<span class="attr">&quot;astId&quot;</span><span class="punctuation">:</span> <span class="number">5</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;contract&quot;</span><span class="punctuation">:</span> <span class="string">&quot;fileA:A&quot;</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;b&quot;</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;offset&quot;</span><span class="punctuation">:</span> <span class="number">16</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;slot&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0&quot;</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_uint128&quot;</span></span><br><span class="line">				<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">				<span class="punctuation">&#123;</span></span><br><span class="line">					<span class="attr">&quot;astId&quot;</span><span class="punctuation">:</span> <span class="number">9</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;contract&quot;</span><span class="punctuation">:</span> <span class="string">&quot;fileA:A&quot;</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;staticArray&quot;</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;offset&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;slot&quot;</span><span class="punctuation">:</span> <span class="string">&quot;1&quot;</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_array(t_uint256)2_storage&quot;</span></span><br><span class="line">				<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">				<span class="punctuation">&#123;</span></span><br><span class="line">					<span class="attr">&quot;astId&quot;</span><span class="punctuation">:</span> <span class="number">12</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;contract&quot;</span><span class="punctuation">:</span> <span class="string">&quot;fileA:A&quot;</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;dynArray&quot;</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;offset&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;slot&quot;</span><span class="punctuation">:</span> <span class="string">&quot;3&quot;</span><span class="punctuation">,</span></span><br><span class="line">					<span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;t_array(t_uint256)dyn_storage&quot;</span></span><br><span class="line">				<span class="punctuation">&#125;</span></span><br><span class="line">			<span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;numberOfBytes&quot;</span><span class="punctuation">:</span> <span class="string">&quot;128&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="attr">&quot;t_uint128&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;encoding&quot;</span><span class="punctuation">:</span> <span class="string">&quot;inplace&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;uint128&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;numberOfBytes&quot;</span><span class="punctuation">:</span> <span class="string">&quot;16&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">		<span class="attr">&quot;t_uint256&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">			<span class="attr">&quot;encoding&quot;</span><span class="punctuation">:</span> <span class="string">&quot;inplace&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;uint256&quot;</span><span class="punctuation">,</span></span><br><span class="line">			<span class="attr">&quot;numberOfBytes&quot;</span><span class="punctuation">:</span> <span class="string">&quot;32&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span></span><br><span class="line">	<span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="变量在-memory-布局"><a href="#变量在-memory-布局" class="headerlink" title="变量在 memory 布局"></a>变量在 memory 布局</h1><p>Solidity 保留了四个 32 字节的插槽，字节范围(包括端点)特定用途如下：</p>
+<ul>
+<li><code>0x00</code> - <code>0x3f</code> (64 字节): 用于哈希方法的<strong>暂存空间</strong>（临时空间）</li>
+<li><code>0x40</code> - <code>0x5f</code> (32 字节): 当前分配的内存大小(也作为<strong>空闲内存指针</strong>)</li>
+<li><code>0x60</code> - <code>0x7f</code> (32 字节): <strong>零位插槽</strong></li>
+</ul>
+<p><strong>暂存空间</strong>可以在语句之间使用 (例如在内联汇编中)。<strong>零位插槽</strong>用作动态内存数组的初始值，并且永远不应写入（空闲内存指针最初指向<code>0x80</code>）.Solidity 总是将新对象放在<strong>空闲内存指针</strong>上，并且内存永远不会被释放(将来可能会改变)。</p>
+<p>Solidity 中的内存数组中的元素始终占据 32 字节的倍数（对于 <code>bytes1[]</code>总是这样，但不适用与 <code>bytes</code> 和 <code>string</code> ）。</p>
+<p>多维内存数组是指向内存数组的指针，动态数组的长度存储在数组的第一个插槽中，然后是数组元素。</p>
+<p>⚠️ 警告: Solidity 中有一些需要临时存储区的操作需要大于 64 个字节，因此无法放入暂存空间。它们将被放置在空闲内存指向的位置，但是由于使用寿命短，指针不会更新。内存可以归零，也可以不归零。因此，不应指望空闲内存指针指向归零内存区域。</p>
+<p>尽管使用 <code>msize</code>到达绝对归零的内存区域似乎是一个好主意，但使用此类非临时指针而不更新空闲内存指针可能会产生意外结果。</p>
+<h3 id="与存储中布局的不同"><a href="#与存储中布局的不同" class="headerlink" title="与存储中布局的不同"></a>与存储中布局的不同</h3><p>如上所述，在内存中的布局与在 <strong>存储中</strong> 有一些不同。下面是一些例子：</p>
+<h4 id="数组的不同"><a href="#数组的不同" class="headerlink" title="数组的不同"></a>数组的不同</h4><p>下面的数组在存储中占用 32 字节（1 个槽），但在内存中占用 128 字节（4 个元素，每个 32 字节）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uint8[4] a;</span><br></pre></td></tr></table></figure>
+
+<h4 id="结构体的不同"><a href="#结构体的不同" class="headerlink" title="结构体的不同"></a>结构体的不同</h4><p>下面的结构体在存储中占用 96 (1 个槽，每个 32 字节) ，但在内存中占用 128<br>个字节（4 个元素每个 32 字节）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct S &#123;</span><br><span class="line">    uint a;</span><br><span class="line">    uint b;</span><br><span class="line">    uint8 c;</span><br><span class="line">    uint8 d;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Call-Data-布局"><a href="#Call-Data-布局" class="headerlink" title="Call Data 布局"></a>Call Data 布局</h1><p>假定：函数调用的输入数据采用 ABI 规范。</p>
+<p>其中，ABI 规范要求将参数填充为 32 的倍数 个字节。内部函数调用使用不同的约定。</p>
+<p>合约构造函数的参数直接附加在合约代码的末尾，也采用 ABI 编码。构造函数将通过硬编码偏移量，而不是通过使用 <code>codesize</code> 操作码来访问它们，因为在将数据追加到代码时，它就会会改变。</p>
+<h1 id="清理变量"><a href="#清理变量" class="headerlink" title="清理变量"></a>清理变量</h1><p>当一个值短于 256 位时，在某些情况下，剩余位必须被清理。编译器在设计时，会在操作数据之前清理这些剩余位，以避免剩余位中潜在垃圾数据在操作产生任何不利影响。</p>
+<ul>
+<li>在将一个值写入存储器之前，需要清除剩余的位，因为存储器的内容可以用于计算哈希值或作为消息调用的数据发送。</li>
+<li>同样，在将一个值存储到存储器中之前，也需要清除剩余的位，因为否则可以观察到垃圾数据。</li>
+<li>如果紧接着的操作不受影响，就不会清理位。例如，由于任何非零值都会被 <code>JUMPI</code> 指令认为是 <code>true</code>，所以在布尔值被用作条件判断之前，不需要清理它们。 <code>JUMPI</code>。</li>
+<li>编译器会在将输入数据（input data）加载到堆栈时，会对其进行清理。</li>
+</ul>
+<p>⚠️ 注意：通过内联汇编的访问数据没有此操作。如果使用内联汇编来访问短于 256 位的 Solidity 变量，编译器不保证该值被正确清理。</p>
+<p>不同的类型有不同的清理无效值的规则：</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Valid Values</th>
+<th>Invalid Values Mean</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>enum of nmembers</td>
+<td>0 until n - 1</td>
+<td>exception</td>
+</tr>
+<tr>
+<td>bool</td>
+<td>0 or 1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>signed integers</td>
+<td>sign-extended word</td>
+<td>currently silently wraps; in the future exceptions will be thrown</td>
+</tr>
+<tr>
+<td>unsigned integers</td>
+<td>higher bits zeroed</td>
+<td>currently silently wraps; in the future exceptions will be thrown</td>
+</tr>
+</tbody></table>
+<h1 id="问答题"><a href="#问答题" class="headerlink" title="问答题"></a>问答题</h1><ul>
+<li>存储大小少于 32 字节的多个变量会被打包到一个存储插槽(storage slot)中，规则是什么？<ul>
+<li>存储插槽的第一项会以低位对齐的方式储存。</li>
+<li>值类型仅使用存储它们所需的字节。</li>
+<li>如果存储插槽中的剩余空间不足以储存一个值类型，那么它会被存入下一个存储插槽。</li>
+<li>结构体（struct）和数组数据总是会开启一个新插槽（但结构体或数组中的各元素，则按规则紧密打包）。</li>
+<li>结构体和数组之后的数据也或开启一个新插槽。</li>
+</ul>
+</li>
+<li>在使用小于 32 字节的变量时，合约的 gas 使用量可能会高于使用 32 字节的元素。为什么？<ul>
+<li>这是因为 EVM 每次操作 32 个字节，所以如果元素比 32 字节小，EVM 必须执行额外的操作以便将其大小缩减到到所需的大小。</li>
+</ul>
+</li>
+<li>Solidity 保留了四个 32 字节的插槽，分别是什么，用来做什么？<ul>
+<li><code>0x00</code> - <code>0x3f</code> (64 字节): 用于哈希方法的<strong>暂存空间</strong>（临时空间）</li>
+<li><code>0x40</code> - <code>0x5f</code> (32 字节): 当前分配的内存大小(也作为<strong>空闲内存指针</strong>)</li>
+<li><code>0x60</code> - <code>0x7f</code> (32 字节): <strong>零位插槽</strong></li>
+<li><strong>暂存空间</strong>可以在语句之间使用 (例如在内联汇编中)。<strong>零位插槽</strong>用作动态内存数组的初始值，并且永远不应写入（空闲内存指针最初指向<code>0x80</code>）.Solidity 总是将新对象放在<strong>空闲内存指针</strong>上，并且内存永远不会被释放(将来可能会改变)。</li>
+</ul>
+</li>
+<li>memory 与 storge 之间不同之处有哪些？<ul>
+<li>数组的不同</li>
+<li>结构体的不同</li>
+<li>原因都是因为内存中每条数据都单独占 32 字节，而在 storge 里，可以储存在一个存储插槽中。</li>
+</ul>
+</li>
+<li>calldata 布局<ul>
+<li>函数调用的输入数据采用 ABI 规范。</li>
+<li>ABI 规范要求将参数填充为 32 的倍数 个字节。</li>
+<li>合约构造函数的参数直接附加在合约代码的末尾，也采用 ABI 编码。构造函数将通过硬编码偏移量，而不是通过使用 <code>codesize</code> 操作码来访问它们，因为在将数据追加到代码时，它就会会改变。</li>
+</ul>
+</li>
+<li>聊一聊清理变量<ul>
+<li>当一个值短于 256 位时，在某些情况下，剩余位必须被清理。编译器在设计时，会在操作数据之前清理这些剩余位，以避免剩余位中潜在垃圾数据在操作产生任何不利影响。</li>
+<li>在将一个值写入存储器之前，需要清除剩余的位，因为存储器的内容可以用于计算哈希值或作为消息调用的数据发送。</li>
+<li>同样，在将一个值存储到存储器中之前，也需要清除剩余的位，因为否则可以观察到垃圾数据。</li>
+<li>如果紧接着的操作不受影响，就不会清理位。例如，由于任何非零值都会被 <code>JUMPI</code> 指令认为是 <code>true</code>，所以在布尔值被用作条件判断之前，不需要清理它们。 <code>JUMPI</code>。</li>
+<li>编译器会在将输入数据（input data）加载到堆栈时，会对其进行清理。</li>
+<li>⚠️ 注意：通过内联汇编的访问数据没有此操作。如果使用内联汇编来访问短于 256 位的 Solidity 变量，编译器不保证该值被正确清理。</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/07/27/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/19-%E5%8F%98%E9%87%8F%E7%9A%84%E5%B8%83%E5%B1%80/" title="19-变量的布局">https://kongpengyq.com/2022/07/27/区块链/Solidity0.8/19-变量的布局/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/Solidity0-8-17/" rel="tag"># Solidity0.8.17</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/26/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/18-ABI%E7%BC%96%E7%A0%81/" rel="prev" title="18-ABI编码">
+      <i class="fa fa-chevron-left"></i> 18-ABI编码
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/27/%E5%8C%BA%E5%9D%97%E9%93%BE/Solidity0.8/mapping%E5%8F%AF%E8%BF%AD%E4%BB%A3%E6%98%A0%E5%B0%84/" rel="next" title="mapping可迭代映射">
+      mapping可迭代映射 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E5%8F%98%E9%87%8F%E5%9C%A8-storge-%E4%B8%AD%E7%9A%84%E5%B8%83%E5%B1%80"><span class="nav-text">状态变量在 storge 中的布局</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-%E4%BD%BF%E7%94%A8%E6%97%B6%E5%80%99%E7%9A%84%E6%B3%A8%E6%84%8F"><span class="nav-text">1.1 使用时候的注意</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-%E4%B9%A6%E5%86%99%E6%97%B6%E7%9A%84%E6%B3%A8%E6%84%8F"><span class="nav-text">1.2 书写时的注意</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-mapping-%E5%92%8C%E5%8A%A8%E6%80%81%E6%95%B0%E7%BB%84"><span class="nav-text">1.3 mapping 和动态数组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4-%E8%B5%B7%E5%A7%8B%E4%BD%8D%E7%BD%AE"><span class="nav-text">1.4 起始位置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90%E8%AF%B4%E6%98%8E"><span class="nav-text">例子说明</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-5-bytes-%E5%92%8C-string"><span class="nav-text">1.5 bytes 和 string</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-6-JSON-%E8%BE%93%E5%87%BA"><span class="nav-text">1.6 JSON 输出</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%98%E9%87%8F%E5%9C%A8-memory-%E5%B8%83%E5%B1%80"><span class="nav-text">变量在 memory 布局</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8E%E5%AD%98%E5%82%A8%E4%B8%AD%E5%B8%83%E5%B1%80%E7%9A%84%E4%B8%8D%E5%90%8C"><span class="nav-text">与存储中布局的不同</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%8D%E5%90%8C"><span class="nav-text">数组的不同</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%93%E6%9E%84%E4%BD%93%E7%9A%84%E4%B8%8D%E5%90%8C"><span class="nav-text">结构体的不同</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Call-Data-%E5%B8%83%E5%B1%80"><span class="nav-text">Call Data 布局</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B8%85%E7%90%86%E5%8F%98%E9%87%8F"><span class="nav-text">清理变量</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E7%AD%94%E9%A2%98"><span class="nav-text">问答题</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

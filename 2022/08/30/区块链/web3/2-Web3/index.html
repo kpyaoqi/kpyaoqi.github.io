@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://kongpengyq.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Web3Web3是web.js的主类，可以通过Web3.modules返回所有子模块类的对象 子模块列表：  Eth：与以太坊网络交互的 Eth 模块 Net：与网络属性进行交互的 Net 模块 Personal：与以太坊账户交互的 Personal 模块 Shh：与whisper协议交互的 Shh 模块 Bzz：与swarm网络交互的 Bzz 模块 Utils：工具性函数  1.version（">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2-Web3">
+<meta property="og:url" content="https://kongpengyq.com/2022/08/30/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/2-Web3/index.html">
+<meta property="og:site_name" content="YQ &amp; 博客">
+<meta property="og:description" content="Web3Web3是web.js的主类，可以通过Web3.modules返回所有子模块类的对象 子模块列表：  Eth：与以太坊网络交互的 Eth 模块 Net：与网络属性进行交互的 Net 模块 Personal：与以太坊账户交互的 Personal 模块 Shh：与whisper协议交互的 Shh 模块 Bzz：与swarm网络交互的 Bzz 模块 Utils：工具性函数  1.version（">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-08-29T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-27T08:03:09.712Z">
+<meta property="article:author" content="幺柒YQ">
+<meta property="article:tag" content="区块链">
+<meta property="article:tag" content="web3.js">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://kongpengyq.com/2022/08/30/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/2-Web3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>2-Web3 | YQ & 博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="YQ & 博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">YQ & 博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://kongpengyq.com/2022/08/30/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/2-Web3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.png">
+      <meta itemprop="name" content="幺柒YQ">
+      <meta itemprop="description" content="努力坚持就会有希望">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YQ & 博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2-Web3
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-08-30 00:00:00" itemprop="dateCreated datePublished" datetime="2022-08-30T00:00:00+08:00">2022-08-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-27 16:03:09" itemprop="dateModified" datetime="2023-10-27T16:03:09+08:00">2023-10-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web3-js/" itemprop="url" rel="index">
+                    <span itemprop="name">web3.js</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="Web3"><a href="#Web3" class="headerlink" title="Web3"></a>Web3</h2><p>Web3是web.js的主类，可以通过<code>Web3.modules</code>返回所有子模块类的对象</p>
+<p><strong>子模块列表</strong>：</p>
+<ul>
+<li>Eth：与以太坊网络交互的 Eth 模块</li>
+<li>Net：与网络属性进行交互的 Net 模块</li>
+<li>Personal：与以太坊账户交互的 Personal 模块</li>
+<li>Shh：与whisper协议交互的 Shh 模块</li>
+<li>Bzz：与swarm网络交互的 Bzz 模块</li>
+<li>Utils：工具性函数</li>
+</ul>
+<h3 id="1-version"><a href="#1-version" class="headerlink" title="1.version"></a>1.<strong>version</strong></h3><p><strong>（ 返回当前 web3.js 库的软件包版本）</strong></p>
+<p><strong>返回值</strong>(String)：当前版本</p>
+<h3 id="2-setProvider"><a href="#2-setProvider" class="headerlink" title="2.setProvider"></a>2.<strong>setProvider</strong></h3><p><strong>（改变相应模块的 provider）</strong></p>
+<p><strong>参数</strong>：Object(myProvider)：一个有效的provider</p>
+<p>**返回值(String)**：Boolean</p>
+<blockquote>
+<p>通过web3调用它的时候，web3.eth、web3.net等子模块的provider也会被设置，除了web3.bzz，它总需要单独设置</p>
+</blockquote>
+<h3 id="3-providers"><a href="#3-providers" class="headerlink" title="3.providers"></a>3.providers</h3><p><strong>（包含当前可用的 providers）(子模块也有)</strong></p>
+<p><strong>返回值(Object)：</strong></p>
+<ul>
+<li><code>HttpProvider</code>: 因为不能用于订阅，HTTP provider 已经<strong>不推荐使用</strong>。</li>
+<li><code>WebsocketProvider</code>: Websocket provider 是用于传统的浏览器中的标准方法.</li>
+<li><code>IpcProvider</code>: 当运行一个本地节点时，IPC provider 用于 node.js 下的DApp 环境，提供最为安全的连接。</li>
+</ul>
+<h3 id="4-giveProvider"><a href="#4-giveProvider" class="headerlink" title="4.giveProvider"></a>4.giveProvider</h3><p><strong>(返回浏览器设置的原生 provider ，否则返回 null)(子模块也有)</strong></p>
+<p><strong>返回值：</strong>浏览器设置好的 provider 或者 <code>null</code></p>
+<h3 id="5-currentProvider"><a href="#5-currentProvider" class="headerlink" title="5.currentProvider"></a>5.currentProvider</h3><p><strong>(当前在用的 provider)(子模块也有)</strong></p>
+<p><strong>返回值</strong>：当前在用的 provider 或者 <code>null</code></p>
+<h3 id="6-BatchRequest"><a href="#6-BatchRequest" class="headerlink" title="6.BatchRequest"></a>6.BatchRequest</h3><p><strong>（创建并执行批量请求的类）(子模块也有)</strong></p>
+<p><strong>返回值(Object)：</strong>具有如下方法</p>
+<ul>
+<li><code>add(request)</code>: 添加请求对象到批量调用中。</li>
+<li><code>execute()</code>: 执行批量请求。</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//例子</span></span><br><span class="line"><span class="keyword">var</span> contract = <span class="keyword">new</span> web3.<span class="property">eth</span>.<span class="title class_">Contract</span>(abi, address);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> batch = <span class="keyword">new</span> web3.<span class="title class_">BatchRequest</span>();</span><br><span class="line">batch.<span class="title function_">add</span>(web3.<span class="property">eth</span>.<span class="property">getBalance</span>.<span class="title function_">request</span>(<span class="string">&#x27;0x0000000000000000000000000000000000000000&#x27;</span>, <span class="string">&#x27;latest&#x27;</span>, callback));</span><br><span class="line">batch.<span class="title function_">add</span>(contract.<span class="property">methods</span>.<span class="title function_">balance</span>(address).<span class="property">call</span>.<span class="title function_">request</span>(&#123;<span class="attr">from</span>: <span class="string">&#x27;0x0000000000000000000000000000000000000000&#x27;</span>&#125;, callback2));</span><br><span class="line">batch.<span class="title function_">execute</span>();</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-extend"><a href="#7-extend" class="headerlink" title="7.extend"></a>7.extend</h3><p><strong>（扩展 web3 模块）(子模块也有)</strong></p>
+<p><strong>参数</strong>：</p>
+<ul>
+<li><code>methods</code> - <code>Object</code>: 扩展对象，带有一组如下所示的方法描述对象:<ul>
+<li><code>property</code> - <code>String</code>: (可选) 要添加到模块上的属性名称。如果没有设置属性，则直接添加到模块上。</li>
+<li><code>methods</code> - <code>Array</code>: 方法描述对象数组：<ul>
+<li><code>name</code> - <code>String</code>: 要添加的方法名称。</li>
+<li><code>call</code> - <code>String</code>: RPC 方法名称。</li>
+<li><code>params</code> - <code>Number</code>: (可选) 方法的参数个数，默认值为 0。</li>
+<li><code>inputFormatter</code> - <code>Array</code>: (可选) 输入格式化函数数组，每个成员对应一个函数参数，或者使用 null 来对应不需要进行格式化处理的参数。</li>
+<li><code>outputFormatter - ``Function</code>: (可选) 用来格式化方法输出。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>返回值(Object)</strong>: 扩展模块.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//l</span></span><br><span class="line">web3.<span class="title function_">extend</span>(&#123;</span><br><span class="line">    <span class="attr">property</span>: <span class="string">&#x27;myModule&#x27;</span>,</span><br><span class="line">    <span class="attr">methods</span>: [&#123;</span><br><span class="line">        <span class="attr">name</span>: <span class="string">&#x27;getBalance&#x27;</span>,</span><br><span class="line">        <span class="attr">call</span>: <span class="string">&#x27;eth_getBalance&#x27;</span>,</span><br><span class="line">        <span class="attr">params</span>: <span class="number">2</span>,</span><br><span class="line">        <span class="attr">inputFormatter</span>: [web3.<span class="property">extend</span>.<span class="property">formatters</span>.<span class="property">inputAddressFormatter</span>, web3.<span class="property">extend</span>.<span class="property">formatters</span>.<span class="property">inputDefaultBlockNumberFormatter</span>],</span><br><span class="line">        <span class="attr">outputFormatter</span>: web3.<span class="property">utils</span>.<span class="property">hexToNumberString</span></span><br><span class="line">    &#125;,&#123;</span><br><span class="line">        <span class="attr">name</span>: <span class="string">&#x27;getGasPriceSuperFunction&#x27;</span>,</span><br><span class="line">        <span class="attr">call</span>: <span class="string">&#x27;eth_gasPriceSuper&#x27;</span>,</span><br><span class="line">        <span class="attr">params</span>: <span class="number">2</span>,</span><br><span class="line">        <span class="attr">inputFormatter</span>: [<span class="literal">null</span>, web3.<span class="property">utils</span>.<span class="property">numberToHex</span>]</span><br><span class="line">    &#125;]</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">web3.<span class="title function_">extend</span>(&#123;</span><br><span class="line">    <span class="attr">methods</span>: [&#123;</span><br><span class="line">        <span class="attr">name</span>: <span class="string">&#x27;directCall&#x27;</span>,</span><br><span class="line">        <span class="attr">call</span>: <span class="string">&#x27;eth_callForFun&#x27;</span>,</span><br><span class="line">    &#125;]</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(web3);</span><br><span class="line">&gt; <span class="title class_">Web3</span> &#123;</span><br><span class="line">    <span class="attr">myModule</span>: &#123;</span><br><span class="line">        <span class="attr">getBalance</span>: <span class="keyword">function</span>(<span class="params"></span>)&#123;&#125;,</span><br><span class="line">        <span class="attr">getGasPriceSuperFunction</span>: <span class="keyword">function</span>(<span class="params"></span>)&#123;&#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">directCall</span>: <span class="keyword">function</span>(<span class="params"></span>)&#123;&#125;,</span><br><span class="line">    <span class="attr">eth</span>: <span class="title class_">Eth</span> &#123;...&#125;,</span><br><span class="line">    <span class="attr">bzz</span>: <span class="title class_">Bzz</span> &#123;...&#125;,</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+    
+    
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+    
+        <div class="reward-container">
+  <div>原创技术分享，您的支持将鼓励我继续创作.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    点击打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="幺柒YQ 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="幺柒YQ 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>幺柒YQ
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://kongpengyq.com/2022/08/30/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/2-Web3/" title="2-Web3">https://kongpengyq.com/2022/08/30/区块链/web3/2-Web3/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="https://twitter.com/qiyao666">
+                <span class="icon">
+                  <i class="fa fa-twitter"></i>
+                </span>
+
+                <span class="label">Twitter</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/images/wechat.jpg">
+                <span class="icon">
+                  <i class="fa fa-wechat"></i>
+                </span>
+
+                <span class="label">Wechat</span>
+              </a>
+            </div>
+
+            <div class="social-item">
+              <a target="_blank" class="social-link" href="/atom.xml">
+                <span class="icon">
+                  <i class="fa fa-rss"></i>
+                </span>
+
+                <span class="label">RSS</span>
+              </a>
+            </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
+              <a href="/tags/web3-js/" rel="tag"># web3.js</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/08/26/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/1-%E5%BC%80%E5%A7%8B/" rel="prev" title="1-开始">
+      <i class="fa fa-chevron-left"></i> 1-开始
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/08/31/%E5%8C%BA%E5%9D%97%E9%93%BE/web3/3-Web3.eth/" rel="next" title="3-Web3.eth">
+      3-Web3.eth <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81OTA3NC8zNTUzNg=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Web3"><span class="nav-text">Web3</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-version"><span class="nav-text">1.version</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-setProvider"><span class="nav-text">2.setProvider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-providers"><span class="nav-text">3.providers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-giveProvider"><span class="nav-text">4.giveProvider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-currentProvider"><span class="nav-text">5.currentProvider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-BatchRequest"><span class="nav-text">6.BatchRequest</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-extend"><span class="nav-text">7.extend</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="幺柒YQ"
+      src="/images/avater.png">
+  <p class="site-author-name" itemprop="name">幺柒YQ</p>
+  <div class="site-description" itemprop="description">努力坚持就会有希望</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">232</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/kpyaoqi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;kpyaoqi" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:18312386077@163.com" title="E-Mail → mailto:18312386077@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/wechat.jpg" title="WeChat → images&#x2F;wechat.jpg"><i class="fa fa-fw fa-wechat"></i>WeChat</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/images/qq.jpg" title="QQ → images&#x2F;qq.jpg"><i class="fa fa-fw fa-qq"></i>QQ</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://baidu.com/" title="https:&#x2F;&#x2F;baidu.com" rel="noopener" target="_blank">百度</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://stackoverflow.com/" title="https:&#x2F;&#x2F;stackoverflow.com&#x2F;" rel="noopener" target="_blank">Stackoverflow</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2021-11 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">幺柒YQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">899k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13:37</span>
+</div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共379.4k字</span>
+</div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>
